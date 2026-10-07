@@ -37,7 +37,7 @@ class KnowledgeBaseInitializer:
     def __init__(
         self,
         kb_name: str,
-        base_dir="./data/knowledge_bases",
+        base_dir="./data/portfolios",
         api_key: str | None = None,
         base_url: str | None = None,
         progress_tracker: ProgressTracker | None = None,
@@ -229,7 +229,7 @@ class KnowledgeBaseInitializer:
         rag_service = RAGService(
             kb_base_dir=str(
                 self.base_dir
-            ),  # Base directory for all KBs (e.g., data/knowledge_bases)
+            ),  # Base directory for all KBs (e.g., data/portfolios)
             provider=provider,
         )
 
@@ -238,31 +238,23 @@ class KnowledgeBaseInitializer:
 
         try:
             # Process all documents using the RAGService
-            success = await rag_service.initialize(
+            await rag_service.initialize(
                 kb_name=self.kb_name,
                 file_paths=file_paths,
                 extract_numbered_items=True,  # Enable numbered items extraction
             )
 
-            if success:
-                logger.info("✓ Document processing completed!")
+            logger.info("✓ Document processing completed!")
 
-                # Update metadata with the RAG provider used
-                self._update_metadata_with_provider(provider)
+            # Update metadata with the RAG provider used
+            self._update_metadata_with_provider(provider)
 
-                self.progress_tracker.update(
-                    ProgressStage.PROCESSING_DOCUMENTS,
-                    "Documents processed successfully",
-                    current=len(doc_files),
-                    total=len(doc_files),
-                )
-            else:
-                logger.error("Document processing failed")
-                self.progress_tracker.update(
-                    ProgressStage.ERROR,
-                    "Document processing failed",
-                    error="RAG pipeline returned failure",
-                )
+            self.progress_tracker.update(
+                ProgressStage.PROCESSING_DOCUMENTS,
+                "Documents processed successfully",
+                current=len(doc_files),
+                total=len(doc_files),
+            )
 
         except asyncio.TimeoutError:
             error_msg = "Processing timeout (>10 minutes)"
@@ -273,6 +265,7 @@ class KnowledgeBaseInitializer:
                 "Timeout processing documents",
                 error=error_msg,
             )
+            raise
         except Exception as e:
             error_msg = str(e)
             logger.error(f"✗ Error processing documents: {error_msg}")
@@ -284,6 +277,7 @@ class KnowledgeBaseInitializer:
                 "Failed to process documents",
                 error=error_msg,
             )
+            raise
 
         # Fix structure: flatten nested content_list directories (for RAGAnything compatibility)
         await self.fix_structure()
@@ -529,8 +523,8 @@ Example usage:
     parser.add_argument("--docs-dir", help="Directory containing documents to process")
     parser.add_argument(
         "--base-dir",
-        default="./knowledge_bases",
-        help="Base directory for knowledge bases (default: ./knowledge_bases)",
+        default="./portfolios",
+        help="Base directory for portfolios (default: ./portfolios)",
     )
     parser.add_argument("--api-key", default=os.getenv("LLM_API_KEY"), help="OpenAI API key")
     parser.add_argument("--base-url", default=os.getenv("LLM_HOST"), help="API base URL")

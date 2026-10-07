@@ -151,7 +151,7 @@ def create_task_logger(
 
     Args:
         task_id: Unique task identifier
-        module_name: Module name (e.g., "Solver", "Research")
+        module_name: Module name (e.g., "Research", "Question")
         log_dir: Directory for log files
         queue: Optional asyncio.Queue for WebSocket streaming
 
@@ -165,7 +165,7 @@ def create_task_logger(
     log_path.mkdir(parents=True, exist_ok=True)
 
     # Create logger
-    logger = logging.getLogger(f"deeptutor.{module_name}.{task_id}")
+    logger = logging.getLogger(f"novusorbit.{module_name}.{task_id}")
     logger.setLevel(logging.DEBUG)
     logger.handlers.clear()
     logger.propagate = False

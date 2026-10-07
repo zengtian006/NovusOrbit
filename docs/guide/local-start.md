@@ -26,10 +26,10 @@ Choose one of the following options:
 
 ```bash [Conda (Recommended)]
 # Create environment
-conda create -n deeptutor python=3.10
+conda create -n novusorbit python=3.10
 
 # Activate environment
-conda activate deeptutor
+conda activate novusorbit
 ```
 
 ```bash [venv]

@@ -1,7 +1,7 @@
 # ============================================
-# DeepTutor Multi-Stage Dockerfile
+# NovusOrbit Multi-Stage Dockerfile
 # ============================================
-# This Dockerfile builds a production-ready image for DeepTutor
+# This Dockerfile builds a production-ready image for NovusOrbit
 # containing both the FastAPI backend and Next.js frontend
 #
 # Build: docker compose build
@@ -31,12 +31,17 @@ RUN npm ci --legacy-peer-deps
 # Copy frontend source code
 COPY web/ ./
 
-# Create .env.local with placeholder that will be replaced at runtime
-# Use a unique placeholder that can be safely replaced
-RUN echo "NEXT_PUBLIC_API_BASE=__NEXT_PUBLIC_API_BASE_PLACEHOLDER__" > .env.local
+# Create .env.local with valid URL for build time
+# Using localhost as build-time value (will be replaced at runtime if needed)
+RUN echo "NEXT_PUBLIC_API_BASE=http://localhost:8001" > .env.local
 
-# Build Next.js for production with standalone output
-# This allows runtime environment variable injection
+# Generate Prisma Client before building Next.js
+# This is required because Next.js imports @prisma/client during build
+RUN npx prisma generate
+
+# Build Next.js for production
+# Set NODE_ENV=production to ensure optimized production build
+ENV NODE_ENV=production
 RUN npm run build
 
 # ============================================
@@ -84,9 +89,9 @@ RUN pip install --upgrade pip && \
 FROM python:3.11-slim AS production
 
 # Labels
-LABEL maintainer="DeepTutor Team" \
-      description="DeepTutor: AI-Powered Personalized Learning Assistant" \
-      version="0.1.0"
+LABEL maintainer="NovusOrbit Team" \
+    description="NovusOrbit: AI-Powered Personalized Learning Assistant" \
+    version="0.1.0"
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -129,7 +134,23 @@ COPY --from=frontend-builder /app/web/.next ./web/.next
 COPY --from=frontend-builder /app/web/public ./web/public
 COPY --from=frontend-builder /app/web/package.json ./web/package.json
 COPY --from=frontend-builder /app/web/next.config.js ./web/next.config.js
+COPY --from=frontend-builder /app/web/postcss.config.js ./web/postcss.config.js
+COPY --from=frontend-builder /app/web/tailwind.config.js ./web/tailwind.config.js
 COPY --from=frontend-builder /app/web/node_modules ./web/node_modules
+# Copy Next.js source files (required for next start)
+COPY --from=frontend-builder /app/web/app ./web/app
+COPY --from=frontend-builder /app/web/components ./web/components
+COPY --from=frontend-builder /app/web/context ./web/context
+COPY --from=frontend-builder /app/web/hooks ./web/hooks
+COPY --from=frontend-builder /app/web/i18n ./web/i18n
+COPY --from=frontend-builder /app/web/lib ./web/lib
+COPY --from=frontend-builder /app/web/types ./web/types
+COPY --from=frontend-builder /app/web/locales ./web/locales
+COPY --from=frontend-builder /app/web/prisma ./web/prisma
+COPY --from=frontend-builder /app/web/middleware.ts ./web/middleware.ts
+COPY --from=frontend-builder /app/web/next-env.d.ts ./web/next-env.d.ts
+COPY --from=frontend-builder /app/web/tsconfig.json ./web/tsconfig.json
+COPY --from=frontend-builder /app/web/.env.local ./web/.env.local
 
 # Copy application source code
 COPY src/ ./src/
@@ -155,153 +176,113 @@ RUN mkdir -p \
 
 # Create supervisord configuration for running both services
 # Log output goes to stdout/stderr so docker logs can capture them
-RUN mkdir -p /etc/supervisor/conf.d
-
-RUN cat > /etc/supervisor/conf.d/deeptutor.conf <<'EOF'
-[supervisord]
-nodaemon=true
-logfile=/dev/null
-logfile_maxbytes=0
-pidfile=/var/run/supervisord.pid
-
-[program:backend]
-command=/bin/bash /app/start-backend.sh
-directory=/app
-autostart=true
-autorestart=true
-stdout_logfile=/dev/fd/1
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/fd/2
-stderr_logfile_maxbytes=0
-environment=PYTHONPATH="/app",PYTHONUNBUFFERED="1"
-
-[program:frontend]
-command=/bin/bash /app/start-frontend.sh
-directory=/app/web
-autostart=true
-autorestart=true
-startsecs=5
-stdout_logfile=/dev/fd/1
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/fd/2
-stderr_logfile_maxbytes=0
-environment=NODE_ENV="production"
-EOF
-
-RUN sed -i 's/\r$//' /etc/supervisor/conf.d/deeptutor.conf
+RUN mkdir -p /etc/supervisor/conf.d && \
+    printf '[supervisord]\n' > /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'nodaemon=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'logfile=/dev/null\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'pidfile=/var/run/supervisord.pid\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf '\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf '[program:backend]\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'command=/bin/bash /app/start-backend.sh\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'directory=/app\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'autostart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'autorestart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stdout_logfile=/dev/fd/1\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stdout_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stderr_logfile=/dev/fd/2\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stderr_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'environment=PYTHONPATH="/app",PYTHONUNBUFFERED="1"\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf '\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf '[program:frontend]\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'command=/bin/bash /app/start-frontend.sh\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'directory=/app/web\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'autostart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'autorestart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'startsecs=5\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stdout_logfile=/dev/fd/1\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stdout_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stderr_logfile=/dev/fd/2\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'stderr_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+    printf 'environment=NODE_ENV="production"\n' >> /etc/supervisor/conf.d/novusorbit.conf
 
 # Create backend startup script
-RUN cat > /app/start-backend.sh <<'EOF'
-#!/bin/bash
-set -e
-
-BACKEND_PORT=${BACKEND_PORT:-8001}
-
-echo "[Backend]  🚀 Starting FastAPI backend on port ${BACKEND_PORT}..."
-
-# Run uvicorn directly - the application's logging system already handles:
-# 1. Console output (visible in docker logs)
-# 2. File logging to data/user/logs/ai_tutor_*.log
-exec python -m uvicorn src.api.main:app --host 0.0.0.0 --port ${BACKEND_PORT}
-EOF
-
-RUN sed -i 's/\r$//' /app/start-backend.sh && chmod +x /app/start-backend.sh
+RUN printf '#!/bin/bash\n\
+    set -e\n\
+    \n\
+    BACKEND_PORT=${BACKEND_PORT:-8001}\n\
+    \n\
+    echo "[Backend]  Starting FastAPI backend on port ${BACKEND_PORT}..."\n\
+    \n\
+    # Run uvicorn directly - the application'"'"'s logging system already handles:\n\
+    # 1. Console output (visible in docker logs)\n\
+    # 2. File logging to data/user/logs/ai_tutor_*.log\n\
+    exec python -m uvicorn src.api.main:app --host 0.0.0.0 --port ${BACKEND_PORT}\n' > /app/start-backend.sh && \
+    chmod +x /app/start-backend.sh
 
 # Create frontend startup script
 # This script handles runtime environment variable injection for Next.js
-RUN cat > /app/start-frontend.sh <<'EOF'
-#!/bin/bash
-set -e
-
-# Get the backend port (default to 8001)
-BACKEND_PORT=${BACKEND_PORT:-8001}
-FRONTEND_PORT=${FRONTEND_PORT:-3782}
-
-# Determine the API base URL with multiple fallback options
-# Priority: NEXT_PUBLIC_API_BASE_EXTERNAL > NEXT_PUBLIC_API_BASE > auto-detect
-if [ -n "$NEXT_PUBLIC_API_BASE_EXTERNAL" ]; then
-    # Explicit external URL for cloud deployments
-    API_BASE="$NEXT_PUBLIC_API_BASE_EXTERNAL"
-    echo "[Frontend] 📌 Using external API URL: ${API_BASE}"
-elif [ -n "$NEXT_PUBLIC_API_BASE" ]; then
-    # Custom API base URL
-    API_BASE="$NEXT_PUBLIC_API_BASE"
-    echo "[Frontend] 📌 Using custom API URL: ${API_BASE}"
-else
-    # Default: localhost with configured backend port
-    # Note: This only works for local development, not cloud deployments
-    API_BASE="http://localhost:${BACKEND_PORT}"
-    echo "[Frontend] 📌 Using default API URL: ${API_BASE}"
-    echo "[Frontend] ⚠️  For cloud deployment, set NEXT_PUBLIC_API_BASE_EXTERNAL to your server's public URL"
-    echo "[Frontend]    Example: -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:${BACKEND_PORT}"
-fi
-
-echo "[Frontend] 🚀 Starting Next.js frontend on port ${FRONTEND_PORT}..."
-
-# Replace placeholder in built Next.js files
-# This is necessary because NEXT_PUBLIC_* vars are inlined at build time
-find /app/web/.next -type f \( -name "*.js" -o -name "*.json" \) -exec \
-    sed -i "s|__NEXT_PUBLIC_API_BASE_PLACEHOLDER__|${API_BASE}|g" {} \; 2>/dev/null || true
-
-# Also update .env.local for any runtime reads
-echo "NEXT_PUBLIC_API_BASE=${API_BASE}" > /app/web/.env.local
-
-# Start Next.js
-cd /app/web && exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p ${FRONTEND_PORT}
-EOF
-
-RUN sed -i 's/\r$//' /app/start-frontend.sh && chmod +x /app/start-frontend.sh
+RUN printf '#!/bin/bash\n\
+    set -e\n\
+    \n\
+    export NODE_ENV=production\n\
+    \n\
+    BACKEND_PORT=${BACKEND_PORT:-8001}\n\
+    FRONTEND_PORT=${FRONTEND_PORT:-3782}\n\
+    \n\
+    if [ -n "$NEXT_PUBLIC_API_BASE" ]; then\n\
+    API_BASE="$NEXT_PUBLIC_API_BASE"\n\
+    echo "[Frontend] Using configured API URL: ${API_BASE}"\n\
+    elif [ -n "$NEXT_PUBLIC_API_BASE_EXTERNAL" ]; then\n\
+    API_BASE="$NEXT_PUBLIC_API_BASE_EXTERNAL"\n\
+    echo "[Frontend] Using external API URL: ${API_BASE}"\n\
+    else\n\
+    API_BASE="http://localhost:${BACKEND_PORT}"\n\
+    echo "[Frontend] Single-container mode: ${API_BASE}"\n\
+    fi\n\
+    \n\
+    echo "[Frontend] Starting Next.js in production mode on port ${FRONTEND_PORT}..."\n\
+    \n\
+    if [ "${API_BASE}" != "http://localhost:8001" ]; then\n\
+    echo "[Frontend] Updating API endpoint..."\n\
+    find /app/web/.next -type f \\( -name "*.js" -o -name "*.json" \\) -exec sed -i "s|http://localhost:8001|${API_BASE}|g" {} \\; 2>/dev/null || true\n\
+    fi\n\
+    \n\
+    echo "NODE_ENV=production" > /app/web/.env.local\n\
+    echo "NEXT_PUBLIC_API_BASE=${API_BASE}" >> /app/web/.env.local\n\
+    cd /app/web && exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p ${FRONTEND_PORT}\n' > /app/start-frontend.sh && \
+    chmod +x /app/start-frontend.sh
 
 # Create entrypoint script
-RUN cat > /app/entrypoint.sh <<'EOF'
-#!/bin/bash
-set -e
-
-echo "============================================"
-echo "🚀 Starting DeepTutor"
-echo "============================================"
-
-# Set default ports if not provided
-export BACKEND_PORT=${BACKEND_PORT:-8001}
-export FRONTEND_PORT=${FRONTEND_PORT:-3782}
-
-echo "📌 Backend Port: ${BACKEND_PORT}"
-echo "📌 Frontend Port: ${FRONTEND_PORT}"
-
-# Check for required environment variables
-if [ -z "$LLM_API_KEY" ]; then
-    echo "⚠️  Warning: LLM_API_KEY not set"
-    echo "   Please provide LLM configuration via environment variables or .env file"
-fi
-
-if [ -z "$LLM_MODEL" ]; then
-    echo "⚠️  Warning: LLM_MODEL not set"
-    echo "   Please configure LLM_MODEL in your .env file"
-fi
-
-# Initialize user data directories if empty
-echo "📁 Checking data directories..."
-if [ ! -f "/app/data/user/user_history.json" ]; then
-    echo "   Initializing user data directories..."
-    python -c "
-from pathlib import Path
-from src.services.setup import init_user_directories
-init_user_directories(Path('/app'))
-" 2>/dev/null || echo "   ⚠️ Directory initialization skipped (will be created on first use)"
-fi
-
-echo "============================================"
-echo "📦 Configuration loaded from:"
-echo "   - Environment variables (.env file)"
-echo "   - config/main.yaml"
-echo "   - config/agents.yaml"
-echo "============================================"
-
-# Start supervisord
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/deeptutor.conf
-EOF
-
-RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+RUN printf '#!/bin/bash\n\
+    set -e\n\
+    \n\
+    echo "============================================"\n\
+    echo "Starting NovusOrbit"\n\
+    echo "============================================"\n\
+    \n\
+    export BACKEND_PORT=${BACKEND_PORT:-8001}\n\
+    export FRONTEND_PORT=${FRONTEND_PORT:-3782}\n\
+    \n\
+    echo "Backend Port: ${BACKEND_PORT}"\n\
+    echo "Frontend Port: ${FRONTEND_PORT}"\n\
+    \n\
+    if [ -z "$LLM_API_KEY" ]; then\n\
+    echo "WARNING: LLM_API_KEY not set"\n\
+    fi\n\
+    \n\
+    if [ -z "$LLM_MODEL" ]; then\n\
+    echo "WARNING: LLM_MODEL not set"\n\
+    fi\n\
+    \n\
+    echo "Checking data directories..."\n\
+    if [ ! -f "/app/data/user/user_history.json" ]; then\n\
+    python -c "from pathlib import Path; from src.services.setup import init_user_directories; init_user_directories(Path('"'"'/app'"'"'))" 2>/dev/null || echo "Directory init skipped"\n\
+    fi\n\
+    \n\
+    echo "============================================"\n\
+    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/novusorbit.conf\n' > /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
 # Expose ports
 EXPOSE 8001 3782
@@ -313,57 +294,53 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 # Set entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-# ============================================
-# Stage 4: Development Image (Optional)
-# ============================================
-FROM production AS development
+# # ============================================
+# # Stage 4: Development Image (Optional)
+# # ============================================
+# FROM production AS development
 
-# Install development tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    vim \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# # Install development tools
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     vim \
+#     git \
+#     && rm -rf /var/lib/apt/lists/*
 
-# Install development Python packages
-RUN pip install --no-cache-dir \
-    pre-commit \
-    black \
-    ruff
+# # Install development Python packages
+# RUN pip install --no-cache-dir \
+#     pre-commit \
+#     black \
+#     ruff
 
-# Override supervisord config for development (with reload)
-# Log output goes to stdout/stderr so docker logs can capture them
-RUN cat > /etc/supervisor/conf.d/deeptutor.conf <<'EOF'
-[supervisord]
-nodaemon=true
-logfile=/dev/null
-logfile_maxbytes=0
-pidfile=/var/run/supervisord.pid
+# # Override supervisord config for development (with reload)
+# # Log output goes to stdout/stderr so docker logs can capture them
+# RUN printf '[supervisord]\n' > /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'nodaemon=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'logfile=/dev/null\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'pidfile=/var/run/supervisord.pid\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf '\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf '[program:backend]\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'command=python -m uvicorn src.api.main:app --host 0.0.0.0 --port %%(ENV_BACKEND_PORT)s --reload\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'directory=/app\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'autostart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'autorestart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stdout_logfile=/dev/fd/1\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stdout_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stderr_logfile=/dev/fd/2\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stderr_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'environment=PYTHONPATH="/app",PYTHONUNBUFFERED="1"\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf '\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf '[program:frontend]\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'command=/bin/bash -c "cd /app/web && node node_modules/next/dist/bin/next dev -H 0.0.0.0 -p ${FRONTEND_PORT:-3782}"\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'directory=/app/web\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'autostart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'autorestart=true\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'startsecs=5\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stdout_logfile=/dev/fd/1\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stdout_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stderr_logfile=/dev/fd/2\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'stderr_logfile_maxbytes=0\n' >> /etc/supervisor/conf.d/novusorbit.conf && \
+#     printf 'environment=NODE_ENV="development"\n' >> /etc/supervisor/conf.d/novusorbit.conf
 
-[program:backend]
-command=python -m uvicorn src.api.main:app --host 0.0.0.0 --port %(ENV_BACKEND_PORT)s --reload
-directory=/app
-autostart=true
-autorestart=true
-stdout_logfile=/dev/fd/1
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/fd/2
-stderr_logfile_maxbytes=0
-environment=PYTHONPATH="/app",PYTHONUNBUFFERED="1"
-
-[program:frontend]
-command=/bin/bash -c "cd /app/web && node node_modules/next/dist/bin/next dev -H 0.0.0.0 -p ${FRONTEND_PORT:-3782}"
-directory=/app/web
-autostart=true
-autorestart=true
-startsecs=5
-stdout_logfile=/dev/fd/1
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/fd/2
-stderr_logfile_maxbytes=0
-environment=NODE_ENV="development"
-EOF
-
-RUN sed -i 's/\r$//' /etc/supervisor/conf.d/deeptutor.conf
-
-# Development ports
-EXPOSE 8001 3782
+# # Development ports
+# EXPOSE 8001 3782

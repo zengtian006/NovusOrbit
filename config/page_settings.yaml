@@ -1,0 +1,39 @@
+# Global Page Settings - Applied to all users
+# Controls page-level features like SSO requirements
+
+pages:
+  "/":
+    requireSSO: false
+
+  "/portfolio":
+    requireSSO: false
+    
+  "/history":
+    requireSSO: false
+
+  "/interview":
+    requireSSO: true
+    
+  "/job-suggest":
+    requireSSO: true
+    
+  "/resume-writer":
+    requireSSO: true
+
+  "/jobs":
+    requireSSO: false
+
+  "/notebook":
+    requireSSO: false
+    
+  "/question":
+    requireSSO: false
+    
+  "/guide":
+    requireSSO: false
+    
+  "/ideagen":
+    requireSSO: false
+    
+  "/research":
+    requireSSO: false

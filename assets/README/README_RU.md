@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="../../assets/logo-ver2.png" alt="Логотип DeepTutor" width="150" style="border-radius: 15px;">
+<img src="../../assets/logo-ver2.png" alt="Логотип NovusOrbit" width="150" style="border-radius: 15px;">
 
-# DeepTutor: Персональный учебный ассистент на базе ИИ
+# NovusOrbit: Персональный учебный ассистент на базе ИИ
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -16,7 +16,7 @@
   &nbsp;&nbsp;
   <a href="../../Communication.md"><img src="https://img.shields.io/badge/Feishu-Join_Group-00D4AA?style=for-the-badge&logo=feishu&logoColor=white" alt="Feishu"></a>
   &nbsp;&nbsp;
-  <a href="https://github.com/HKUDS/DeepTutor/issues/78"><img src="https://img.shields.io/badge/WeChat-Join_Group-07C160?style=for-the-badge&logo=wechat&logoColor=white" alt="WeChat"></a>
+  <a href="https://github.com/HKUDS/NovusOrbit/issues/78"><img src="https://img.shields.io/badge/WeChat-Join_Group-07C160?style=for-the-badge&logo=wechat&logoColor=white" alt="WeChat"></a>
 </p>
 
 
@@ -37,37 +37,37 @@
 ---
 ### 📰 Новости
 
-> **[2026.1.1]** С Новым годом! Присоединяйтесь к нашему [Discord-сообществу](https://discord.gg/zpP9cssj), [WeChat-сообществу](https://github.com/HKUDS/DeepTutor/issues/78) или [Discussions](https://github.com/HKUDS/DeepTutor/discussions) — формируйте будущее DeepTutor! 💬
+> **[2026.1.1]** С Новым годом! Присоединяйтесь к нашему [Discord-сообществу](https://discord.gg/zpP9cssj), [WeChat-сообществу](https://github.com/HKUDS/NovusOrbit/issues/78) или [Discussions](https://github.com/HKUDS/NovusOrbit/discussions) — формируйте будущее NovusOrbit! 💬
 
-> **[2025.12.30]** Посетите наш [официальный сайт](https://hkuds.github.io/DeepTutor/) для получения дополнительной информации!
+> **[2025.12.30]** Посетите наш [официальный сайт](https://hkuds.github.io/NovusOrbit/) для получения дополнительной информации!
 
-> **[2025.12.29]** DeepTutor уже в сети! ✨
+> **[2025.12.29]** NovusOrbit уже в сети! ✨
 
 ### 📦 Релизы
 
-> **[2026.1.23]** Релиз [v0.6.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.6.0) - Сохранение сеансов интерфейса, полная поддержка китайского языка, обновления развертывания Docker и исправления незначительных ошибок -- Спасибо всем за обратную связь!
+> **[2026.1.23]** Релиз [v0.6.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.6.0) - Сохранение сеансов интерфейса, полная поддержка китайского языка, обновления развертывания Docker и исправления незначительных ошибок -- Спасибо всем за обратную связь!
 
 <details>
 <summary>История релизов</summary>
 
-> **[2026.1.18]** Релиз [v0.5.2](https://github.com/HKUDS/DeepTutor/releases/tag/v0.5.1) - Улучшение конвейера RAG с поддержкой Docling и улучшение рабочих процессов CI/CD с исправлением нескольких незначительных ошибок -- Спасибо всем за отзывы!
+> **[2026.1.18]** Релиз [v0.5.2](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.5.1) - Улучшение конвейера RAG с поддержкой Docling и улучшение рабочих процессов CI/CD с исправлением нескольких незначительных ошибок -- Спасибо всем за отзывы!
 
 
-> **[2026.1.15]** Релиз [v0.5.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.5.0) - Унифицированные службы LLM и встраивания, выбор конвейера RAG и значительные улучшения модулей Home, History, QuestionGen и Settings -- Спасибо всем участникам!
+> **[2026.1.15]** Релиз [v0.5.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.5.0) - Унифицированные службы LLM и встраивания, выбор конвейера RAG и значительные улучшения модулей Home, History, QuestionGen и Settings -- Спасибо всем участникам!
 
-> **[2026.1.9]** Релиз [v0.4.1](https://github.com/HKUDS/DeepTutor/releases/tag/v0.4.1) с полной переработкой системы провайдера LLM, улучшением надежности генерации вопросов и очисткой кодовой базы - Спасибо всем участникам!
+> **[2026.1.9]** Релиз [v0.4.1](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.4.1) с полной переработкой системы провайдера LLM, улучшением надежности генерации вопросов и очисткой кодовой базы - Спасибо всем участникам!
 
-> **[2026.1.9]** Релиз [v0.4.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.4.0) с новой структурой кода, поддержкой нескольких llm и встраиваний - Спасибо всем участникам!
+> **[2026.1.9]** Релиз [v0.4.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.4.0) с новой структурой кода, поддержкой нескольких llm и встраиваний - Спасибо всем участникам!
 
-> **[2026.1.5]** [v0.3.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.3.0) - Унифицированная архитектура PromptManager, автоматизация CI/CD и предварительно собранные образы Docker на GHCR
+> **[2026.1.5]** [v0.3.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.3.0) - Унифицированная архитектура PromptManager, автоматизация CI/CD и предварительно собранные образы Docker на GHCR
 
-> **[2026.1.2]** [v0.2.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.2.0) - Развертывание Docker, обновление до Next.js 16 и React 19, исправления безопасности WebSocket и критических уязвимостей
+> **[2026.1.2]** [v0.2.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.2.0) - Развертывание Docker, обновление до Next.js 16 и React 19, исправления безопасности WebSocket и критических уязвимостей
 
 </details>
 
 ---
 
-## Ключевые особенности DeepTutor
+## Ключевые особенности NovusOrbit
 
 ### 📚 Q&A по знаниям из массивов документов
 • **Интеллектуальная база знаний**: Загружайте учебники, научные статьи, технические руководства и документы, специфичные для области. Создавайте исчерпывающий репозиторий знаний на основе ИИ для мгновенного доступа.<br>
@@ -216,15 +216,15 @@
 </table>
 
 <p align="center">
-  <sub>🌙 Используйте DeepTutor в <b>темном режиме</b>!</sub>
+  <sub>🌙 Используйте NovusOrbit в <b>темном режиме</b>!</sub>
 </p>
 
 ---
 
-## 🏛️ Фреймворк DeepTutor
+## 🏛️ Фреймворк NovusOrbit
 
 <div align="center">
-<img src="../../assets/figs/full-pipe.png" alt="Рабочий процесс DeepTutor Full-Stack" width="100%">
+<img src="../../assets/figs/full-pipe.png" alt="Рабочий процесс NovusOrbit Full-Stack" width="100%">
 </div>
 
 ### 💬 Слой пользовательского интерфейса
@@ -248,7 +248,7 @@
 ## 📋 Будущие задачи
 > 🌟 Поставьте звезду, чтобы следить за нашими будущими обновлениями!
 - [x] Поддержка многоязычности
-- [x] Сообщество DeepTutor
+- [x] Сообщество NovusOrbit
 - [x] Поддержка видео- и аудиофайлов
 - [x] Настройка атомарного конвейера RAG
 - [ ] Пошаговое редактирование базы знаний
@@ -263,8 +263,8 @@
 **① Клонирование репозитория**
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 **② Настройка переменных окружения**
@@ -349,12 +349,12 @@ docker compose build --no-cache    # Очистка кэша и пересбор
 
 ```bash
 # Работает на всех платформах — Docker автоматически определяет архитектуру
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 
 # Windows PowerShell: используйте ${PWD} вместо $(pwd)
 ```
@@ -385,25 +385,25 @@ docker compose up --build # Пересборка после изменений
 **Облачная установка** — Необходимо установить внешний URL-адрес API:
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 **Пример пользовательских портов:**
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 9001:9001 -p 3000:3000 \
   -e BACKEND_PORT=9001 \
   -e FRONTEND_PORT=3000 \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:9001 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 </details>
@@ -420,7 +420,7 @@ docker run -d --name deeptutor \
 
 ```bash
 # Использование conda (Рекомендуется)
-conda create -n deeptutor python=3.10 && conda activate deeptutor
+conda create -n novusorbit python=3.10 && conda activate novusorbit
 
 # Или использование venv
 python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
@@ -1270,7 +1270,7 @@ npm --version   # Должно показывать номер версии
 
 **Причина**
 
-Windows имеет ограничение по умолчанию на длину пути (260 символов), которое может быть превышено из-за вложенной структуры каталогов и зависимостей DeepTutor.
+Windows имеет ограничение по умолчанию на длину пути (260 символов), которое может быть превышено из-за вложенной структуры каталогов и зависимостей NovusOrbit.
 
 **Решение**
 
@@ -1318,10 +1318,10 @@ NEXT_PUBLIC_API_BASE=http://localhost:8001
 
 ```bash
 # Использование docker run
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001 \
   ... другие параметры ...
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 
 # Или в файле .env
 NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001
@@ -1344,13 +1344,13 @@ NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001
 Установите как переменные окружения портов, так и сопоставления портов:
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 9001:9001 -p 4000:4000 \
   -e BACKEND_PORT=9001 \
   -e FRONTEND_PORT=4000 \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=http://localhost:9001 \
   ... другие переменные окружения ...
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 **Важно**: Сопоставление портов `-p` должно соответствовать значениям `BACKEND_PORT`/`FRONTEND_PORT`.
@@ -1427,7 +1427,7 @@ location /api/v1/ {
 NEXT_PUBLIC_API_BASE=https://your-domain.com:port
 ```
 
-См.: [GitHub Issue #112](https://github.com/HKUDS/DeepTutor/issues/112)
+См.: [GitHub Issue #112](https://github.com/HKUDS/NovusOrbit/issues/112)
 
 </details>
 
@@ -1514,16 +1514,16 @@ python src/knowledge/extract_numbered_items.py --kb <kb_name> --base-dir ./data/
 <div align="center">
 
 <p>
-  <a href="https://github.com/HKUDS/DeepTutor/stargazers"><img src="../../assets/roster/stargazers.svg" alt="Stargazers"/></a>
+  <a href="https://github.com/HKUDS/NovusOrbit/stargazers"><img src="../../assets/roster/stargazers.svg" alt="Stargazers"/></a>
   &nbsp;&nbsp;
-  <a href="https://github.com/HKUDS/DeepTutor/network/members"><img src="../../assets/roster/forkers.svg" alt="Forkers"/></a>
+  <a href="https://github.com/HKUDS/NovusOrbit/network/members"><img src="../../assets/roster/forkers.svg" alt="Forkers"/></a>
 </p>
 
-<a href="https://www.star-history.com/#HKUDS/DeepTutor&type=timeline&legend=top-left">
+<a href="https://www.star-history.com/#HKUDS/NovusOrbit&type=timeline&legend=top-left">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=timeline&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=timeline&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=timeline&legend=top-left" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=timeline&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=timeline&legend=top-left" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=timeline&legend=top-left" />
   </picture>
 </a>
 
@@ -1533,10 +1533,10 @@ python src/knowledge/extract_numbered_items.py --kb <kb_name> --base-dir ./data/
 
 <div align="center">
 
-Мы надеемся, что DeepTutor сможет стать подарком для сообщества. 🎁
+Мы надеемся, что NovusOrbit сможет стать подарком для сообщества. 🎁
 
-<a href="https://github.com/HKUDS/DeepTutor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=HKUDS/DeepTutor&max=999" alt="Участники HKUDS/DeepTutor" />
+<a href="https://github.com/HKUDS/NovusOrbit/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=HKUDS/NovusOrbit&max=999" alt="Участники HKUDS/NovusOrbit" />
 </a>
 
 </div>
@@ -1551,15 +1551,15 @@ python src/knowledge/extract_numbered_items.py --kb <kb_name> --base-dir ./data/
 
 **[Лаборатория интеллектуальных данных @ HKU](https://github.com/HKUDS)**
 
-[⭐ Поставьте звезду](https://github.com/HKUDS/DeepTutor/stargazers) · [🐛 Сообщить об ошибке](https://github.com/HKUDS/DeepTutor/issues) · [💬 Обсуждения](https://github.com/HKUDS/DeepTutor/discussions)
+[⭐ Поставьте звезду](https://github.com/HKUDS/NovusOrbit/stargazers) · [🐛 Сообщить об ошибке](https://github.com/HKUDS/NovusOrbit/issues) · [💬 Обсуждения](https://github.com/HKUDS/NovusOrbit/discussions)
 
 ---
 
 Этот проект распространяется под лицензией ***[AGPL-3.0](../../LICENSE)***.
 
 <p align="center">
-  <em> Спасибо, что посетили ✨ DeepTutor!</em><br><br>
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.DeepTutor&style=for-the-badge&color=00d4ff" alt="Views">
+  <em> Спасибо, что посетили ✨ NovusOrbit!</em><br><br>
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.NovusOrbit&style=for-the-badge&color=00d4ff" alt="Views">
 </p>
 
 </div>

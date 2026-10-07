@@ -1,0 +1,73 @@
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to version control
+
+# AWS Configuration
+aws_region   = "us-east-1"
+project_name = "novusorbit"
+environment  = "production"
+
+# Network Configuration
+vpc_cidr                 = "10.0.0.0/16"
+availability_zones_count = 2
+
+# ECS Configuration
+task_cpu      = 2048 # 2 vCPU
+task_memory   = 4096 # 4 GB
+desired_count = 2
+min_capacity  = 1
+max_capacity  = 4
+
+# Application Ports
+backend_port  = 8001
+frontend_port = 3782
+
+# Docker Configuration
+docker_image_tag = "latest"
+
+# Domain Configuration (Optional)
+# domain_name     = "your-domain.com"
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
+
+# LLM Configuration
+llm_binding = "openai"
+llm_model   = "gpt-4o"
+llm_host    = "https://api.openai.com/v1"
+llm_api_key = "sk-your-api-key-here"
+
+# Embedding Configuration
+embedding_binding  = "openai"
+embedding_model    = "text-embedding-3-small"
+embedding_host     = "https://api.openai.com/v1"
+embedding_dimension = 1536
+embedding_api_key  = "sk-your-api-key-here"
+
+# Database Configuration
+database_url = "mongodb+srv://username:password@cluster.mongodb.net/database"
+
+# NextAuth Configuration
+nextauth_secret = "generate-a-secret-with-openssl-rand-base64-32"
+
+# Google OAuth (Optional)
+google_client_id     = "your-google-client-id"
+google_client_secret = "your-google-client-secret"
+
+# Optional Services
+search_provider = "perplexity"
+search_api_key  = "pplx-your-api-key"
+tts_api_key     = "sk-your-api-key"
+tts_model       = "tts-1"
+
+# Infrastructure Options
+enable_efs         = true
+enable_autoscaling = true
+cpu_target_value   = 75
+memory_target_value = 75
+
+# Logging
+log_retention_days = 30
+
+# Additional Tags
+additional_tags = {
+  Team = "DevOps"
+  Cost = "Project"
+}

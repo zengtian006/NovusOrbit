@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "job-search": {
+      "command": "python",
+      "args": ["-m", "src.mcp"],
+      "cwd": "/Users/tzeng/Development/DeepTutor"
+    }
+  }
+}

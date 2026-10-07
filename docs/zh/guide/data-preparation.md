@@ -1,6 +1,6 @@
 # 数据准备
 
-DeepTutor 提供示例知识库和样例问题，帮助您快速上手。
+NovusOrbit 提供示例知识库和样例问题，帮助您快速上手。
 
 ## 示例知识库
 
@@ -62,7 +62,7 @@ DeepTutor 提供示例知识库和样例问题，帮助您快速上手。
 将下载的文件解压到 `data/` 目录：
 
 ```
-DeepTutor/
+NovusOrbit/
 ├── data/
 │   └── knowledge_bases/
 │       ├── research_papers/      # 研究论文知识库
@@ -73,7 +73,7 @@ DeepTutor/
 
 ### 步骤 3：验证
 
-解压后，启动 DeepTutor 时您的知识库将自动可用。
+解压后，启动 NovusOrbit 时您的知识库将自动可用。
 
 ::: warning 嵌入兼容性
 我们的示例知识库使用 `text-embedding-3-large`，`dimensions = 3072`。

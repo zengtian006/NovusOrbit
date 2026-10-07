@@ -3,7 +3,7 @@
 Setup Service
 =============
 
-System setup and initialization for DeepTutor.
+System setup and initialization for NovusOrbit.
 
 Port configuration is done via .env file:
     BACKEND_PORT=8001   (default: 8001)

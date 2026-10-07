@@ -1,6 +1,6 @@
 /* Roadmap 导航标签特殊样式 - 更显眼 & 独立 */
-.VPNavBarMenuLink[href="/DeepTutor/roadmap"],
-.VPNavScreenMenuLink[href="/DeepTutor/roadmap"] {
+.VPNavBarMenuLink[href="/NovusOrbit/roadmap"],
+.VPNavScreenMenuLink[href="/NovusOrbit/roadmap"] {
   position: relative;
   color: white !important;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -14,15 +14,15 @@
 }
 
 /* 强制覆盖可能的默认样式 */
-.VPNavBarMenuLink[href="/DeepTutor/roadmap"]:hover,
-.VPNavScreenMenuLink[href="/DeepTutor/roadmap"]:hover {
+.VPNavBarMenuLink[href="/NovusOrbit/roadmap"]:hover,
+.VPNavScreenMenuLink[href="/NovusOrbit/roadmap"]:hover {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
   transform: translateY(-2px);
   box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.3), 0 4px 6px -2px rgba(102, 126, 234, 0.1);
 }
 
-.VPNavBarMenuLink[href="/DeepTutor/roadmap"]::before,
-.VPNavScreenMenuLink[href="/DeepTutor/roadmap"]::before {
+.VPNavBarMenuLink[href="/NovusOrbit/roadmap"]::before,
+.VPNavScreenMenuLink[href="/NovusOrbit/roadmap"]::before {
   content: '🚀';
   margin-right: 6px;
   font-size: 1.1em;
@@ -30,15 +30,15 @@
 }
 
 /* 活跃状态 */
-.VPNavBarMenuLink[href="/DeepTutor/roadmap"].active,
-.VPNavBarMenuLink[href="/DeepTutor/roadmap"].VPLink--active {
+.VPNavBarMenuLink[href="/NovusOrbit/roadmap"].active,
+.VPNavBarMenuLink[href="/NovusOrbit/roadmap"].VPLink--active {
   background: linear-gradient(135deg, #5b21b6 0%, #4c1d95 100%) !important; /* 深紫色 */
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* 移动端样式优化 */
 @media (max-width: 768px) {
-  .VPNavScreenMenuLink[href="/DeepTutor/roadmap"] {
+  .VPNavScreenMenuLink[href="/NovusOrbit/roadmap"] {
     display: inline-flex;
     align-items: center;
     margin: 12px 0 12px 12px;

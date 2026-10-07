@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 # This allows users to configure NEXT_PUBLIC_API_BASE for remote access
 project_root = Path(__file__).parent.parent
-load_dotenv(project_root / "DeepTutor.env", override=False)
+load_dotenv(project_root / "NovusOrbit.env", override=False)
 load_dotenv(project_root / ".env", override=False)
 
 # Force unbuffered output for the main process
@@ -415,7 +415,7 @@ if __name__ == "__main__":
     setup_windows_ctrl_handler()
 
     print_flush("=" * 50)
-    print_flush("DeepTutor Web Platform Launcher")
+    print_flush("NovusOrbit Web Platform Launcher")
     print_flush("=" * 50)
 
     # Initialize user data directories

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     reload_excludes = [
         str(project_root / "venv"),  # Virtual environment
         str(project_root / ".venv"),  # Virtual environment (alternative name)
-        str(project_root / "data"),  # Data directory (includes knowledge_bases, user data, logs)
+        str(project_root / "data"),  # Data directory (includes portfolios, user data, logs)
         str(project_root / "node_modules"),  # Node modules (if any at root)
         str(project_root / "web" / "node_modules"),  # Web node modules
         str(project_root / "web" / ".next"),  # Next.js build

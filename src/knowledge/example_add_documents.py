@@ -26,7 +26,7 @@ async def example_add_single_document():
 
     adder = DocumentAdder(
         kb_name="ai_textbook",
-        base_dir="./data/knowledge_bases",
+        base_dir="./data/portfolios",
         api_key=os.getenv("LLM_API_KEY"),
         base_url=os.getenv("LLM_HOST"),
     )
@@ -58,7 +58,7 @@ async def example_add_multiple_documents():
 
     adder = DocumentAdder(
         kb_name="math2211",
-        base_dir="./data/knowledge_bases",
+        base_dir="./data/portfolios",
         api_key=os.getenv("LLM_API_KEY"),
         base_url=os.getenv("LLM_HOST"),
     )
@@ -97,7 +97,7 @@ async def example_add_from_directory():
 
     adder = DocumentAdder(
         kb_name="ai_textbook",
-        base_dir="./data/knowledge_bases",
+        base_dir="./data/portfolios",
         api_key=os.getenv("LLM_API_KEY"),
         base_url=os.getenv("LLM_HOST"),
     )
@@ -135,7 +135,7 @@ async def example_add_only_no_processing():
 
     adder = DocumentAdder(
         kb_name="ai_textbook",
-        base_dir="./data/knowledge_bases",
+        base_dir="./data/portfolios",
         api_key=os.getenv("LLM_API_KEY"),
         base_url=os.getenv("LLM_HOST"),
     )
@@ -156,7 +156,7 @@ async def example_check_existing_files():
     print("Example 5: Check existing files in knowledge base")
     print("=" * 60)
 
-    adder = DocumentAdder(kb_name="ai_textbook", base_dir="./data/knowledge_bases")
+    adder = DocumentAdder(kb_name="ai_textbook", base_dir="./data/portfolios")
 
     existing_files = adder.get_existing_files()
 
@@ -174,7 +174,7 @@ def example_with_error_handling():
     try:
         adder = DocumentAdder(
             kb_name="ai_textbook",
-            base_dir="./data/knowledge_bases",
+            base_dir="./data/portfolios",
             api_key=os.getenv("LLM_API_KEY"),
             base_url=os.getenv("LLM_HOST"),
         )

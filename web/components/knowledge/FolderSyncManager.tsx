@@ -39,7 +39,7 @@ export default function FolderSyncManager({
     setLinking(true);
     try {
       const res = await fetch(
-        apiUrl(`/api/v1/knowledge/${kbName}/link-folder`),
+        apiUrl(`/api/v1/portfolio/${kbName}/link-folder`),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

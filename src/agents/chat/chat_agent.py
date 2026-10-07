@@ -160,6 +160,75 @@ class ChatAgent(BaseAgent):
 
         return "\n\n".join(lines)
 
+    # Keywords that strongly signal a career-related question (fast pre-filter)
+    _CAREER_KEYWORDS = {
+        "resume", "cv", "cover letter", "interview", "job", "career", "hire",
+        "hiring", "salary", "negotiate", "promotion", "skill", "experience",
+        "linkedin", "portfolio", "recruiter", "networking", "internship",
+        "manager", "leadership", "professional", "qualification", "certif",
+        "employer", "apply", "application", "offer", "role", "position",
+        "workplace", "work-life", "remote work", "freelance", "startup",
+        "industry", "mentor", "coach", "transition", "layoff", "fired",
+        "resign", "quit", "onboarding", "performance review",
+        # Chinese equivalents
+        "简历", "面试", "求职", "职业", "薪资", "晋升", "技能", "招聘",
+        "工作", "岗位", "离职", "跳槽", "职场", "人脉", "实习",
+    }
+
+    def _quick_career_check(self, message: str) -> bool:
+        """
+        Fast keyword-based check for career relevance.
+
+        Returns True if any career keyword is found, allowing us to skip
+        the more expensive LLM classification.
+        """
+        lower = message.lower()
+        return any(kw in lower for kw in self._CAREER_KEYWORDS)
+
+    async def _is_career_related(self, message: str) -> bool:
+        """
+        Determine whether a user message is related to career topics.
+
+        Uses a fast keyword check first, then falls back to a lightweight
+        LLM classification call for ambiguous cases.
+
+        Args:
+            message: The user's message
+
+        Returns:
+            True if the message is career-related and warrants RAG/web search
+        """
+        # Fast path: keyword match
+        if self._quick_career_check(message):
+            self.logger.debug("Career relevance: keyword match")
+            return True
+
+        # Slow path: ask the LLM (very short prompt, low cost)
+        try:
+            classification = await self.call_llm(
+                user_prompt=message,
+                system_prompt=(
+                    "You are a classifier. Decide if the following user message is related to "
+                    "careers, jobs, professional development, resumes, interviews, job searching, "
+                    "skill development, the job market, or the user's professional background.\n\n"
+                    "Reply with ONLY one word: YES or NO."
+                ),
+                temperature=0.0,
+                max_tokens=3,
+                verbose=False,
+                stage="career_classification",
+            )
+            is_career = classification.strip().upper().startswith("YES")
+            self.logger.info(
+                f"Career relevance LLM check: {'YES' if is_career else 'NO'} "
+                f"for: {message[:60]}..."
+            )
+            return is_career
+        except Exception as e:
+            self.logger.warning(f"Career classification failed, defaulting to True: {e}")
+            # Err on the side of providing context
+            return True
+
     async def retrieve_context(
         self,
         message: str,
@@ -169,6 +238,9 @@ class ChatAgent(BaseAgent):
     ) -> tuple[str, dict[str, Any]]:
         """
         Retrieve context from RAG and/or Web Search.
+
+        Only triggers retrieval if the message is career-related, to avoid
+        wasting API calls on unrelated questions (e.g. "what's the weather?").
 
         Args:
             message: User message to search for
@@ -181,6 +253,16 @@ class ChatAgent(BaseAgent):
         """
         context_parts = []
         sources = {"rag": [], "web": []}
+
+        # Gate: only use RAG/web search for career-related questions
+        if enable_rag or enable_web_search:
+            is_relevant = await self._is_career_related(message)
+            if not is_relevant:
+                self.logger.info(
+                    f"Skipping RAG/web search — question not career-related: "
+                    f"{message[:60]}..."
+                )
+                return "", sources
 
         # RAG retrieval
         if enable_rag and kb_name:

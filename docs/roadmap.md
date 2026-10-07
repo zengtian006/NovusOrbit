@@ -1,6 +1,6 @@
 # Roadmap
 
-Our vision for DeepTutor's future development.
+Our vision for NovusOrbit's future development.
 
 ## ✅ Recently Completed (v0.4.0)
 
@@ -32,9 +32,9 @@ Our vision for DeepTutor's future development.
 
 Have a feature idea? We'd love to hear it!
 
-- Open a [Feature Request](https://github.com/HKUDS/DeepTutor/issues/new?template=feature_request.yml)
+- Open a [Feature Request](https://github.com/HKUDS/NovusOrbit/issues/new?template=feature_request.yml)
 - Join the discussion on existing proposals
-- Check our [GitHub Discussions](https://github.com/HKUDS/DeepTutor/discussions)
+- Check our [GitHub Discussions](https://github.com/HKUDS/NovusOrbit/discussions)
 
 ---
 

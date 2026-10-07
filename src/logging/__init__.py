@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Unified Logging System for DeepTutor
+Unified Logging System for NovusOrbit
 =====================================
 
 A clean, consistent logging system with:
@@ -15,13 +15,13 @@ A clean, consistent logging system with:
 Usage:
     from src.logging import get_logger, LLMStats
 
-    logger = get_logger("Solver")
+    logger = get_logger("Research")
     logger.info("Processing started")
     logger.success("Task completed in 2.3s")
     logger.error("Something went wrong")
 
     # Track LLM usage
-    stats = LLMStats("Solver")
+    stats = LLMStats("Research")
     stats.add_call(model="gpt-4o", prompt_tokens=100, completion_tokens=50)
     stats.print_summary()
 """

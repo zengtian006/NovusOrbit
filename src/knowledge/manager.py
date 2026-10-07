@@ -66,7 +66,7 @@ def file_lock_exclusive(file_handle):
 class KnowledgeBaseManager:
     """Manager for knowledge bases"""
 
-    def __init__(self, base_dir="./data/knowledge_bases"):
+    def __init__(self, base_dir="./data/portfolios"):
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
@@ -847,7 +847,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Knowledge Base Manager")
     parser.add_argument(
-        "--base-dir", default="./knowledge_bases", help="Base directory for knowledge bases"
+        "--base-dir", default="./portfolios", help="Base directory for portfolios"
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")

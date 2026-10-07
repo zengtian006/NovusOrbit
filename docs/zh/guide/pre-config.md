@@ -1,12 +1,12 @@
 # 预配置
 
-在启动 DeepTutor 之前，您需要完成以下设置步骤。
+在启动 NovusOrbit 之前，您需要完成以下设置步骤。
 
 ## 1. 克隆仓库
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 ## 2. 环境变量配置
@@ -97,7 +97,7 @@ SEARCH_API_KEY=your_search_api_key        # 搜索提供商的 API 密钥
 
 ## 3. 配置文件
 
-DeepTutor 使用两个 YAML 配置文件进行自定义：
+NovusOrbit 使用两个 YAML 配置文件进行自定义：
 
 ### `config/agents.yaml` - Agent 参数
 
@@ -188,7 +188,7 @@ research:
 
 ### 创建您自己的知识库
 
-启动 DeepTutor 后：
+启动 NovusOrbit 后：
 
 1. 导航到 `http://localhost:3782/knowledge`
 2. 点击 **"New Knowledge Base"**

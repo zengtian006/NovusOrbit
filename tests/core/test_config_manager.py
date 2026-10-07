@@ -17,7 +17,7 @@ def test_atomic_save_and_deep_merge(tmp_path: Path):
         "llm": {"model": "Pro/Flash", "provider": "openai"},
         "paths": {
             "user_data_dir": "./data/user",
-            "knowledge_bases_dir": "./data/knowledge_bases",
+            "portfolios_dir": "./data/portfolios",
             "user_log_dir": "./data/user/logs",
         },
     }
@@ -51,7 +51,7 @@ def test_env_layering(tmp_path: Path):
         "llm": {"model": "Pro/Flash", "provider": "openai"},
         "paths": {
             "user_data_dir": "./data/user",
-            "knowledge_bases_dir": "./data/knowledge_bases",
+            "portfolios_dir": "./data/portfolios",
             "user_log_dir": "./data/user/logs",
         },
     }

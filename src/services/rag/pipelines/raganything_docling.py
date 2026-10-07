@@ -57,7 +57,7 @@ class RAGAnythingDoclingPipeline:
         """
         self.logger = get_logger("RAGAnythingDoclingPipeline")
         self.kb_base_dir = kb_base_dir or str(
-            Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "knowledge_bases"
+            Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "portfolios"
         )
         self.enable_image = enable_image_processing
         self.enable_table = enable_table_processing

@@ -7,15 +7,6 @@
 # Each module shares ONE set of parameters for all its agents.
 # =============================================================================
 
-# Solve Module - Problem solving agents
-# Agents: investigate_agent, note_agent, manager_agent, solve_agent, tool_agent, response_agent, precision_answer_agent
-solve:
-  temperature: 0.3
-  max_tokens: 8192
-  # NOTE: Valid tools for investigate agent validation are defined in
-  #       config/main.yaml, which is the SINGLE source of truth for valid_tools.
-  #       Do not re-declare valid_tools here to avoid configuration drift.
-
 # Research Module - Deep research agents
 # Agents: rephrase_agent, decompose_agent, manager_agent, research_agent, note_agent, reporting_agent
 research:
@@ -40,9 +31,9 @@ ideagen:
   temperature: 0.7
   max_tokens: 4096
 
-# CoWriter Module - Collaborative writing agents
-# Agents: edit_agent
-co_writer:
+# Resume Writer Module - Text editing and narration agents
+# Agents: edit_agent, narrator_agent
+resume_writer:
   temperature: 0.7
   max_tokens: 4096
 

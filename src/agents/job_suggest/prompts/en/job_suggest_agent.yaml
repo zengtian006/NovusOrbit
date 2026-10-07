@@ -1,0 +1,163 @@
+# Job Suggestion Agent Prompts (English)
+
+# =====================================================================
+# RANKING REAL JOBS (primary flow — uses MCP scrapers)
+# =====================================================================
+
+# System prompt for ranking real job listings against a portfolio
+rank_system: |
+  You are an expert career advisor. You analyze real job listings scraped from
+  job boards (Indeed, LinkedIn) and determine how well they match a candidate's
+  profile. You provide honest, specific assessments with actionable insights.
+
+# Template for ranking and analyzing real scraped job listings
+rank_template: |
+  Analyze the following real job listings (scraped from Indeed & LinkedIn) and
+  select the top {count} that best match this candidate's profile.
+
+  ## Candidate Profile (from their portfolio/resume)
+  <candidate_profile>
+  {portfolio_context}
+  </candidate_profile>
+
+  {preferences_section}
+
+  ## Real Job Listings Found
+  {jobs_listing}
+
+  ## Instructions
+  1. Select the top {count} jobs that best match this candidate's skills and experience.
+  2. Rank them from best match (#1) to good match (#{count}).
+  3. For each selected job, use this **exact** format:
+
+  ### {{number}}. {{Job Title}} at {{Company}}
+  **Location:** {{location}}
+  **Source:** {{Indeed/LinkedIn}}
+  **URL:** {{url}}
+  **Why It Fits:** 2-3 sentences explaining why the candidate is a strong match
+  **Key Skills Match:** list the candidate's skills that align with this role
+  **Potential Gaps:** any areas where the candidate might need to upskill
+  **Match Score:** X/10
+
+  4. Be specific — reference the candidate's actual skills and the job's actual requirements.
+  5. If a job listing has a salary, mention it; otherwise note "Not listed".
+  6. Preserve the original URL for each job so the candidate can apply directly.
+
+  IMPORTANT: Write the analysis in English.
+
+# =====================================================================
+# FALLBACK: LLM-GENERATED SUGGESTIONS (when scrapers return no results)
+# =====================================================================
+
+# System prompt for LLM-only suggestions (fallback)
+suggest_system: |
+  You are an expert career advisor and job market analyst. You analyze a candidate's
+  background, skills, and experience to suggest the most suitable job opportunities.
+  You have deep knowledge of job markets, career paths, and industry trends.
+
+# Template for generating LLM-only job suggestions (fallback)
+suggest_template: |
+  Based on the candidate's background, suggest exactly {count} job positions that
+  would be an excellent match for their skills and experience.
+
+  ## Candidate Profile (from their portfolio/resume)
+  <candidate_profile>
+  {portfolio_context}
+  </candidate_profile>
+
+  {preferences_section}
+  {market_section}
+
+  ## Instructions
+  1. Suggest exactly {count} job positions numbered 1 through {count}.
+  2. Each suggestion should be a realistic, specific job role — not a generic category.
+  3. For each suggestion, provide:
+     - **Job Title**: A specific, real-world title
+     - **Company Type**: The type of company/industry this role would be at
+     - **Why It Fits**: 2-3 sentences explaining why this candidate is a strong match
+     - **Key Skills Match**: List the candidate's skills that align with this role
+     - **Salary Range**: Estimated salary range (USD) based on current market
+     - **Growth Potential**: Brief note on career growth in this direction
+  4. Rank suggestions from best match to good match.
+  5. Be specific — reference the candidate's actual skills and experiences.
+  6. Consider both obvious matches and creative "stretch" opportunities.
+
+  IMPORTANT: Generate all suggestions in English.
+
+  ## Output Format
+  For each suggestion, use this exact format:
+
+  ### {number}. {Job Title}
+  **Company Type:** {company_type}
+  **Why It Fits:** {explanation}
+  **Key Skills Match:** {skills_list}
+  **Estimated Salary:** {salary_range}
+  **Growth Potential:** {growth_note}
+
+# =====================================================================
+# DETAIL ANALYSIS (works for both real and hypothetical jobs)
+# =====================================================================
+
+# System prompt for generating detailed job analysis
+detail_system: |
+  You are an expert career advisor. You provide in-depth analysis of how well
+  a candidate matches a specific job role, with actionable advice for landing the position.
+
+# Template for detailed job analysis
+detail_template: |
+  Provide a detailed analysis of how this candidate matches the following job role.
+
+  ## Job Role
+  **Title**: {job_title}
+  **Company Type**: {company_type}
+
+  ## Candidate Profile
+  <candidate_profile>
+  {portfolio_context}
+  </candidate_profile>
+
+  {web_section}
+
+  ## Instructions
+  Provide a comprehensive analysis covering:
+
+  1. **Match Score**: Rate the overall match from 1-10 with a brief justification
+  2. **Strengths**: What makes this candidate stand out for this role (bullet points)
+  3. **Gaps**: Any skills or experiences the candidate might be lacking
+  4. **How to Prepare**: Specific actionable steps to strengthen their candidacy
+  5. **Interview Tips**: 3-5 key topics they should prepare to discuss
+  6. **Similar Roles to Consider**: 2-3 alternative job titles to also search for
+  7. **Where to Look**: Suggest types of companies or specific companies known for this role
+
+  Be specific and reference the candidate's actual background throughout.
+
+  IMPORTANT: Write the analysis in English.
+
+# =====================================================================
+# SHARED SECTION TEMPLATES
+# =====================================================================
+
+# Template for preferences section
+preferences_section_template: |
+  ## Candidate Preferences
+  {preferences_text}
+
+  Take these preferences into account when ranking/suggesting positions.
+
+# Template for market context section (fallback mode)
+market_section_template: |
+  ## Current Job Market Insights (from web research)
+  <market_research>
+  {market_context}
+  </market_research>
+
+  Use these current market insights to inform salary estimates and demand levels.
+
+# Template for web research section in detail view
+web_section_template: |
+  ## Current Market Information (from web research)
+  <web_research>
+  {web_context}
+  </web_research>
+
+  Use this information to provide accurate, up-to-date advice.

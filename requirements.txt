@@ -1,5 +1,5 @@
 # ============================================
-# DeepTutor Python Dependencies
+# NovusOrbit Python Dependencies
 # ============================================
 # Python >= 3.10 required
 # Install: pip install -r requirements.txt
@@ -23,6 +23,8 @@ dashscope>=1.14.0
 aiohttp>=3.9.4
 httpx>=0.27.0
 urllib3>=2.2.1
+beautifulsoup4>=4.12.0     # HTML parser for job board scraping
+markdownify>=0.13.0        # Convert HTML job descriptions to Markdown
 
 # ============================================
 # Async support
@@ -38,12 +40,16 @@ uvicorn[standard]>=0.24.0
 websockets>=12.0
 python-multipart>=0.0.6
 pydantic>=2.0.0
+pydantic-settings>=2.0.0
+email-validator>=2.0.0
 
 # ============================================
 # RAG and knowledge base
 # ============================================
-raganything>=0.1.0
-docling>=2.31.0                # Document parser for Office/HTML (alternative to MinerU)
+lightrag-hku>=1.4.0
+# raganything>=0.1.0           # Requires torch>=2.6.0 (no macOS x86_64 wheels). Install separately on ARM/Linux.
+# mineru>=2.0.0                # MinerU document parser for PDF. Requires torch>=2.6.0. Install separately if needed.
+# docling>=2.31.0              # Document parser for Office/HTML (alternative to MinerU)
 
 # ============================================
 # LlamaIndex

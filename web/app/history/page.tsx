@@ -18,17 +18,26 @@ import {
   MessageSquare,
   Loader2,
   Eye,
+  Briefcase,
+  Award,
+  Compass,
+  MapPin,
+  Database,
+  FileEdit,
+  Wand2,
 } from "lucide-react";
 import { apiUrl } from "@/lib/api";
 import { formatDate } from "@/lib/datetime";
 import { useGlobal } from "@/context/GlobalContext";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import ActivityDetail from "@/components/ActivityDetail";
 import ChatSessionDetail from "@/components/ChatSessionDetail";
-import SolverSessionDetail from "@/components/SolverSessionDetail";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface HistoryEntry {
   id: string;
-  type: "solve" | "question" | "research" | "chat";
+  type: "question" | "research" | "chat";
   title: string;
   summary: string;
   timestamp: number;
@@ -36,12 +45,6 @@ interface HistoryEntry {
 }
 
 const TYPE_CONFIG = {
-  solve: {
-    icon: Calculator,
-    color: "blue",
-    bgColor: "bg-blue-100 dark:bg-blue-900/30",
-    textColor: "text-blue-600 dark:text-blue-400",
-  },
   question: {
     icon: FileText,
     color: "purple",
@@ -72,43 +75,79 @@ interface ChatSession {
   updated_at: number;
 }
 
-// Solver session interface
-interface SolverSession {
+// Interview session interface
+interface InterviewSession {
   session_id: string;
-  title: string;
-  message_count: number;
+  job_title: string;
+  company: string;
+  level: string;
+  question_count: number;
+  answered_count: number;
   kb_name: string;
-  last_message: string;
-  token_stats?: {
-    model: string;
-    calls: number;
-    tokens: number;
-    cost: number;
-  };
   created_at: number;
   updated_at: number;
 }
 
+// Job Suggest session interface
+interface JobSuggestSession {
+  session_id: string;
+  kb_name: string;
+  preferences: {
+    role_type?: string;
+    location?: string;
+    industry?: string;
+    experience_level?: string;
+  };
+  suggestion_count: number;
+  detail_count: number;
+  suggestions?: string;
+  details?: Record<string, { analysis: string; generated_at: number }>;
+  created_at: number;
+  updated_at: number;
+}
+
+// Resume Writer operation interface
+interface ResumeWriterOperation {
+  id: string;
+  timestamp: string;
+  action: "rewrite" | "shorten" | "expand" | "auto_mark";
+  source?: string;
+  kb_name?: string;
+  input: {
+    original_text: string;
+    instruction?: string;
+  };
+  output: {
+    edited_text?: string;
+    marked_text?: string;
+  };
+  tool_call_file?: string;
+  model?: string;
+}
+
 export default function HistoryPage() {
-  const { uiSettings, loadChatSession, loadSolverSession } = useGlobal();
+  const { uiSettings, loadChatSession } = useGlobal();
   const { t } = useTranslation();
+  const { trackEvent } = useAnalytics();
   const router = useRouter();
 
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
-  const [solverSessions, setSolverSessions] = useState<SolverSession[]>([]);
+  const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([]);
+  const [jobSuggestSessions, setJobSuggestSessions] = useState<JobSuggestSession[]>([]);
+  const [resumeWriterOperations, setResumeWriterOperations] = useState<ResumeWriterOperation[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
-  const [loadingSolverSessionId, setLoadingSolverSessionId] = useState<
-    string | null
-  >(null);
   const [selectedEntry, setSelectedEntry] = useState<HistoryEntry | null>(null);
   const [selectedChatSession, setSelectedChatSession] = useState<string | null>(
     null,
   );
-  const [selectedSolverSession, setSelectedSolverSession] = useState<
-    string | null
-  >(null);
+  const [selectedInterviewSession, setSelectedInterviewSession] = useState<string | null>(null);
+  const [interviewDetail, setInterviewDetail] = useState<any | null>(null);
+  const [selectedJobSuggestSession, setSelectedJobSuggestSession] = useState<string | null>(null);
+  const [jobSuggestDetail, setJobSuggestDetail] = useState<JobSuggestSession | null>(null);
+  const [selectedResumeOperation, setSelectedResumeOperation] = useState<string | null>(null);
+  const [resumeOperationDetail, setResumeOperationDetail] = useState<ResumeWriterOperation | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -118,7 +157,7 @@ export default function HistoryPage() {
       // Fetch regular activity history
       if (
         filterType === "all" ||
-        (filterType !== "chat" && filterType !== "solve")
+        (filterType !== "chat" && filterType !== "interview" && filterType !== "job-suggest" && filterType !== "resume-writer")
       ) {
         const typeParam = filterType !== "all" ? `&type=${filterType}` : "";
         const res = await fetch(
@@ -146,20 +185,52 @@ export default function HistoryPage() {
         setChatSessions([]);
       }
 
-      // Fetch solver sessions
-      if (filterType === "all" || filterType === "solve") {
+      // Fetch interview sessions
+      if (filterType === "all" || filterType === "interview") {
         try {
-          const solverRes = await fetch(
-            apiUrl("/api/v1/solve/sessions?limit=20"),
+          const interviewRes = await fetch(
+            apiUrl("/api/v1/interview/sessions?limit=20"),
           );
-          const solverData = await solverRes.json();
-          setSolverSessions(solverData);
+          const interviewData = await interviewRes.json();
+          setInterviewSessions(interviewData);
         } catch (err) {
-          console.error("Failed to fetch solver sessions:", err);
-          setSolverSessions([]);
+          console.error("Failed to fetch interview sessions:", err);
+          setInterviewSessions([]);
         }
       } else {
-        setSolverSessions([]);
+        setInterviewSessions([]);
+      }
+
+      // Fetch job suggest sessions
+      if (filterType === "all" || filterType === "job-suggest") {
+        try {
+          const jobSuggestRes = await fetch(
+            apiUrl("/api/v1/job-suggest/sessions?limit=20"),
+          );
+          const jobSuggestData = await jobSuggestRes.json();
+          setJobSuggestSessions(jobSuggestData);
+        } catch (err) {
+          console.error("Failed to fetch job suggest sessions:", err);
+          setJobSuggestSessions([]);
+        }
+      } else {
+        setJobSuggestSessions([]);
+      }
+
+      // Fetch resume writer operations
+      if (filterType === "all" || filterType === "resume-writer") {
+        try {
+          const resumeRes = await fetch(
+            apiUrl("/api/v1/resume_writer/history"),
+          );
+          const resumeData = await resumeRes.json();
+          setResumeWriterOperations(resumeData.history || []);
+        } catch (err) {
+          console.error("Failed to fetch resume writer operations:", err);
+          setResumeWriterOperations([]);
+        }
+      } else {
+        setResumeWriterOperations([]);
       }
     } catch (err) {
       console.error("Failed to fetch history:", err);
@@ -176,7 +247,7 @@ export default function HistoryPage() {
     setLoadingSessionId(sessionId);
     try {
       await loadChatSession(sessionId);
-      router.push("/");
+      router.push("/chat");
     } catch (err) {
       console.error("Failed to load session:", err);
     } finally {
@@ -184,21 +255,41 @@ export default function HistoryPage() {
     }
   };
 
-  const handleLoadSolverSession = async (sessionId: string) => {
-    setLoadingSolverSessionId(sessionId);
+  const handleViewInterviewSession = async (sessionId: string) => {
+    setSelectedInterviewSession(sessionId);
     try {
-      await loadSolverSession(sessionId);
-      router.push("/solver");
+      const res = await fetch(apiUrl(`/api/v1/interview/sessions/${sessionId}`));
+      const data = await res.json();
+      setInterviewDetail(data);
     } catch (err) {
-      console.error("Failed to load solver session:", err);
-    } finally {
-      setLoadingSolverSessionId(null);
+      console.error("Failed to fetch interview session:", err);
+    }
+  };
+
+  const handleViewJobSuggestSession = async (sessionId: string) => {
+    setSelectedJobSuggestSession(sessionId);
+    try {
+      const res = await fetch(apiUrl(`/api/v1/job-suggest/sessions/${sessionId}`));
+      const data = await res.json();
+      setJobSuggestDetail(data);
+    } catch (err) {
+      console.error("Failed to fetch job suggest session:", err);
+    }
+  };
+
+  const handleViewResumeOperation = async (operationId: string) => {
+    const operation = resumeWriterOperations.find(op => op.id === operationId);
+    if (operation) {
+      setSelectedResumeOperation(operationId);
+      setResumeOperationDetail(operation);
     }
   };
 
   const filteredEntries = entries.filter((entry) => {
     // Exclude chat type - they are shown in dedicated Chat History section
     if (entry.type === "chat") return false;
+    // Exclude question and research types
+    if (entry.type === "question" || entry.type === "research") return false;
 
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
@@ -286,19 +377,21 @@ export default function HistoryPage() {
             <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
               {[
                 { value: "all", label: t("All") },
-                { value: "chat", label: t("Chat") },
-                { value: "solve", label: t("Solve") },
-                { value: "question", label: t("Question") },
-                { value: "research", label: t("Research") },
+                { value: "chat", label: t("Career Chat") },
+                { value: "interview", label: t("Interview Prep") },
+                { value: "job-suggest", label: t("Job Search") },
+                { value: "resume-writer", label: t("Resume Writer") },
               ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => setFilterType(option.value)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
-                    filterType === option.value
-                      ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                  }`}
+                  onClick={() => {
+                    trackEvent({ action: "filter_history", feature: "/history", metadata: { filterType: option.value } });
+                    setFilterType(option.value);
+                  }}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === option.value
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                    }`}
                 >
                   {option.label}
                 </button>
@@ -319,7 +412,9 @@ export default function HistoryPage() {
             </div>
           ) : filteredEntries.length === 0 &&
             chatSessions.length === 0 &&
-            solverSessions.length === 0 ? (
+            interviewSessions.length === 0 &&
+            jobSuggestSessions.length === 0 &&
+            resumeWriterOperations.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <History className="w-8 h-8 text-slate-300 dark:text-slate-500" />
@@ -351,7 +446,10 @@ export default function HistoryPage() {
                     return (
                       <div
                         key={entry.id}
-                        onClick={() => setSelectedEntry(entry)}
+                        onClick={() => {
+                          trackEvent({ action: "view_history_entry", feature: "/history", metadata: { entryType: entry.type, entryId: entry.id } });
+                          setSelectedEntry(entry);
+                        }}
                         className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer"
                       >
                         <div className="flex gap-4">
@@ -412,7 +510,7 @@ export default function HistoryPage() {
               <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-amber-500" />
                 <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-                  {t("Chat History")}
+                  {t("Career Chat")}
                 </h2>
                 <span className="text-xs text-slate-400 ml-auto">
                   {chatSessions.length}{" "}
@@ -502,48 +600,46 @@ export default function HistoryPage() {
             </div>
           )}
 
-        {/* Solver Sessions Section */}
-        {solverSessions.length > 0 &&
-          (filterType === "all" || filterType === "solve") && (
+        {/* Interview Prep Sessions Section */}
+        {interviewSessions.length > 0 &&
+          (filterType === "all" || filterType === "interview") && (
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
               <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
-                <Calculator className="w-5 h-5 text-blue-500" />
+                <Briefcase className="w-5 h-5 text-violet-500" />
                 <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-                  {t("Solver History")}
+                  {t("Interview Prep")}
                 </h2>
                 <span className="text-xs text-slate-400 ml-auto">
-                  {solverSessions.length}{" "}
-                  {t(solverSessions.length === 1 ? "session" : "sessions")}
+                  {interviewSessions.length}{" "}
+                  {t(interviewSessions.length === 1 ? "session" : "sessions")}
                 </span>
               </div>
               <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                {solverSessions
+                {interviewSessions
                   .filter((session) => {
                     if (!searchQuery.trim()) return true;
                     const query = searchQuery.toLowerCase();
                     return (
-                      session.title.toLowerCase().includes(query) ||
-                      session.last_message?.toLowerCase().includes(query)
+                      session.job_title.toLowerCase().includes(query) ||
+                      session.company?.toLowerCase().includes(query)
                     );
                   })
                   .map((session) => (
                     <div
                       key={session.session_id}
-                      onClick={() =>
-                        setSelectedSolverSession(session.session_id)
-                      }
+                      onClick={() => handleViewInterviewSession(session.session_id)}
                       className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer"
                     >
                       <div className="flex gap-4">
                         <div className="mt-0.5">
-                          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                            <Calculator className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <Briefcase className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start">
-                            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">
-                              {t("Solve")}
+                            <span className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-1">
+                              {t("Interview")}
                             </span>
                             <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
                               <Clock className="w-3 h-3" />
@@ -554,57 +650,256 @@ export default function HistoryPage() {
                             </span>
                           </div>
                           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate pr-4">
-                            {session.title}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-slate-400 dark:text-slate-500">
-                              {session.message_count} {t("messages")}
-                            </span>
-                            {session.kb_name && (
-                              <span className="text-xs text-blue-500 dark:text-blue-400">
-                                KB: {session.kb_name}
+                            {session.job_title}
+                            {session.company && (
+                              <span className="text-slate-500 dark:text-slate-400 font-normal">
+                                {" "}— {session.company}
                               </span>
                             )}
-                            {session.token_stats?.cost !== undefined &&
-                              session.token_stats.cost > 0 && (
-                                <span className="text-xs text-amber-500">
-                                  ${session.token_stats.cost.toFixed(4)}
-                                </span>
-                              )}
+                          </h3>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-xs text-slate-400 dark:text-slate-500">
+                              {session.question_count} {t("questions")}
+                            </span>
+                            <span className="text-xs text-emerald-500">
+                              {session.answered_count} {t("answered")}
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium capitalize ${session.level === "easy"
+                              ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                              : session.level === "hard"
+                                ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                                : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                              }`}>
+                              {t(session.level)}
+                            </span>
+                            {session.kb_name && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                                <Award className="w-2.5 h-2.5" />
+                                {t("Resume")}
+                              </span>
+                            )}
                           </div>
-                          {session.last_message && (
-                            <p className="text-sm text-slate-500 dark:text-slate-400 truncate mt-1">
-                              {session.last_message}
-                            </p>
-                          )}
                         </div>
                         <div className="self-center flex items-center gap-2">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedSolverSession(session.session_id);
+                              handleViewInterviewSession(session.session_id);
                             }}
                             className="px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1.5"
                           >
                             <Eye className="w-3.5 h-3.5" />
                             {t("View")}
                           </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+        {/* Job Search Sessions Section */}
+        {jobSuggestSessions.length > 0 &&
+          (filterType === "all" || filterType === "job-suggest") && (
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
+                <Compass className="w-5 h-5 text-teal-500" />
+                <h2 className="font-semibold text-slate-900 dark:text-slate-100">
+                  {t("Job Search")}
+                </h2>
+                <span className="text-xs text-slate-400 ml-auto">
+                  {jobSuggestSessions.length}{" "}
+                  {t(jobSuggestSessions.length === 1 ? "session" : "sessions")}
+                </span>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                {jobSuggestSessions
+                  .filter((session) => {
+                    if (!searchQuery.trim()) return true;
+                    const query = searchQuery.toLowerCase();
+                    const prefs = session.preferences || {};
+                    return (
+                      (prefs.role_type || "").toLowerCase().includes(query) ||
+                      (prefs.location || "").toLowerCase().includes(query) ||
+                      (prefs.industry || "").toLowerCase().includes(query) ||
+                      (session.kb_name || "").toLowerCase().includes(query)
+                    );
+                  })
+                  .map((session) => {
+                    const prefs = session.preferences || {};
+                    // Build a descriptive title from preferences
+                    const titleParts: string[] = [];
+                    if (prefs.role_type) titleParts.push(prefs.role_type);
+                    if (prefs.location) titleParts.push(`in ${prefs.location}`);
+                    const title = titleParts.length > 0
+                      ? titleParts.join(" ")
+                      : t("Job Search");
+
+                    return (
+                      <div
+                        key={session.session_id}
+                        onClick={() => handleViewJobSuggestSession(session.session_id)}
+                        className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer"
+                      >
+                        <div className="flex gap-4">
+                          <div className="mt-0.5">
+                            <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                              <Compass className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start">
+                              <span className="text-xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 mb-1">
+                                {t("Job Search")}
+                              </span>
+                              <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatDate(
+                                  new Date(session.updated_at * 1000),
+                                  uiSettings.language,
+                                )}
+                              </span>
+                            </div>
+                            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate pr-4">
+                              {title}
+                            </h3>
+                            <div className="flex items-center gap-3 mt-1 flex-wrap">
+                              <span className="text-xs text-slate-400 dark:text-slate-500">
+                                {session.suggestion_count} {t("suggestions")}
+                              </span>
+                              {session.detail_count > 0 && (
+                                <span className="text-xs text-emerald-500">
+                                  {session.detail_count} {t("detailed")}
+                                </span>
+                              )}
+                              {session.kb_name && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                                  <Database className="w-2.5 h-2.5" />
+                                  {session.kb_name}
+                                </span>
+                              )}
+                              {prefs.industry && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded font-medium">
+                                  {prefs.industry}
+                                </span>
+                              )}
+                              {prefs.experience_level && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded font-medium capitalize">
+                                  {prefs.experience_level}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="self-center flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewJobSuggestSession(session.session_id);
+                              }}
+                              className="px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1.5"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              {t("View")}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
+        {/* Resume Writer Operations Section */}
+        {resumeWriterOperations.length > 0 &&
+          (filterType === "all" || filterType === "resume-writer") && (
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2">
+                <FileEdit className="w-5 h-5 text-indigo-500" />
+                <h2 className="font-semibold text-slate-900 dark:text-slate-100">
+                  {t("Resume Writer")}
+                </h2>
+                <span className="text-xs text-slate-400 ml-auto">
+                  {resumeWriterOperations.length}{" "}
+                  {t(resumeWriterOperations.length === 1 ? "operation" : "operations")}
+                </span>
+              </div>
+              <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                {resumeWriterOperations
+                  .filter((operation) => {
+                    if (!searchQuery.trim()) return true;
+                    const query = searchQuery.toLowerCase();
+                    return (
+                      operation.action.toLowerCase().includes(query) ||
+                      operation.input.instruction?.toLowerCase().includes(query) ||
+                      operation.input.original_text.toLowerCase().includes(query)
+                    );
+                  })
+                  .map((operation) => (
+                    <div
+                      key={operation.id}
+                      onClick={() => handleViewResumeOperation(operation.id)}
+                      className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer"
+                    >
+                      <div className="flex gap-4">
+                        <div className="mt-0.5">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            {operation.action === "auto_mark" ? (
+                              <Wand2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                            ) : (
+                              <FileEdit className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start">
+                            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1">
+                              {operation.action === "auto_mark" ? t("Auto Mark") : t(operation.action)}
+                            </span>
+                            <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {formatDate(
+                                new Date(operation.timestamp),
+                                uiSettings.language,
+                              )}
+                            </span>
+                          </div>
+                          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate pr-4">
+                            {operation.input.instruction || t("Text editing")}
+                          </h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                            {operation.input.original_text.substring(0, 150)}...
+                          </p>
+                          <div className="flex items-center gap-3 mt-2">
+                            {operation.source && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded font-medium">
+                                {operation.source === "rag" ? t("Resume") : t("Web")}
+                              </span>
+                            )}
+                            {operation.kb_name && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                                <Database className="w-2.5 h-2.5" />
+                                {operation.kb_name}
+                              </span>
+                            )}
+                            {operation.model && (
+                              <span className="text-xs text-slate-400 dark:text-slate-500">
+                                {operation.model}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="self-center flex items-center gap-2">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleLoadSolverSession(session.session_id);
+                              handleViewResumeOperation(operation.id);
                             }}
-                            disabled={
-                              loadingSolverSessionId === session.session_id
-                            }
-                            className="px-3 py-1.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                            className="px-3 py-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-1.5"
                           >
-                            {loadingSolverSessionId === session.session_id ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Calculator className="w-3.5 h-3.5" />
-                            )}
-                            {t("Continue")}
+                            <Eye className="w-3.5 h-3.5" />
+                            {t("View")}
                           </button>
                         </div>
                       </div>
@@ -635,16 +930,299 @@ export default function HistoryPage() {
         />
       )}
 
-      {/* Solver Session Detail Modal */}
-      {selectedSolverSession && (
-        <SolverSessionDetail
-          sessionId={selectedSolverSession}
-          onClose={() => setSelectedSolverSession(null)}
-          onContinue={() => {
-            handleLoadSolverSession(selectedSolverSession);
-            setSelectedSolverSession(null);
-          }}
-        />
+      {/* Interview Session Detail Modal */}
+      {selectedInterviewSession && interviewDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[85vh] flex flex-col mx-4">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-slate-900 dark:text-slate-100">
+                    {interviewDetail.job_title}
+                    {interviewDetail.company && ` — ${interviewDetail.company}`}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium capitalize ${interviewDetail.level === "easy"
+                      ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                      : interviewDetail.level === "hard"
+                        ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                        : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                      }`}>
+                      {interviewDetail.level}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {interviewDetail.questions?.length || 0} {t("questions")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedInterviewSession(null);
+                  setInterviewDetail(null);
+                }}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            {/* Questions list */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {(interviewDetail.questions || []).map((q: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center text-xs font-bold shrink-0">
+                      {q.number || idx + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        {q.question}
+                      </p>
+                      {q.answer && (
+                        <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Award className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                              {t("Suggested Answer")}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                            {q.answer}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Job Suggest Session Detail Modal */}
+      {selectedJobSuggestSession && jobSuggestDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 w-full max-w-3xl max-h-[85vh] flex flex-col mx-4">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                  <Compass className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-slate-900 dark:text-slate-100">
+                    {t("Job Search Results")}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    {jobSuggestDetail.preferences?.role_type && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded font-medium flex items-center gap-0.5">
+                        <Briefcase className="w-2.5 h-2.5" />
+                        {jobSuggestDetail.preferences.role_type}
+                      </span>
+                    )}
+                    {jobSuggestDetail.preferences?.location && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded font-medium flex items-center gap-0.5">
+                        <MapPin className="w-2.5 h-2.5" />
+                        {jobSuggestDetail.preferences.location}
+                      </span>
+                    )}
+                    {jobSuggestDetail.kb_name && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                        <Database className="w-2.5 h-2.5" />
+                        {jobSuggestDetail.kb_name}
+                      </span>
+                    )}
+                    <span className="text-xs text-slate-400">
+                      {formatDate(
+                        new Date((jobSuggestDetail.created_at || 0) * 1000),
+                        uiSettings.language,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedJobSuggestSession(null);
+                  setJobSuggestDetail(null);
+                }}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            {/* Suggestions content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Main suggestions markdown */}
+              {jobSuggestDetail.suggestions && (
+                <div className="bg-teal-50 dark:bg-teal-900/10 rounded-xl border border-teal-100 dark:border-teal-900/30 p-5">
+                  <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {jobSuggestDetail.suggestions}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              )}
+
+              {/* Detail analyses if any */}
+              {jobSuggestDetail.details && Object.keys(jobSuggestDetail.details).length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                    <Search className="w-4 h-4" />
+                    {t("Detailed Analyses")}
+                  </h3>
+                  {Object.entries(jobSuggestDetail.details).map(([jobTitle, detail]: [string, any]) => (
+                    <div
+                      key={jobTitle}
+                      className="bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 p-4"
+                    >
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
+                        {jobTitle}
+                      </h4>
+                      <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {detail.analysis || ""}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* No content placeholder */}
+              {!jobSuggestDetail.suggestions && (
+                <div className="text-center py-8 text-slate-400 dark:text-slate-500">
+                  <Compass className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">{t("No suggestions data available for this session.")}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resume Writer Operation Detail Modal */}
+      {selectedResumeOperation && resumeOperationDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 w-full max-w-3xl max-h-[85vh] flex flex-col mx-4">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                  {resumeOperationDetail.action === "auto_mark" ? (
+                    <Wand2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  ) : (
+                    <FileEdit className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="font-bold text-slate-900 dark:text-slate-100">
+                    {resumeOperationDetail.action === "auto_mark" ? t("Auto Mark") : t(resumeOperationDetail.action)}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-slate-400">
+                      {formatDate(
+                        new Date(resumeOperationDetail.timestamp),
+                        uiSettings.language,
+                      )}
+                    </span>
+                    {resumeOperationDetail.model && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded font-medium">
+                        {resumeOperationDetail.model}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedResumeOperation(null);
+                  setResumeOperationDetail(null);
+                }}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Instruction */}
+              {resumeOperationDetail.input.instruction && (
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="w-4 h-4 text-indigo-500" />
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                      {t("Instruction")}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-900 dark:text-slate-100">
+                    {resumeOperationDetail.input.instruction}
+                  </p>
+                </div>
+              )}
+
+              {/* Original Text */}
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-4 h-4 text-slate-500" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                    {t("Original Text")}
+                  </span>
+                </div>
+                <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap max-h-60 overflow-y-auto">
+                  {resumeOperationDetail.input.original_text}
+                </div>
+              </div>
+
+              {/* Output */}
+              {(resumeOperationDetail.output.edited_text || resumeOperationDetail.output.marked_text) && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/30 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    {resumeOperationDetail.action === "auto_mark" ? (
+                      <Wand2 className="w-4 h-4 text-indigo-500" />
+                    ) : (
+                      <FileEdit className="w-4 h-4 text-indigo-500" />
+                    )}
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                      {resumeOperationDetail.action === "auto_mark" ? t("Marked Text") : t("Edited Text")}
+                    </span>
+                  </div>
+                  <div className="text-sm text-slate-900 dark:text-slate-100 whitespace-pre-wrap max-h-60 overflow-y-auto">
+                    {resumeOperationDetail.output.edited_text || resumeOperationDetail.output.marked_text}
+                  </div>
+                </div>
+              )}
+
+              {/* Metadata */}
+              {(resumeOperationDetail.source || resumeOperationDetail.kb_name) && (
+                <div className="flex items-center gap-2">
+                  {resumeOperationDetail.source && (
+                    <span className="text-xs px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded font-medium">
+                      {t("Source")}: {resumeOperationDetail.source === "rag" ? t("Resume") : t("Web")}
+                    </span>
+                  )}
+                  {resumeOperationDetail.kb_name && (
+                    <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-1">
+                      <Database className="w-3 h-3" />
+                      {resumeOperationDetail.kb_name}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

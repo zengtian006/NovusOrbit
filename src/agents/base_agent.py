@@ -3,11 +3,10 @@
 Unified BaseAgent - Base class for all module agents.
 
 This is the single source of truth for agent base functionality across:
-- solve module
 - research module
 - guide module
 - ideagen module
-- co_writer module
+- resume_writer module
 - question module (unified in Jan 2026 refactor)
 """
 
@@ -68,7 +67,7 @@ class BaseAgent(ABC):
         Initialize base Agent.
 
         Args:
-            module_name: Module name (solve/research/guide/ideagen/co_writer)
+            module_name: Module name (research/guide/ideagen/resume_writer)
             agent_name: Agent name (e.g., "solve_agent", "note_agent")
             api_key: API key (optional, defaults to environment variable)
             base_url: API endpoint (optional, defaults to environment variable)

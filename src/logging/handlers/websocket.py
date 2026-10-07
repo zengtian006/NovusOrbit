@@ -97,11 +97,11 @@ class LogInterceptor:
 
     Usage:
         queue = asyncio.Queue()
-        logger = logging.getLogger("deeptutor.Solver")
+        logger = logging.getLogger("novusorbit.Research")
 
         with LogInterceptor(logger, queue):
             # All logs from this logger will be streamed to queue
-            solver.solve(problem)
+            research.start(topic)
     """
 
     def __init__(

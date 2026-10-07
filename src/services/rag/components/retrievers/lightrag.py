@@ -35,7 +35,7 @@ class LightRAGRetriever(BaseComponent):
         self.kb_base_dir = kb_base_dir or str(
             Path(__file__).resolve().parent.parent.parent.parent.parent.parent
             / "data"
-            / "knowledge_bases"
+            / "portfolios"
         )
 
     def _get_lightrag_instance(self, kb_name: str):

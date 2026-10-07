@@ -3,7 +3,7 @@
 Prompt Service
 ==============
 
-Unified prompt management for all DeepTutor modules.
+Unified prompt management for all NovusOrbit modules.
 
 Usage:
     from src.services.prompt import get_prompt_manager, PromptManager

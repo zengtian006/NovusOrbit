@@ -1,0 +1,11 @@
+{
+  "name": "hello",
+  "created_at": "2026-02-10 00:17:45",
+  "description": "Knowledge base: hello",
+  "version": "1.0",
+  "rag_provider": "llamaindex",
+  "last_updated": "2026-02-10 00:17:51",
+  "file_hashes": {
+    "CV-Jenny Li.pdf": "91d5e6c0e8d3685837057af78563412694edea11ae6cd7a02fbc1476cb67674c"
+  }
+}

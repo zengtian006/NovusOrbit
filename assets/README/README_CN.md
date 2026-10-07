@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="../../assets/logo-ver2.png" alt="DeepTutor Logo" width="150" style="border-radius: 15px;">
+<img src="../../assets/logo-ver2.png" alt="NovusOrbit Logo" width="150" style="border-radius: 15px;">
 
-# DeepTutor: 您的个人学习助手
+# NovusOrbit: 您的个人学习助手
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)](../../LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=flat&logo=discord&logoColor=white)](https://discord.gg/eRsjPgMU4t)
 [![Feishu](https://img.shields.io/badge/Feishu-Group-blue?style=flat)](../../Communication.md)
-[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/DeepTutor/issues/78)
+[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/NovusOrbit/issues/78)
 
 
 
@@ -30,33 +30,33 @@
 </div>
 
 ---
-> **[2026.1.1]** 新年快乐！加入我们的 [Discord 社区](https://discord.gg/zpP9cssj)、[WeChat 社区](https://github.com/HKUDS/DeepTutor/issues/78) 或 [Discussions](https://github.com/HKUDS/DeepTutor/discussions) — 一起塑造 DeepTutor 的未来！💬
+> **[2026.1.1]** 新年快乐！加入我们的 [Discord 社区](https://discord.gg/zpP9cssj)、[WeChat 社区](https://github.com/HKUDS/NovusOrbit/issues/78) 或 [Discussions](https://github.com/HKUDS/NovusOrbit/discussions) — 一起塑造 NovusOrbit 的未来！💬
 
-> **[2025.12.30]** 访问我们的 [官方网站](https://hkuds.github.io/DeepTutor/) 获取更多详情！
+> **[2025.12.30]** 访问我们的 [官方网站](https://hkuds.github.io/NovusOrbit/) 获取更多详情！
 
-> **[2025.12.29]** DeepTutor 正式发布！✨
+> **[2025.12.29]** NovusOrbit 正式发布！✨
 
 ### 📦 Releases
 
-> **[2026.1.18]** 发布 [v0.5.2](https://github.com/HKUDS/DeepTutor/releases/tag/v0.5.1) - RAG 流水线新增 Docling 支持，并改进 CI/CD 工作流、修复若干小问题 —— 感谢大家的反馈！
+> **[2026.1.18]** 发布 [v0.5.2](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.5.1) - RAG 流水线新增 Docling 支持，并改进 CI/CD 工作流、修复若干小问题 —— 感谢大家的反馈！
 
 <details>
 <summary>历史版本</summary>
 
-> **[2026.1.15]** 发布 [v0.5.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.5.0) - 统一 LLM & Embedding 服务、RAG 流水线选择，并对 Home、History、QuestionGen、Settings 模块做了重大增强 —— 感谢所有贡献者！
+> **[2026.1.15]** 发布 [v0.5.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.5.0) - 统一 LLM & Embedding 服务、RAG 流水线选择，并对 Home、History、QuestionGen、Settings 模块做了重大增强 —— 感谢所有贡献者！
 
-> **[2026.1.9]** 发布 [v0.4.1](https://github.com/HKUDS/DeepTutor/releases/tag/v0.4.1) - LLM Provider 系统重构、题目生成鲁棒性提升与代码清理 —— 感谢所有贡献者！
+> **[2026.1.9]** 发布 [v0.4.1](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.4.1) - LLM Provider 系统重构、题目生成鲁棒性提升与代码清理 —— 感谢所有贡献者！
 
-> **[2026.1.9]** 发布 [v0.4.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.4.0) - 全新代码结构、多 LLM & Embeddings 支持 —— 感谢所有贡献者！
+> **[2026.1.9]** 发布 [v0.4.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.4.0) - 全新代码结构、多 LLM & Embeddings 支持 —— 感谢所有贡献者！
 
-> **[2026.1.5]** 发布 [v0.3.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.3.0) - 统一 PromptManager 架构、CI/CD 自动化与 GHCR 预构建 Docker 镜像
+> **[2026.1.5]** 发布 [v0.3.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.3.0) - 统一 PromptManager 架构、CI/CD 自动化与 GHCR 预构建 Docker 镜像
 
-> **[2026.1.2]** 发布 [v0.2.0](https://github.com/HKUDS/DeepTutor/releases/tag/v0.2.0) - Docker 部署、Next.js 16 & React 19 升级、WebSocket 安全与关键漏洞修复
+> **[2026.1.2]** 发布 [v0.2.0](https://github.com/HKUDS/NovusOrbit/releases/tag/v0.2.0) - Docker 部署、Next.js 16 & React 19 升级、WebSocket 安全与关键漏洞修复
 
 </details>
 ---
 
-## DeepTutor 的核心功能
+## NovusOrbit 的核心功能
 
 ### 📚 海量文档知识问答
 • **智能知识库**：上传教科书、研究论文、技术手册和领域特定文档。构建全面的 AI 驱动知识库，实现即时访问。<br>
@@ -207,15 +207,15 @@
 </table>
 
 <p align="center">
-  <sub>🌙 在 <b>暗色模式</b> 下使用 DeepTutor！</sub>
+  <sub>🌙 在 <b>暗色模式</b> 下使用 NovusOrbit！</sub>
 </p>
 
 ---
 
-## 🏛️ DeepTutor 的框架
+## 🏛️ NovusOrbit 的框架
 
 <div align="center">
-<img src="../../assets/figs/full-pipe.png" alt="DeepTutor Full-Stack Workflow" width="100%">
+<img src="../../assets/figs/full-pipe.png" alt="NovusOrbit Full-Stack Workflow" width="100%">
 </div>
 
 ### 💬 用户界面层
@@ -240,7 +240,7 @@
 
 > 🌟 Star 以关注我们的未来更新！
 - [ ] 支持本地 LLM 服务（如 ollama）
-- [ ] 重构 RAG 模块（见 [Discussions](https://github.com/HKUDS/DeepTutor/discussions)）
+- [ ] 重构 RAG 模块（见 [Discussions](https://github.com/HKUDS/NovusOrbit/discussions)）
 - [ ] 从想法生成进行深度编码
 - [ ] 笔记本的个性化交互
 
@@ -251,8 +251,8 @@
 **① 克隆仓库**
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 **② 设置环境变量**
@@ -336,12 +336,12 @@ cp .env.example .env
 
 ```bash
 # 支持所有平台：Docker 会自动识别你的架构
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 
 # Windows PowerShell：使用 ${PWD} 替代 $(pwd)
 ```
@@ -349,12 +349,12 @@ docker run -d --name deeptutor \
 或使用 `.env` 文件：
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 </details>
@@ -379,7 +379,7 @@ docker compose up -d      # 启动
 docker compose logs -f    # 日志
 docker compose down       # 停止
 docker compose up --build # 重建
-docker pull ghcr.io/hkuds/deeptutor:latest  # 更新镜像
+docker pull ghcr.io/hkuds/novusorbit:latest  # 更新镜像
 ```
 
 > **开发模式**：添加 `-f docker-compose.dev.yml`
@@ -398,8 +398,8 @@ docker pull ghcr.io/hkuds/deeptutor:latest  # 更新镜像
 
 ```bash
 # 使用 conda（推荐）
-conda create -n deeptutor python=3.10
-conda activate deeptutor
+conda create -n novusorbit python=3.10
+conda activate novusorbit
 
 # 或使用 venv
 python -m venv venv
@@ -1345,11 +1345,11 @@ python src/knowledge/extract_numbered_items.py --kb <kb_name> --base-dir ./data/
 ## ⭐ Star 历史
 
 <div align="center">
-<a href="https://star-history.com/#HKUDS/DeepTutor&Date">
+<a href="https://star-history.com/#HKUDS/NovusOrbit&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
  </picture>
 </a>
 </div>
@@ -1377,7 +1377,7 @@ conda install -c conda-forge pre-commit
 
 **第 2 步：安装 Git hooks**
 ```bash
-cd DeepTutor
+cd NovusOrbit
 pre-commit install
 ```
 
@@ -1453,11 +1453,11 @@ git commit --no-verify -m "紧急修复"
 
 **[香港大学数据智能实验室](https://github.com/HKUDS)**
 
-[⭐ Star us](https://github.com/HKUDS/DeepTutor/stargazers) · [🐛 Report a bug](https://github.com/HKUDS/DeepTutor/issues) · [💬 Discussions](https://github.com/HKUDS/DeepTutor/discussions)
+[⭐ Star us](https://github.com/HKUDS/NovusOrbit/stargazers) · [🐛 Report a bug](https://github.com/HKUDS/NovusOrbit/issues) · [💬 Discussions](https://github.com/HKUDS/NovusOrbit/discussions)
 
 ---
-*✨ 感谢访问 **DeepTutor**！*
+*✨ 感谢访问 **NovusOrbit**！*
 
-<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.DeepTutor&style=for-the-badge&color=00d4ff" alt="Views">
+<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.NovusOrbit&style=for-the-badge&color=00d4ff" alt="Views">
 
 </div>

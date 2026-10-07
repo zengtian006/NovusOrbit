@@ -39,7 +39,7 @@ class VectorIndexer(BaseComponent):
         self.kb_base_dir = kb_base_dir or str(
             Path(__file__).resolve().parent.parent.parent.parent.parent.parent
             / "data"
-            / "knowledge_bases"
+            / "portfolios"
         )
 
         # Try to import FAISS, fallback to simple storage if not available

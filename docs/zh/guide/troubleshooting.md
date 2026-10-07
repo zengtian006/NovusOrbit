@@ -45,4 +45,4 @@ taskkill /PID <PID> /F
 
 ---
 
-📖 **完整 FAQ**: [GitHub README](https://github.com/HKUDS/DeepTutor#-faq)
+📖 **完整 FAQ**: [GitHub README](https://github.com/HKUDS/NovusOrbit#-faq)

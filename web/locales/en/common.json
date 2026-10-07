@@ -4,5 +4,15 @@
   "common.loading": "Loading...",
   "common.save": "Save",
   "common.cancel": "Cancel",
-  "common.close": "Close"
+  "common.close": "Close",
+  "Send Feedback": "Send Feedback",
+  "Name": "Name",
+  "Email": "Email",
+  "Message": "Message",
+  "Your name": "Your name",
+  "Tell us what you think...": "Tell us what you think...",
+  "Sending...": "Sending...",
+  "Thank you! Your feedback has been sent successfully.": "Thank you! Your feedback has been sent successfully.",
+  "Failed to send feedback. Please try again.": "Failed to send feedback. Please try again.",
+  "We'd love to hear your thoughts, suggestions, or issues you've encountered.": "We'd love to hear your thoughts, suggestions, or issues you've encountered."
 }

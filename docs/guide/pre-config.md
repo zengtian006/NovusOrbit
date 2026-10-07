@@ -1,12 +1,12 @@
 # Pre-Configuration
 
-Before starting DeepTutor, you need to complete the following setup steps.
+Before starting NovusOrbit, you need to complete the following setup steps.
 
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 ## 2. Environment Variables Setup
@@ -97,7 +97,7 @@ SEARCH_API_KEY=your_search_api_key        # API key for search provider
 
 ## 3. Configuration Files
 
-DeepTutor uses two YAML configuration files for customization:
+NovusOrbit uses two YAML configuration files for customization:
 
 ### `config/agents.yaml` - Agent Parameters
 
@@ -188,7 +188,7 @@ The demo knowledge bases use `text-embedding-3-large` with `dimensions = 3072`. 
 
 ### Create Your Own Knowledge Base
 
-After launching DeepTutor:
+After launching NovusOrbit:
 
 1. Navigate to `http://localhost:3782/knowledge`
 2. Click **"New Knowledge Base"**

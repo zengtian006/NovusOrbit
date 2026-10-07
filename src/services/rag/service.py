@@ -18,7 +18,7 @@ from .factory import get_pipeline, has_pipeline, list_pipelines
 
 # Default knowledge base directory
 DEFAULT_KB_BASE_DIR = str(
-    Path(__file__).resolve().parent.parent.parent.parent / "data" / "knowledge_bases"
+    Path(__file__).resolve().parent.parent.parent.parent / "data" / "portfolios"
 )
 
 
@@ -52,7 +52,7 @@ class RAGService:
 
         Args:
             kb_base_dir: Base directory for knowledge bases.
-                         Defaults to data/knowledge_bases.
+                         Defaults to data/portfolios.
             provider: RAG pipeline provider to use.
                       Defaults to RAG_PROVIDER env var or "raganything".
         """

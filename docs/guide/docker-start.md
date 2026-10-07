@@ -15,12 +15,12 @@ Choose your preferred deployment method:
 
 ### Option A: Build from Source
 
-Build and run DeepTutor locally from the source code.
+Build and run NovusOrbit locally from the source code.
 
 ```bash
 # Clone repository (if not done)
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 
 # Create and configure .env file
 cp .env.example .env
@@ -61,24 +61,24 @@ Use our official pre-built images from GitHub Container Registry.
 
 ```bash
 # Works on all platforms - Docker auto-detects your architecture
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 ::: warning Windows PowerShell
 Use `${PWD}` instead of `$(pwd)`:
 
 ```powershell
-docker run -d --name deeptutor `
+docker run -d --name novusorbit `
   -p 8001:8001 -p 3782:3782 `
   --env-file .env `
   -v ${PWD}/data:/app/data `
   -v ${PWD}/config:/app/config:ro `
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 :::
 
@@ -102,12 +102,12 @@ The `:latest` tag is a **multi-architecture image** — Docker automatically pul
 When deploying to a cloud server, you must set the external API URL:
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 ::: warning Why is this needed?
@@ -119,14 +119,14 @@ The default API URL is `localhost:8001`, which points to the user's local machin
 To use different ports:
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 9001:9001 -p 4000:4000 \
   -e BACKEND_PORT=9001 \
   -e FRONTEND_PORT=4000 \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=http://localhost:9001 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 ::: warning Important
@@ -151,26 +151,26 @@ docker ps
 ### Stop Container
 
 ```bash
-docker stop deeptutor
+docker stop novusorbit
 ```
 
 ### Remove Container
 
 ```bash
-docker rm deeptutor
+docker rm novusorbit
 ```
 
 ### View Logs
 
 ```bash
 # All logs
-docker logs deeptutor
+docker logs novusorbit
 
 # Follow logs in real-time
-docker logs -f deeptutor
+docker logs -f novusorbit
 
 # Last 100 lines
-docker logs --tail 100 deeptutor
+docker logs --tail 100 novusorbit
 ```
 
 ## Troubleshooting

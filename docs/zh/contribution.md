@@ -1,14 +1,14 @@
 # 参与贡献
 
-我们希望 DeepTutor 能成为送给社区的礼物。🎁
+我们希望 NovusOrbit 能成为送给社区的礼物。🎁
 
 ## 加入我们的社区
 
 <div class="community-links">
-  <a href="https://github.com/HKUDS/DeepTutor/issues/78" class="community-badge wechat">
+  <a href="https://github.com/HKUDS/NovusOrbit/issues/78" class="community-badge wechat">
     💬 微信社区群
   </a>
-  <a href="https://github.com/HKUDS/DeepTutor/issues/167" class="community-badge wechat-collab">
+  <a href="https://github.com/HKUDS/NovusOrbit/issues/167" class="community-badge wechat-collab">
     🤝 微信共创群
   </a>
   <a href="https://discord.gg/eRsjPgMU4t" class="community-badge discord">
@@ -29,7 +29,7 @@
 
 ### 贡献指南
 
-详细指南请参阅 [CONTRIBUTING.md](https://github.com/HKUDS/DeepTutor/blob/dev/CONTRIBUTING.md)。
+详细指南请参阅 [CONTRIBUTING.md](https://github.com/HKUDS/NovusOrbit/blob/dev/CONTRIBUTING.md)。
 
 **要点：**
 
@@ -41,8 +41,8 @@
 
 ```bash
 # Fork 并克隆
-git clone https://github.com/YOUR_USERNAME/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/YOUR_USERNAME/NovusOrbit.git
+cd NovusOrbit
 
 # 从 dev 创建功能分支
 git checkout dev && git pull origin dev
@@ -56,13 +56,13 @@ pip install pre-commit && pre-commit install
 
 ## 我们的贡献者
 
-<a href="https://github.com/HKUDS/DeepTutor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=HKUDS/DeepTutor&max=999" alt="贡献者" />
+<a href="https://github.com/HKUDS/NovusOrbit/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=HKUDS/NovusOrbit&max=999" alt="贡献者" />
 </a>
 
 ---
 
-感谢您对 DeepTutor 贡献的兴趣！🚀
+感谢您对 NovusOrbit 贡献的兴趣！🚀
 
 <style>
 .community-links {

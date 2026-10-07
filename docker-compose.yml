@@ -1,7 +1,7 @@
 # ============================================
-# DeepTutor Docker Compose Configuration
+# NovusOrbit Docker Compose Configuration
 # ============================================
-# This file provides orchestration for DeepTutor services
+# This file provides orchestration for NovusOrbit services
 #
 # Usage:
 #   Production:  docker compose up -d
@@ -15,9 +15,9 @@
 
 services:
   # ============================================
-  # All-in-One DeepTutor Service
+  # All-in-One NovusOrbit Service
   # ============================================
-  deeptutor:
+  novusorbit:
     build:
       context: .
       dockerfile: Dockerfile
@@ -25,7 +25,7 @@ services:
       args:
         # Pass backend port at build time for Next.js static optimization
         - BACKEND_PORT=${BACKEND_PORT:-8001}
-    container_name: deeptutor
+    container_name: novusorbit
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8001}:${BACKEND_PORT:-8001}"
@@ -66,14 +66,18 @@ services:
       # Frontend web port (default: 3782)
       - FRONTEND_PORT=${FRONTEND_PORT:-3782}
       # ============================================
-      # API URL Configuration (Important for Cloud Deployment)
+      # API URL Configuration
       # ============================================
-      # For CLOUD/REMOTE deployment: Set this to your server's public URL
-      # Example: https://your-server.com:8001 or https://api.yourdomain.com
-      # If not set, defaults to http://localhost:${BACKEND_PORT} (only works locally)
-      - NEXT_PUBLIC_API_BASE_EXTERNAL=${NEXT_PUBLIC_API_BASE_EXTERNAL:-}
-      # Alternative: Direct API base URL (same priority as NEXT_PUBLIC_API_BASE_EXTERNAL)
+      # SINGLE-CONTAINER DEPLOYMENT (default):
+      # Frontend and backend run in the same container and communicate via localhost.
+      # Leave these variables unset to use the default: http://localhost:8001
+      #
+      # MULTI-CONTAINER DEPLOYMENT (advanced):
+      # If you run frontend and backend in separate containers, set NEXT_PUBLIC_API_BASE
+      # to the backend's URL. Example: http://backend-service:8001
       - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-}
+      # DEPRECATED: Use NEXT_PUBLIC_API_BASE instead
+      - NEXT_PUBLIC_API_BASE_EXTERNAL=${NEXT_PUBLIC_API_BASE_EXTERNAL:-}
 
     volumes:
       # Mount local config directory (read-only)
@@ -84,18 +88,18 @@ services:
       - ./data/knowledge_bases:/app/data/knowledge_bases
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${BACKEND_PORT:-8001}/"]
+      test: [ "CMD", "curl", "-f", "http://localhost:${BACKEND_PORT:-8001}/" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
 
     networks:
-      - deeptutor-network
+      - novusorbit-network
 
 # ============================================
 # Networks
 # ============================================
 networks:
-  deeptutor-network:
+  novusorbit-network:
     driver: bridge

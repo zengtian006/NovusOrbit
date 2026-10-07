@@ -4,8 +4,8 @@
  * Sidebar navigation order configuration
  */
 export interface SidebarNavOrder {
-  start: string[]; // Array of href paths for START group
-  learnResearch: string[]; // Array of href paths for LEARN & RESEARCH group
+  essential: string[]; // Array of href paths for ESSENTIAL TOOLS group
+  advanced: string[]; // Array of href paths for ADVANCED TOOLS group
 }
 
 /**
@@ -19,19 +19,20 @@ export const SIDEBAR_COLLAPSED_WIDTH = 64;
 /**
  * Default sidebar description
  */
-export const DEFAULT_SIDEBAR_DESCRIPTION = "✨ Data Intelligence Lab @ HKU";
+export const DEFAULT_SIDEBAR_DESCRIPTION = "✨ NovusOrbit";
 
 /**
  * Default navigation order
  */
 export const DEFAULT_NAV_ORDER: SidebarNavOrder = {
-  start: ["/", "/history", "/knowledge", "/notebook"],
-  learnResearch: [
-    "/question",
-    "/solver",
-    "/guide",
-    "/ideagen",
-    "/research",
-    "/co_writer",
+  essential: ["/", "/portfolio", "/jobs", "/history", "/notebook"],
+  advanced: [
+    "/interview",
+    "/job-suggest",
+    "/resume-writer",
+    // "/question",
+    // "/guide",
+    // "/ideagen",
+    // "/research",
   ],
 };

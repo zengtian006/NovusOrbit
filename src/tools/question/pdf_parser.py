@@ -124,6 +124,11 @@ def parse_pdf_with_mineru(pdf_path: str, output_base_dir: str = None):
 
         if not generated_folders:
             print("⚠️ Warning: No generated files found in temp directory")
+            # Log MinerU output to help diagnose silent failures
+            if result.stderr:
+                print(f"Stderr: {result.stderr[-2000:]}")
+            if result.stdout:
+                print(f"Stdout: {result.stdout[-2000:]}")
             if temp_output.exists():
                 shutil.rmtree(temp_output)
             return False

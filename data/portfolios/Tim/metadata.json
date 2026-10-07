@@ -1,0 +1,11 @@
+{
+  "name": "Tim",
+  "created_at": "2026-02-10 00:16:40",
+  "description": "Knowledge base: Tim",
+  "version": "1.0",
+  "rag_provider": "llamaindex",
+  "last_updated": "2026-02-10 00:16:45",
+  "file_hashes": {
+    "CV-ZengTian(Tim).pdf": "5a5b94c96c678d43f740adebdde391bd1b9b68b944e257aaa1d8a5b8fbc3d6cf"
+  }
+}

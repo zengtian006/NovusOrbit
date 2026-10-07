@@ -1,0 +1,38 @@
+{
+  "knowledge_bases": {
+    "Tim": {
+      "path": "Tim",
+      "description": "Knowledge base: Tim",
+      "status": "ready",
+      "updated_at": "2026-02-10T00:16:45.582010",
+      "progress": {
+        "stage": "completed",
+        "message": "Knowledge base initialization complete!",
+        "percent": 100,
+        "current": 1,
+        "total": 1,
+        "file_name": "",
+        "error": null,
+        "timestamp": "2026-02-10T00:16:45.580888"
+      },
+      "rag_provider": "llamaindex"
+    },
+    "hello": {
+      "path": "hello",
+      "description": "Knowledge base: hello",
+      "status": "ready",
+      "updated_at": "2026-02-10T00:17:51.641398",
+      "progress": {
+        "stage": "completed",
+        "message": "Knowledge base initialization complete!",
+        "percent": 100,
+        "current": 1,
+        "total": 1,
+        "file_name": "",
+        "error": null,
+        "timestamp": "2026-02-10T00:17:51.640959"
+      },
+      "rag_provider": "llamaindex"
+    }
+  }
+}

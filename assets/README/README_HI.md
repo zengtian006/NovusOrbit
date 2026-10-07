@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="../../assets/logo-ver2.png" alt="DeepTutor Logo" width="150" style="border-radius: 15px;">
+<img src="../../assets/logo-ver2.png" alt="NovusOrbit Logo" width="150" style="border-radius: 15px;">
 
-# DeepTutor: आपका व्यक्तिगत सीखने का सहायक
+# NovusOrbit: आपका व्यक्तिगत सीखने का सहायक
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)](../../LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=flat&logo=discord&logoColor=white)](https://discord.gg/eRsjPgMU4t)
 [![Feishu](https://img.shields.io/badge/Feishu-Group-blue?style=flat)](../../Communication.md)
-[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/DeepTutor/issues/78)
+[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/NovusOrbit/issues/78)
 
 
 
@@ -28,14 +28,14 @@
 </div>
 
 ---
-> **[2026.1.1]** नया साल मुबारक हो! हमारे [Discord समुदाय](https://discord.gg/zpP9cssj), [WeChat समुदाय](https://github.com/HKUDS/DeepTutor/issues/78), या [Discussions](https://github.com/HKUDS/DeepTutor/discussions) से जुड़ें — DeepTutor के भविष्य को आकार दें! 💬
+> **[2026.1.1]** नया साल मुबारक हो! हमारे [Discord समुदाय](https://discord.gg/zpP9cssj), [WeChat समुदाय](https://github.com/HKUDS/NovusOrbit/issues/78), या [Discussions](https://github.com/HKUDS/NovusOrbit/discussions) से जुड़ें — NovusOrbit के भविष्य को आकार दें! 💬
 
-> **[2025.12.30]** अधिक विवरण के लिए हमारी [आधिकारिक वेबसाइट](https://hkuds.github.io/DeepTutor/) पर जाएं!
+> **[2025.12.30]** अधिक विवरण के लिए हमारी [आधिकारिक वेबसाइट](https://hkuds.github.io/NovusOrbit/) पर जाएं!
 
-> **[2025.12.29]** DeepTutor अब उपलब्ध है! ✨
+> **[2025.12.29]** NovusOrbit अब उपलब्ध है! ✨
 ---
 
-## DeepTutor की मुख्य विशेषताएं
+## NovusOrbit की मुख्य विशेषताएं
 
 ### 📚 बड़े पैमाने पर दस्तावेज़ ज्ञान Q&A
 • **स्मार्ट ज्ञान आधार**: पाठ्यपुस्तकें, अनुसंधान पत्र, तकनीकी मैनुअल और डोमेन-विशिष्ट दस्तावेज़ अपलोड करें। तत्काल पहुंच के लिए AI-संचालित व्यापक ज्ञान भंडार बनाएं।<br>
@@ -186,14 +186,14 @@
 </table>
 
 <p align="center">
-  <sub>🌙 <b>डार्क मोड</b> में DeepTutor का उपयोग करें!</sub>
+  <sub>🌙 <b>डार्क मोड</b> में NovusOrbit का उपयोग करें!</sub>
 </p>
 
 <details>
 <summary><b>सिस्टम आर्किटेक्चर</b></summary>
 <br>
 
-![DeepTutor Full-Stack Workflow](../../assets/figs/full-pipe.png)
+![NovusOrbit Full-Stack Workflow](../../assets/figs/full-pipe.png)
 
 </details>
 
@@ -201,7 +201,7 @@
 
 > हमारे भविष्य के अपडेट के लिए हमें फॉलो करें!
 - [ ] स्थानीय LLM सेवाओं का समर्थन (जैसे ollama)
-- [ ] RAG मॉड्यूल का रिफैक्टरिंग ([Discussions](https://github.com/HKUDS/DeepTutor/discussions) देखें)
+- [ ] RAG मॉड्यूल का रिफैक्टरिंग ([Discussions](https://github.com/HKUDS/NovusOrbit/discussions) देखें)
 - [ ] विचार उत्पादन से गहन कोडिंग
 - [ ] नोटबुक के साथ व्यक्तिगत इंटरैक्शन
 
@@ -212,8 +212,8 @@
 **① रिपॉजिटरी क्लोन करें**
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 **② पर्यावरण चर सेट करें**
@@ -297,12 +297,12 @@ cp .env.example .env
 
 ```bash
 # सभी प्लेटफॉर्म पर काम करता है — Docker आपकी आर्किटेक्चर को ऑटो-डिटेक्ट करता है
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 
 # Windows PowerShell: $(pwd) के बजाय ${PWD} का उपयोग करें
 ```
@@ -310,12 +310,12 @@ docker run -d --name deeptutor \
 या `.env` फ़ाइल का उपयोग करें:
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 </details>
@@ -340,7 +340,7 @@ docker compose up -d      # प्रारंभ
 docker compose logs -f    # लॉग
 docker compose down       # रोकें
 docker compose up --build # पुनर्निर्माण
-docker pull ghcr.io/hkuds/deeptutor:latest  # छवि अपडेट करें
+docker pull ghcr.io/hkuds/novusorbit:latest  # छवि अपडेट करें
 ```
 
 > **डेव मोड**: `-f docker-compose.dev.yml` जोड़ें
@@ -359,8 +359,8 @@ docker pull ghcr.io/hkuds/deeptutor:latest  # छवि अपडेट कर�
 
 ```bash
 # conda का उपयोग करना (अनुशंसित)
-conda create -n deeptutor python=3.10
-conda activate deeptutor
+conda create -n novusorbit python=3.10
+conda activate novusorbit
 
 # या venv का उपयोग करना
 python -m venv venv
@@ -649,11 +649,11 @@ python src/knowledge/extract_numbered_items.py --kb <kb_name> --base-dir ./data/
 ## ⭐ स्टार इतिहास
 
 <div align="center">
-<a href="https://star-history.com/#HKUDS/DeepTutor&Date">
+<a href="https://star-history.com/#HKUDS/NovusOrbit&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
  </picture>
 </a>
 </div>
@@ -681,7 +681,7 @@ conda install -c conda-forge pre-commit
 
 **Étape 2: Installer les crochets Git**
 ```bash
-cd DeepTutor
+cd NovusOrbit
 pre-commit install
 ```
 
@@ -757,11 +757,11 @@ git commit --no-verify -m "Correction d'urgence"
 
 **[HKU @ डेटा इंटेलिजेंस लैब](https://github.com/HKUDS)**
 
-[⭐ हमें फॉलो करें](https://github.com/HKUDS/DeepTutor/stargazers) · [🐛 बग रिपोर्ट करें](https://github.com/HKUDS/DeepTutor/issues) · [💬 चर्चाएं](https://github.com/HKUDS/DeepTutor/discussions)
+[⭐ हमें फॉलो करें](https://github.com/HKUDS/NovusOrbit/stargazers) · [🐛 बग रिपोर्ट करें](https://github.com/HKUDS/NovusOrbit/issues) · [💬 चर्चाएं](https://github.com/HKUDS/NovusOrbit/discussions)
 
 ---
-*✨ **DeepTutor** पर जाने के लिए धन्यवाद!*
+*✨ **NovusOrbit** पर जाने के लिए धन्यवाद!*
 
-<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.DeepTutor&style=for-the-badge&color=00d4ff" alt="Views">
+<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.NovusOrbit&style=for-the-badge&color=00d4ff" alt="Views">
 
 </div>

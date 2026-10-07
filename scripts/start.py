@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-DeepTutor CLI Launcher
+NovusOrbit CLI Launcher
 
 Provides a command-line interface for users to easily access:
 1. Solver system (solve_agents)
@@ -39,7 +39,7 @@ logger = get_logger("CLI", console_output=True, file_output=True)
 
 
 class AITutorStarter:
-    """DeepTutor CLI Launcher"""
+    """NovusOrbit CLI Launcher"""
 
     def __init__(self):
         """Initialize launcher"""
@@ -58,13 +58,13 @@ class AITutorStarter:
             self.base_url = llm_config.base_url
         except ValueError as e:
             logger.error(str(e))
-            logger.error("Please configure LLM settings in .env or DeepTutor.env file")
+            logger.error("Please configure LLM settings in .env or NovusOrbit.env file")
             sys.exit(1)
 
         # Load knowledge base list
         self.available_kbs = self._load_available_kbs()
 
-        logger.section("DeepTutor Intelligent Teaching Assistant System")
+        logger.section("NovusOrbit Intelligent Teaching Assistant System")
         logger.success("API configuration loaded")
         logger.info(f"Available knowledge bases: {', '.join(self.available_kbs)}")
         logger.separator()
@@ -723,7 +723,7 @@ class AITutorStarter:
 
         # Display configuration file locations
         print("\n📁 Configuration file locations:")
-        env_files = [".env", "DeepTutor.env"]
+        env_files = [".env", "NovusOrbit.env"]
         for env_file in env_files:
             env_path = Path(__file__).parent / env_file
             if env_path.exists():
@@ -761,7 +761,7 @@ class AITutorStarter:
                     continue  # Don't ask to continue after settings
                 elif choice == "7":
                     print("\n" + "=" * 70)
-                    print("👋 Thank you for using DeepTutor Intelligent Teaching Assistant System!")
+                    print("👋 Thank you for using NovusOrbit Intelligent Teaching Assistant System!")
                     print("=" * 70)
                     break
 
@@ -770,7 +770,7 @@ class AITutorStarter:
                 continue_choice = input("Continue using? (y/n) [default: y]: ").strip().lower()
                 if continue_choice == "n":
                     print("\n" + "=" * 70)
-                    print("👋 Thank you for using DeepTutor Intelligent Teaching Assistant System!")
+                    print("👋 Thank you for using NovusOrbit Intelligent Teaching Assistant System!")
                     print("=" * 70)
                     break
 

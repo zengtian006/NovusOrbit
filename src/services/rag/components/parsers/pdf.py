@@ -101,16 +101,31 @@ class PDFParser(BaseComponent):
         """Basic PDF text extraction fallback."""
         try:
             import fitz  # PyMuPDF
+        except ImportError:
+            raise RuntimeError(
+                f"PyMuPDF is not installed. Cannot extract text from PDF '{file_path.name}'. "
+                "Please install it: pip install pymupdf"
+            )
 
+        try:
             doc = fitz.open(file_path)
             texts = []
             for page in doc:
                 texts.append(page.get_text())
             doc.close()
-            return "\n\n".join(texts)
-        except ImportError:
-            self.logger.warning("PyMuPDF not installed. Cannot extract PDF text.")
-            return ""
+            content = "\n\n".join(texts)
+
+            if not content.strip():
+                raise RuntimeError(
+                    f"PDF '{file_path.name}' produced no text content. "
+                    "The file may be image-only or corrupted. "
+                    "Try using RAGAnythingPipeline for OCR-based extraction."
+                )
+
+            return content
+        except RuntimeError:
+            raise
         except Exception as e:
-            self.logger.error(f"Failed to extract PDF text: {e}")
-            return ""
+            raise RuntimeError(
+                f"Failed to extract text from PDF '{file_path.name}': {e}"
+            ) from e

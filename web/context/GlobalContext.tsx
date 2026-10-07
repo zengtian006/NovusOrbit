@@ -26,7 +26,7 @@ import {
 import { debounce } from "@/lib/debounce";
 
 // Language storage key
-const LANGUAGE_STORAGE_KEY = "deeptutor-language";
+const LANGUAGE_STORAGE_KEY = "novusorbit-language";
 
 // --- Types ---
 interface LogEntry {
@@ -59,7 +59,7 @@ interface TokenStats {
 
 // Progress Info
 interface ProgressInfo {
-  stage: "investigate" | "solve" | "response" | null;
+  stage: "investigate" | "response" | null;
   progress: {
     round?: number;
     queries?: string[];
@@ -69,32 +69,19 @@ interface ProgressInfo {
   };
 }
 
-// Solver State
-interface SolverState {
-  sessionId: string | null;
-  isSolving: boolean;
-  logs: LogEntry[];
-  messages: ChatMessage[];
-  question: string;
-  selectedKb: string;
-  agentStatus: AgentStatus;
-  tokenStats: TokenStats;
-  progress: ProgressInfo;
-}
-
 // Question Progress Info
 interface QuestionProgressInfo {
   stage:
-    | "planning"
-    | "researching"
-    | "generating"
-    | "validating"
-    | "complete"
-    // Mimic mode stages
-    | "uploading"
-    | "parsing"
-    | "extracting"
-    | null;
+  | "planning"
+  | "researching"
+  | "generating"
+  | "validating"
+  | "complete"
+  // Mimic mode stages
+  | "uploading"
+  | "parsing"
+  | "extracting"
+  | null;
   progress: {
     current?: number;
     total?: number;
@@ -248,19 +235,11 @@ interface ChatState {
 
 // Sidebar Navigation Order Type
 export interface SidebarNavOrder {
-  start: string[]; // Array of href paths for START group
-  learnResearch: string[]; // Array of href paths for LEARN & RESEARCH group
+  essential: string[]; // Array of href paths for ESSENTIAL TOOLS group
+  advanced: string[]; // Array of href paths for ADVANCED TOOLS group
 }
 
 interface GlobalContextType {
-  // Solver
-  solverState: SolverState;
-  setSolverState: React.Dispatch<React.SetStateAction<SolverState>>;
-  startSolver: (question: string, kb: string) => void;
-  stopSolver: () => void;
-  newSolverSession: () => void;
-  loadSolverSession: (sessionId: string) => Promise<void>;
-
   // Question
   questionState: QuestionState;
   setQuestionState: React.Dispatch<React.SetStateAction<QuestionState>>;
@@ -321,6 +300,10 @@ interface GlobalContextType {
   sidebarNavOrder: SidebarNavOrder;
   setSidebarNavOrder: (order: SidebarNavOrder) => Promise<void>;
 
+  // Page Settings
+  pageSettings: Record<string, { requireSSO: boolean }> | undefined;
+  updatePageSetting: (page: string, setting: { requireSSO: boolean }) => Promise<void>;
+
   // Persistence utilities
   clearAllPersistence: () => void;
 }
@@ -329,36 +312,6 @@ const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 // --- Default State Constants ---
 // These are used for both initialization and state restoration
-
-const DEFAULT_SOLVER_STATE: SolverState = {
-  sessionId: null,
-  isSolving: false,
-  logs: [],
-  messages: [],
-  question: "",
-  selectedKb: "",
-  agentStatus: {
-    InvestigateAgent: "pending",
-    NoteAgent: "pending",
-    ManagerAgent: "pending",
-    SolveAgent: "pending",
-    ToolAgent: "pending",
-    ResponseAgent: "pending",
-    PrecisionAnswerAgent: "pending",
-  },
-  tokenStats: {
-    model: "Unknown",
-    calls: 0,
-    tokens: 0,
-    input_tokens: 0,
-    output_tokens: 0,
-    cost: 0.0,
-  },
-  progress: {
-    stage: null,
-    progress: {},
-  },
-};
 
 const DEFAULT_QUESTION_STATE: QuestionState = {
   step: "config",
@@ -607,16 +560,13 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
   };
 
   // --- Sidebar Customization State ---
-  const DEFAULT_DESCRIPTION = "✨ Data Intelligence Lab @ HKU";
+  const DEFAULT_DESCRIPTION = "✨ NovusOrbit";
   const DEFAULT_NAV_ORDER: SidebarNavOrder = {
-    start: ["/", "/history", "/knowledge", "/notebook"],
-    learnResearch: [
-      "/question",
-      "/solver",
-      "/guide",
-      "/ideagen",
-      "/research",
-      "/co_writer",
+    essential: ["/", "/portfolio", "/jobs", "/history"],
+    advanced: [
+      "/interview",
+      "/job-suggest",
+      "/resume-writer",
     ],
   };
 
@@ -625,25 +575,63 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
   const [sidebarNavOrder, setSidebarNavOrderState] =
     useState<SidebarNavOrder>(DEFAULT_NAV_ORDER);
 
-  // Initialize sidebar customization from backend API
+  const [pageSettings, setPageSettingsState] = useState<Record<string, { requireSSO: boolean }> | undefined>(undefined);
+
+  // Migrate old route names in saved nav order (e.g., /knowledge -> /portfolio)
+  const migrateNavOrder = (order: SidebarNavOrder): SidebarNavOrder => {
+    const routeMigrations: Record<string, string> = {
+      "/knowledge": "/portfolio",
+    };
+    const migrateGroup = (hrefs: string[]) =>
+      hrefs.map((href) => routeMigrations[href] || href);
+    const migrated = {
+      essential: migrateGroup(order.essential),
+      advanced: migrateGroup(order.advanced),
+    };
+    // Only ensure /jobs is in essential as minimum requirement
+    if (!migrated.essential.includes("/jobs")) {
+      const portfolioIdx = migrated.essential.indexOf("/portfolio");
+      migrated.essential.splice(portfolioIdx >= 0 ? portfolioIdx + 1 : 1, 0, "/jobs");
+    }
+    return migrated;
+  };
+
+  // Initialize sidebar and page settings from backend API
   useEffect(() => {
-    const loadSidebarSettings = async () => {
+    const loadSettings = async () => {
       try {
-        const response = await fetch(apiUrl("/api/v1/settings/sidebar"));
-        if (response.ok) {
-          const data = await response.json();
+        // Load sidebar settings
+        const sidebarResponse = await fetch(apiUrl("/api/v1/settings/sidebar"));
+        if (sidebarResponse.ok) {
+          const data = await sidebarResponse.json();
           if (data.description) {
             setSidebarDescriptionState(data.description);
           }
           if (data.nav_order) {
-            setSidebarNavOrderState(data.nav_order);
+            const migrated = migrateNavOrder(data.nav_order);
+            setSidebarNavOrderState(migrated);
+            // If migration changed anything, persist the updated order
+            if (JSON.stringify(migrated) !== JSON.stringify(data.nav_order)) {
+              fetch(apiUrl("/api/v1/settings/sidebar/nav-order"), {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nav_order: migrated }),
+              }).catch(() => { });
+            }
           }
         }
+
+        // Load global page settings
+        const pageResponse = await fetch(apiUrl("/api/v1/settings/page"));
+        if (pageResponse.ok) {
+          const pageSettingsData = await pageResponse.json();
+          setPageSettingsState(pageSettingsData);
+        }
       } catch (e) {
-        console.error("Failed to load sidebar settings from backend:", e);
+        console.error("Failed to load settings from backend:", e);
       }
     };
-    loadSidebarSettings();
+    loadSettings();
   }, []);
 
   const setSidebarDescription = async (description: string) => {
@@ -674,250 +662,25 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updatePageSetting = async (page: string, setting: { requireSSO: boolean }) => {
+    const updated = { ...pageSettings, [page]: setting };
+    setPageSettingsState(updated);
+    // Save to backend
+    try {
+      await fetch(apiUrl("/api/v1/settings/page"), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pageSettings: updated }),
+      });
+    } catch (e) {
+      console.error("Failed to save page settings:", e);
+    }
+  };
+
   // --- Hydration tracking for persistence ---
   // We need to restore state from localStorage AFTER hydration to avoid SSR mismatch
   const isHydrated = useRef(false);
 
-  // --- Solver Logic ---
-  const [solverState, setSolverState] =
-    useState<SolverState>(DEFAULT_SOLVER_STATE);
-  const solverWs = useRef<WebSocket | null>(null);
-
-  // Debounced save for solver state
-  const saveSolverState = useCallback(
-    debounce((state: SolverState) => {
-      if (!isHydrated.current) return;
-      const toSave = persistState(
-        state,
-        EXCLUDE_FIELDS.SOLVER as unknown as (keyof SolverState)[],
-      );
-      saveToStorage(STORAGE_KEYS.SOLVER_STATE, toSave);
-    }, 500),
-    [],
-  );
-
-  // Auto-save solver state on change (only after hydration)
-  useEffect(() => {
-    if (isHydrated.current) {
-      saveSolverState(solverState);
-    }
-  }, [solverState, saveSolverState]);
-
-  // Use ref to always have the latest sessionId in WebSocket callbacks
-  const solverSessionIdRef = useRef<string | null>(null);
-
-  const startSolver = (question: string, kb: string) => {
-    if (solverWs.current) solverWs.current.close();
-
-    setSolverState((prev) => ({
-      ...prev,
-      isSolving: true,
-      logs: [],
-      messages: [...prev.messages, { role: "user", content: question }],
-      question,
-      selectedKb: kb,
-      agentStatus: {
-        InvestigateAgent: "pending",
-        NoteAgent: "pending",
-        ManagerAgent: "pending",
-        SolveAgent: "pending",
-        ToolAgent: "pending",
-        ResponseAgent: "pending",
-        PrecisionAnswerAgent: "pending",
-      },
-      tokenStats: {
-        model: "Unknown",
-        calls: 0,
-        tokens: 0,
-        input_tokens: 0,
-        output_tokens: 0,
-        cost: 0.0,
-      },
-      progress: {
-        stage: null,
-        progress: {},
-      },
-    }));
-
-    const ws = new WebSocket(wsUrl("/api/v1/solve"));
-    solverWs.current = ws;
-
-    ws.onopen = () => {
-      // Send question with current session_id (if any)
-      ws.send(
-        JSON.stringify({
-          question,
-          kb_name: kb,
-          session_id: solverSessionIdRef.current,
-        }),
-      );
-      addSolverLog({ type: "system", content: "Initializing connection..." });
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "session") {
-        // Update session ID from backend
-        solverSessionIdRef.current = data.session_id;
-        setSolverState((prev) => ({
-          ...prev,
-          sessionId: data.session_id,
-        }));
-      } else if (data.type === "log") {
-        addSolverLog(data);
-      } else if (data.type === "agent_status") {
-        setSolverState((prev) => ({
-          ...prev,
-          agentStatus: data.all_agents || {
-            ...prev.agentStatus,
-            [data.agent]: data.status,
-          },
-        }));
-      } else if (data.type === "token_stats") {
-        setSolverState((prev) => ({
-          ...prev,
-          tokenStats: data.stats || prev.tokenStats,
-        }));
-      } else if (data.type === "progress") {
-        setSolverState((prev) => ({
-          ...prev,
-          progress: {
-            stage: data.stage,
-            progress: data.progress || {},
-          },
-        }));
-      } else if (data.type === "result") {
-        // Use output_dir_name from backend if available, otherwise extract from output_dir
-        let dirName = data.output_dir_name || "";
-        if (!dirName && data.output_dir) {
-          const parts = data.output_dir.split(/[/\\]/);
-          dirName = parts[parts.length - 1];
-        }
-
-        setSolverState((prev) => ({
-          ...prev,
-          sessionId: data.session_id || prev.sessionId,
-          messages: [
-            ...prev.messages,
-            {
-              role: "assistant",
-              content: data.final_answer,
-              outputDir: dirName,
-            },
-          ],
-          isSolving: false,
-        }));
-        ws.close();
-      } else if (data.type === "error") {
-        addSolverLog({
-          type: "error",
-          content: `Error: ${data.content || data.message || "Unknown error"}`,
-        });
-        setSolverState((prev) => ({ ...prev, isSolving: false }));
-      }
-    };
-
-    ws.onerror = () => {
-      addSolverLog({ type: "error", content: "Connection error" });
-      setSolverState((prev) => ({
-        ...prev,
-        isSolving: false,
-        agentStatus: {
-          InvestigateAgent: "error",
-          NoteAgent: "error",
-          ManagerAgent: "error",
-          SolveAgent: "error",
-          ToolAgent: "error",
-          ResponseAgent: "error",
-          PrecisionAnswerAgent: "error",
-        },
-        progress: {
-          stage: null,
-          progress: {},
-        },
-      }));
-    };
-
-    ws.onclose = () => {
-      // Clean up WebSocket reference on close
-      if (solverWs.current === ws) {
-        solverWs.current = null;
-      }
-    };
-  };
-
-  // Stop the current solving process
-  const stopSolver = () => {
-    if (solverWs.current) {
-      // Close the WebSocket to signal cancellation to backend
-      solverWs.current.close();
-      solverWs.current = null;
-    }
-    // Reset solving state but keep logs for user reference if desired
-    setSolverState((prev) => ({
-      ...prev,
-      isSolving: false,
-      // Optionally clear logs or keep them; here we keep existing logs
-    }));
-    addSolverLog({ type: "system", content: "Solver stopped by user." });
-  };
-
-  // Start a new solver session (clear current state)
-  const newSolverSession = () => {
-    if (solverWs.current) {
-      solverWs.current.close();
-      solverWs.current = null;
-    }
-    solverSessionIdRef.current = null;
-    setSolverState({
-      ...DEFAULT_SOLVER_STATE,
-      selectedKb: solverState.selectedKb, // Keep the selected KB
-    });
-  };
-
-  // Load a solver session from history
-  const loadSolverSession = async (sessionId: string) => {
-    try {
-      const response = await fetch(
-        apiUrl(`/api/v1/solve/sessions/${sessionId}`),
-      );
-      if (!response.ok) {
-        throw new Error("Session not found");
-      }
-      const session = await response.json();
-
-      // Map session messages to ChatMessage format
-      const messages: ChatMessage[] = session.messages.map((msg: any) => ({
-        role: msg.role,
-        content: msg.content,
-        outputDir: msg.output_dir,
-      }));
-
-      solverSessionIdRef.current = session.session_id;
-
-      setSolverState((prev) => ({
-        ...prev,
-        sessionId: session.session_id,
-        messages,
-        selectedKb: session.kb_name || prev.selectedKb,
-        tokenStats: session.token_stats || prev.tokenStats,
-        question:
-          messages.length > 0 && messages[0].role === "user"
-            ? messages[0].content
-            : "",
-        isSolving: false,
-        logs: [],
-        progress: { stage: null, progress: {} },
-      }));
-    } catch (error) {
-      console.error("Failed to load solver session:", error);
-      throw error;
-    }
-  };
-
-  const addSolverLog = (log: LogEntry) => {
-    setSolverState((prev) => ({ ...prev, logs: [...prev.logs, log] }));
-  };
 
   // --- Question Logic ---
   const [questionState, setQuestionState] = useState<QuestionState>(
@@ -1806,10 +1569,6 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return;
 
     // Load persisted states
-    const persistedSolver = loadFromStorage<Partial<SolverState>>(
-      STORAGE_KEYS.SOLVER_STATE,
-      {},
-    );
     const persistedQuestion = loadFromStorage<Partial<QuestionState>>(
       STORAGE_KEYS.QUESTION_STATE,
       {},
@@ -1826,17 +1585,6 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
       STORAGE_KEYS.CHAT_STATE,
       {},
     );
-
-    // Restore solver state
-    if (Object.keys(persistedSolver).length > 0) {
-      setSolverState((prev) =>
-        mergeWithDefaults(
-          persistedSolver,
-          prev,
-          EXCLUDE_FIELDS.SOLVER as unknown as (keyof SolverState)[],
-        ),
-      );
-    }
 
     // Restore question state
     if (Object.keys(persistedQuestion).length > 0) {
@@ -2117,7 +1865,6 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Reset all states to defaults
-    setSolverState(DEFAULT_SOLVER_STATE);
     setQuestionState(DEFAULT_QUESTION_STATE);
     setResearchState(DEFAULT_RESEARCH_STATE);
     setIdeaGenState(DEFAULT_IDEAGEN_STATE);
@@ -2128,12 +1875,6 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
   return (
     <GlobalContext.Provider
       value={{
-        solverState,
-        setSolverState,
-        startSolver,
-        stopSolver,
-        newSolverSession,
-        loadSolverSession,
         questionState,
         setQuestionState,
         startQuestionGen,
@@ -2163,6 +1904,8 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         setSidebarDescription,
         sidebarNavOrder,
         setSidebarNavOrder,
+        pageSettings,
+        updatePageSetting,
         clearAllPersistence,
       }}
     >
