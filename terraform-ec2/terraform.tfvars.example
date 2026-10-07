@@ -1,0 +1,68 @@
+# ============================================
+# terraform.tfvars.example
+# ============================================
+# Copy to terraform.tfvars and fill in your values:
+#   cp terraform.tfvars.example terraform.tfvars
+#
+# DO NOT commit terraform.tfvars to version control
+# ============================================
+
+# AWS Configuration
+aws_region   = "us-east-1"
+project_name = "novusorbit"
+environment  = "production"
+
+# EC2 Configuration
+instance_type = "t3.small"  # 2 vCPU, 2 GB RAM — ~$15/month
+volume_size   = 30           # GB, gp3
+
+# SSH Access (optional — SSM Session Manager works without a key)
+# ssh_key_name      = "my-key-pair"
+# ssh_allowed_cidrs = ["1.2.3.4/32"]
+
+# Domain (optional — leave empty for IP-only access)
+domain_name = "novusorbit.com"
+
+# Application Ports
+backend_port  = 8001
+frontend_port = 3782
+
+# Docker
+docker_image_tag = "latest"
+
+# LLM Configuration
+llm_binding = "openai"
+llm_model   = "gpt-4o"
+llm_host    = "https://api.openai.com/v1"
+llm_api_key = "your-api-key"
+
+# Embedding Configuration
+embedding_binding   = "openai"
+embedding_model     = "text-embedding-3-small"
+embedding_host      = "https://api.openai.com/v1"
+embedding_dimension = 1536
+embedding_api_key   = "your-api-key"
+
+# Database
+database_url = "mongodb+srv://your-db-user:your-db-password@cluster0.example.mongodb.net/novusorbit"
+
+# Auth (generate with: openssl rand -base64 32)
+nextauth_secret = "your-nextauth-secret"
+google_client_id     = "your-client-id.apps.googleusercontent.com"
+google_client_secret = "your-client-secret"
+
+# Optional Services
+search_provider = "serper"
+search_api_key  = "your-search-api-key"
+tts_api_key     = "your-api-key"
+tts_model       = "tts-1"
+
+# SMTP
+smtp_user           = "your-email@example.com"
+smtp_password       = "your-smtp-app-password"
+smtp_server         = "smtp.gmail.com"
+smtp_port           = 587
+feedback_email_from = "noreply@novusorbit.com"
+
+# Logging
+log_retention_days = 7

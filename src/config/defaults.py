@@ -1,5 +1,5 @@
 """
-Default configuration values for DeepTutor.
+Default configuration values for NovusOrbit.
 """
 
 from pathlib import Path
@@ -12,7 +12,7 @@ DEFAULTS = {
     "llm": {"model": "gpt-4o-mini", "provider": "openai"},
     "paths": {
         "user_data_dir": str(_project_root / "data" / "user"),
-        "knowledge_bases_dir": str(_project_root / "data" / "knowledge_bases"),
+        "portfolios_dir": str(_project_root / "data" / "portfolios"),
         "user_log_dir": str(_project_root / "logs"),
     },
 }

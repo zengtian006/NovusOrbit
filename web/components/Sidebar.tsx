@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import {
   Home,
+  MessageCircle,
+  MessageSquare,
   History,
-  BookOpen,
+  Briefcase,
   PenTool,
   Calculator,
   Microscope,
@@ -17,16 +21,23 @@ import {
   Book,
   GraduationCap,
   Lightbulb,
+  Compass,
   Github,
-  Globe,
+  Linkedin,
   ChevronsLeft,
   ChevronsRight,
   GripVertical,
-  Check,
-  X,
   LucideIcon,
+  LogOut,
+  LogIn,
+  Crown,
+  FileText,
+  Sun,
+  Moon,
+  BarChart3,
 } from "lucide-react";
 import { useGlobal } from "@/context/GlobalContext";
+import FeedbackModal from "@/components/FeedbackModal";
 
 const SIDEBAR_EXPANDED_WIDTH = 256;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
@@ -42,42 +53,63 @@ interface NavItem {
 const ALL_NAV_ITEMS: Record<string, { icon: LucideIcon; nameKey: string }> = {
   "/": { icon: Home, nameKey: "Home" },
   "/history": { icon: History, nameKey: "History" },
-  "/knowledge": { icon: BookOpen, nameKey: "Knowledge Bases" },
+  "/portfolio": { icon: Briefcase, nameKey: "My Portfolio" },
   "/notebook": { icon: Book, nameKey: "Notebooks" },
+  "/jobs": { icon: Briefcase, nameKey: "Interested Jobs" },
+  "/interview": { icon: MessageSquare, nameKey: "Interview Prep" },
+  "/job-suggest": { icon: Compass, nameKey: "Job Suggestions" },
   "/question": { icon: PenTool, nameKey: "Question Generator" },
-  "/solver": { icon: Calculator, nameKey: "Smart Solver" },
   "/guide": { icon: GraduationCap, nameKey: "Guided Learning" },
   "/ideagen": { icon: Lightbulb, nameKey: "IdeaGen" },
   "/research": { icon: Microscope, nameKey: "Deep Research" },
-  "/co_writer": { icon: Edit3, nameKey: "Co-Writer" },
+  "/resume-writer": { icon: FileText, nameKey: "Resume Writer" },
 };
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const {
     sidebarCollapsed,
     toggleSidebar,
-    sidebarDescription,
-    setSidebarDescription,
     sidebarNavOrder,
     setSidebarNavOrder,
+    uiSettings,
+    updateTheme,
   } = useGlobal();
   const { t } = useTranslation();
 
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
-
-  // Editable description state
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [editingDescriptionValue, setEditingDescriptionValue] =
-    useState(sidebarDescription);
-  const descriptionInputRef = useRef<HTMLInputElement>(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   // Drag and drop state
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOverItem, setDragOverItem] = useState<string | null>(null);
-  const [dragGroup, setDragGroup] = useState<"start" | "learnResearch" | null>(
+  const [dragGroup, setDragGroup] = useState<"essential" | "advanced" | null>(
     null,
   );
+
+  // Track analytics
+  const trackAnalytics = async (feature: string, action: string = "navigate") => {
+    if (status !== "authenticated") return;
+
+    try {
+      await fetch("/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action,
+          feature,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            collapsed: sidebarCollapsed,
+          },
+        }),
+      });
+    } catch (error) {
+      // Silently fail - don't disrupt user experience
+      console.error("Analytics tracking error:", error);
+    }
+  };
 
   // Build navigation items from saved order - defined inside useMemo to properly capture dependencies
   const navGroups = useMemo(() => {
@@ -93,57 +125,23 @@ export default function Sidebar() {
 
     return [
       {
-        id: "start" as const,
-        name: t("Workspace"),
-        items: buildNavItems(sidebarNavOrder.start),
+        id: "essential" as const,
+        name: t("Essential Tools"),
+        items: buildNavItems(sidebarNavOrder.essential),
       },
       {
-        id: "learnResearch" as const,
-        name: t("Learn & Research"),
-        items: buildNavItems(sidebarNavOrder.learnResearch),
+        id: "advanced" as const,
+        name: t("Advanced Tools"),
+        items: buildNavItems(sidebarNavOrder.advanced),
       },
     ];
   }, [sidebarNavOrder, t]);
-
-  // Handle description edit
-  const handleDescriptionEdit = () => {
-    setEditingDescriptionValue(sidebarDescription);
-    setIsEditingDescription(true);
-  };
-
-  const handleDescriptionSave = () => {
-    setSidebarDescription(
-      editingDescriptionValue.trim() || t("✨ Your description here"),
-    );
-    setIsEditingDescription(false);
-  };
-
-  const handleDescriptionCancel = () => {
-    setEditingDescriptionValue(sidebarDescription);
-    setIsEditingDescription(false);
-  };
-
-  const handleDescriptionKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleDescriptionSave();
-    } else if (e.key === "Escape") {
-      handleDescriptionCancel();
-    }
-  };
-
-  // Focus input when editing starts
-  useEffect(() => {
-    if (isEditingDescription && descriptionInputRef.current) {
-      descriptionInputRef.current.focus();
-      descriptionInputRef.current.select();
-    }
-  }, [isEditingDescription]);
 
   // Drag and drop handlers
   const handleDragStart = (
     e: React.DragEvent,
     href: string,
-    groupId: "start" | "learnResearch",
+    groupId: "essential" | "advanced",
   ) => {
     setDraggedItem(href);
     setDragGroup(groupId);
@@ -154,7 +152,7 @@ export default function Sidebar() {
   const handleDragOver = (
     e: React.DragEvent,
     href: string,
-    groupId: "start" | "learnResearch",
+    groupId: "essential" | "advanced",
   ) => {
     e.preventDefault();
     if (dragGroup !== groupId) return; // Only allow drag within same group
@@ -170,7 +168,7 @@ export default function Sidebar() {
   const handleDrop = (
     e: React.DragEvent,
     targetHref: string,
-    groupId: "start" | "learnResearch",
+    groupId: "essential" | "advanced",
   ) => {
     e.preventDefault();
     if (!draggedItem || dragGroup !== groupId) return;
@@ -217,19 +215,18 @@ export default function Sidebar() {
     >
       {/* Header */}
       <div
-        className={`border-b border-slate-100 dark:border-slate-700 transition-all duration-300 ${
-          sidebarCollapsed ? "px-2 py-3" : "px-4 py-3"
-        }`}
+        className={`border-b border-slate-100 dark:border-slate-700 transition-all duration-300 ${sidebarCollapsed ? "px-2 py-3" : "px-4 py-3"
+          }`}
       >
         <div className="flex flex-col gap-2">
           <div
             className={`flex items-center ${sidebarCollapsed ? "justify-center" : "justify-between"}`}
           >
-            <div className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                 <Image
-                  src="/logo.png"
-                  alt={t("DeepTutor Logo")}
+                  src="/favicon-32.png"
+                  alt={t("NovusOrbit Logo")}
                   width={32}
                   height={32}
                   className="object-contain"
@@ -237,21 +234,19 @@ export default function Sidebar() {
                 />
               </div>
               <h1
-                className={`font-bold text-slate-900 dark:text-slate-100 tracking-tight text-base whitespace-nowrap transition-all duration-300 ${
-                  sidebarCollapsed
-                    ? "opacity-0 w-0 overflow-hidden"
-                    : "opacity-100"
-                }`}
-              >
-                DeepTutor
-              </h1>
-            </div>
-            <div
-              className={`flex items-center gap-0.5 transition-all duration-300 ${
-                sidebarCollapsed
+                className={`font-bold text-slate-900 dark:text-slate-100 tracking-tight text-base whitespace-nowrap transition-all duration-300 ${sidebarCollapsed
                   ? "opacity-0 w-0 overflow-hidden"
                   : "opacity-100"
-              }`}
+                  }`}
+              >
+                NovusOrbit
+              </h1>
+            </Link>
+            <div
+              className={`flex items-center gap-0.5 transition-all duration-300 ${sidebarCollapsed
+                ? "opacity-0 w-0 overflow-hidden"
+                : "opacity-100"
+                }`}
             >
               {/* Collapse button */}
               <button
@@ -262,89 +257,42 @@ export default function Sidebar() {
                 <ChevronsLeft className="w-4 h-4" />
               </button>
               <a
-                href="https://hkuds.github.io/DeepTutor/"
+                href="https://www.linkedin.com/in/tim-zeng-8150a792/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
-                title={t("Visit DeepTutor Homepage")}
+                title={t("Visit NovusOrbit LinkedIn")}
               >
-                <Globe className="w-4 h-4" />
+                <Linkedin className="w-4 h-4" />
               </a>
-              <a
-                href="https://github.com/HKUDS/DeepTutor"
+              {/* <a
+                href="https://github.com/NovusOrbit/NovusOrbit"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
                 title={t("View on GitHub")}
               >
                 <Github className="w-4 h-4" />
-              </a>
+              </a> */}
             </div>
           </div>
 
-          {/* Editable Description - only show when expanded */}
-          <div
-            className={`transition-all duration-300 ${
-              sidebarCollapsed ? "opacity-0 h-0 overflow-hidden" : "opacity-100"
-            }`}
-          >
-            {isEditingDescription ? (
-              <div className="flex items-center gap-1">
-                <input
-                  ref={descriptionInputRef}
-                  type="text"
-                  value={editingDescriptionValue}
-                  onChange={(e) => setEditingDescriptionValue(e.target.value)}
-                  onKeyDown={handleDescriptionKeyDown}
-                  className="flex-1 text-[10px] font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-600 px-2 py-1.5 rounded-md border border-blue-300 dark:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  placeholder={t("Enter your description...")}
-                />
-                <button
-                  onClick={handleDescriptionSave}
-                  className="p-1 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300"
-                  title={t("Save")}
-                >
-                  <Check className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={handleDescriptionCancel}
-                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                  title={t("Cancel")}
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div
-                onClick={handleDescriptionEdit}
-                className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-700/50 px-2 py-1.5 rounded-md border border-slate-100 dark:border-slate-600 truncate cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-200 dark:hover:border-slate-500 transition-colors group"
-                title={t("Click to edit")}
-              >
-                <span className="group-hover:hidden">{sidebarDescription}</span>
-                <span className="hidden group-hover:inline text-blue-500 dark:text-blue-400">
-                  ✏️ {t("Click to edit")}
-                </span>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav
-        className={`flex-1 overflow-y-auto py-2 space-y-4 transition-all duration-300 ${
-          sidebarCollapsed ? "px-2" : "px-2"
-        }`}
+        className={`flex-1 overflow-y-auto py-2 space-y-4 transition-all duration-300 ${sidebarCollapsed ? "px-2" : "px-2"
+          }`}
       >
         {navGroups.map((group, idx) => (
           <div key={group.id}>
             {/* Group title - only show when expanded */}
             <div
-              className={`text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 truncate transition-all duration-300 ${
-                sidebarCollapsed
-                  ? "opacity-0 h-0 overflow-hidden px-0"
-                  : "opacity-100 px-1"
-              }`}
+              className={`text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 truncate transition-all duration-300 ${sidebarCollapsed
+                ? "opacity-0 h-0 overflow-hidden px-0"
+                : "opacity-100 px-1"
+                }`}
             >
               {group.name}
             </div>
@@ -372,49 +320,44 @@ export default function Sidebar() {
                       !sidebarCollapsed && handleDrop(e, item.href, group.id)
                     }
                     onDragEnd={handleDragEnd}
-                    className={`group relative ${isDragging ? "opacity-50" : ""} ${
-                      isDragOver ? "border-t-2 border-blue-500" : ""
-                    }`}
+                    className={`group relative ${isDragging ? "opacity-50" : ""} ${isDragOver ? "border-t-2 border-blue-500" : ""
+                      }`}
                   >
                     <Link
                       href={item.href}
-                      className={`flex items-center rounded-md border transition-all duration-200 ${
-                        sidebarCollapsed
-                          ? "justify-center p-2"
-                          : "gap-2.5 pl-2 pr-1.5 py-2"
-                      } ${
-                        isActive
+                      className={`flex items-center rounded-md border transition-all duration-200 ${sidebarCollapsed
+                        ? "justify-center p-2"
+                        : "gap-2.5 pl-2 pr-1.5 py-2"
+                        } ${isActive
                           ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border-slate-100 dark:border-slate-600"
                           : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-sm border-transparent hover:border-slate-100 dark:hover:border-slate-600"
-                      }`}
+                        }`}
+                      onClick={() => trackAnalytics(item.href, "navigate")}
                       onMouseEnter={() =>
                         sidebarCollapsed && setShowTooltip(item.href)
                       }
                       onMouseLeave={() => setShowTooltip(null)}
                     >
                       <item.icon
-                        className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                          isActive
-                            ? "text-blue-500 dark:text-blue-400"
-                            : "text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400"
-                        }`}
+                        className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive
+                          ? "text-blue-500 dark:text-blue-400"
+                          : "text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400"
+                          }`}
                       />
                       <span
-                        className={`font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300 ${
-                          sidebarCollapsed
-                            ? "opacity-0 w-0 overflow-hidden"
-                            : "opacity-100"
-                        }`}
+                        className={`font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed
+                          ? "opacity-0 w-0 overflow-hidden"
+                          : "opacity-100"
+                          }`}
                       >
                         {item.name}
                       </span>
                       {/* Drag handle - only show when expanded and hovering, now on right */}
                       <div
-                        className={`flex-shrink-0 transition-all duration-300 ${
-                          sidebarCollapsed
-                            ? "w-0 opacity-0 overflow-hidden"
-                            : "opacity-0 group-hover:opacity-100"
-                        }`}
+                        className={`flex-shrink-0 transition-all duration-300 ${sidebarCollapsed
+                          ? "w-0 opacity-0 overflow-hidden"
+                          : "opacity-0 group-hover:opacity-100"
+                          }`}
                       >
                         <GripVertical className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 cursor-grab active:cursor-grabbing" />
                       </div>
@@ -440,57 +383,264 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div
-        className={`border-t border-slate-100 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/30 transition-all duration-300 ${
-          sidebarCollapsed ? "px-2 py-2" : "px-2 py-2"
-        }`}
+        className={`border-t border-slate-100 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/30 transition-all duration-300 ${sidebarCollapsed ? "px-2 py-2" : "px-2 py-2"
+          }`}
       >
-        <div className="relative">
-          <Link
-            href="/settings"
-            className={`flex items-center rounded-md text-sm transition-all duration-200 ${
-              sidebarCollapsed
+        {/* Admin Button - Only visible to admins */}
+        {status === "authenticated" && (session?.user as any)?.role === "ADMIN" && (
+          <>
+            <div className="relative mb-2">
+              <Link
+                href="/admin/users"
+                className={`flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
+                  ? "justify-center p-2"
+                  : "gap-2.5 pl-2 pr-1.5 py-2"
+                  } ${pathname === "/admin/users"
+                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shadow-sm border border-amber-200 dark:border-amber-700"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-amber-600 dark:hover:text-amber-400"
+                  }`}
+                onClick={() => trackAnalytics("/admin/users", "navigate")}
+                onMouseEnter={() => sidebarCollapsed && setShowTooltip("/admin")}
+                onMouseLeave={() => setShowTooltip(null)}
+              >
+                <Crown
+                  className={`w-5 h-5 flex-shrink-0 transition-colors ${pathname === "/admin/users"
+                    ? "text-amber-600 dark:text-amber-400"
+                    : "text-slate-400 dark:text-slate-500"
+                    }`}
+                />
+                <span
+                  className={`whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed
+                    ? "opacity-0 w-0 overflow-hidden"
+                    : "opacity-100"
+                    }`}
+                >
+                  Admin
+                </span>
+              </Link>
+              {/* Tooltip for collapsed state */}
+              {sidebarCollapsed && showTooltip === "/admin" && (
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+                  Admin Panel
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
+                </div>
+              )}
+            </div>
+
+            {/* Analytics Button */}
+            <div className="relative mb-2">
+              <Link
+                href="/admin/analytics"
+                className={`flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
+                  ? "justify-center p-2"
+                  : "gap-2.5 pl-2 pr-1.5 py-2"
+                  } ${pathname === "/admin/analytics"
+                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-200 dark:border-blue-700"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400"
+                  }`}
+                onClick={() => trackAnalytics("/admin/analytics", "navigate")}
+                onMouseEnter={() => sidebarCollapsed && setShowTooltip("/analytics")}
+                onMouseLeave={() => setShowTooltip(null)}
+              >
+                <BarChart3
+                  className={`w-5 h-5 flex-shrink-0 transition-colors ${pathname === "/admin/analytics"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-slate-400 dark:text-slate-500"
+                    }`}
+                />
+                <span
+                  className={`whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed
+                    ? "opacity-0 w-0 overflow-hidden"
+                    : "opacity-100"
+                    }`}
+                >
+                  Analytics
+                </span>
+              </Link>
+              {/* Tooltip for collapsed state */}
+              {sidebarCollapsed && showTooltip === "/analytics" && (
+                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+                  Analytics
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+
+
+        {/* Settings Button - Only visible to admins */}
+        {status === "authenticated" && (session?.user as any)?.role === "ADMIN" && (
+          <div className="relative">
+            <Link
+              href="/settings"
+              className={`flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
                 ? "justify-center p-2"
                 : "gap-2.5 pl-2 pr-1.5 py-2"
-            } ${
-              pathname === "/settings"
-                ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-slate-600"
-                : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-            }`}
-            onMouseEnter={() => sidebarCollapsed && setShowTooltip("/settings")}
-            onMouseLeave={() => setShowTooltip(null)}
-          >
-            <Settings
-              className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                pathname === "/settings"
+                } ${pathname === "/settings"
+                  ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-slate-600"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
+                }`}
+              onClick={() => trackAnalytics("/settings", "navigate")}
+              onMouseEnter={() => sidebarCollapsed && setShowTooltip("/settings")}
+              onMouseLeave={() => setShowTooltip(null)}
+            >
+              <Settings
+                className={`w-5 h-5 flex-shrink-0 transition-colors ${pathname === "/settings"
                   ? "text-blue-500 dark:text-blue-400"
                   : "text-slate-400 dark:text-slate-500"
-              }`}
-            />
-            <span
-              className={`whitespace-nowrap flex-1 transition-all duration-300 ${
-                sidebarCollapsed
+                  }`}
+              />
+              <span
+                className={`whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed
                   ? "opacity-0 w-0 overflow-hidden"
                   : "opacity-100"
-              }`}
+                  }`}
+              >
+                {t("Settings")}
+              </span>
+            </Link>
+            {/* Tooltip for collapsed state */}
+            {sidebarCollapsed && showTooltip === "/settings" && (
+              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+                {t("Settings")}
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Auth Button */}
+        <div className="relative">
+          {status === "authenticated" && session?.user ? (
+            <button
+              onClick={() => signOut()}
+              className={`w-full flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
+                ? "justify-center p-2"
+                : "gap-2.5 pl-2 pr-1.5 py-2"
+                } text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-red-600 dark:hover:text-red-400 border border-transparent hover:border-slate-100 dark:hover:border-slate-600`}
+              onMouseEnter={() =>
+                sidebarCollapsed && setShowTooltip("sign-out")
+              }
+              onMouseLeave={() => setShowTooltip(null)}
             >
-              {t("Settings")}
-            </span>
-          </Link>
-          {/* Tooltip for collapsed state */}
-          {sidebarCollapsed && showTooltip === "/settings" && (
-            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
-              {t("Settings")}
-              <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
-            </div>
+              <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white text-xs font-bold">
+                {session.user.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <span
+                className={`whitespace-nowrap flex-1 transition-all duration-300 text-left ${sidebarCollapsed
+                  ? "opacity-0 w-0 overflow-hidden"
+                  : "opacity-100"
+                  }`}
+              >
+                {session.user.name || "User"}
+              </span>
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+            </button>
+          ) : (
+            <button
+              onClick={() => signIn("google")}
+              className={`w-full flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
+                ? "justify-center p-2"
+                : "gap-2.5 pl-2 pr-1.5 py-2"
+                } text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-slate-100 dark:hover:border-slate-600`}
+              onMouseEnter={() =>
+                sidebarCollapsed && setShowTooltip("sign-in")
+              }
+              onMouseLeave={() => setShowTooltip(null)}
+            >
+              <LogIn className="w-5 h-5 flex-shrink-0" />
+              <span
+                className={`whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed
+                  ? "opacity-0 w-0 overflow-hidden"
+                  : "opacity-100"
+                  }`}
+              >
+                {t("Sign In")}
+              </span>
+            </button>
           )}
+          {/* Tooltip for collapsed state */}
+          {sidebarCollapsed &&
+            (showTooltip === "sign-in" || showTooltip === "sign-out") && (
+              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+                {status === "authenticated" && session?.user
+                  ? `${session.user.name || "User"} (Sign out)`
+                  : t("Sign In")}
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
+              </div>
+            )}
         </div>
+
+
+        {/* Feedback Button */}
+        <button
+          onClick={() => window.open("https://www.linkedin.com/in/tim-zeng-8150a792/", "_blank")}
+          className={`w-full flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
+            ? "justify-center p-2"
+            : "gap-2.5 pl-2 pr-1.5 py-2"
+            } text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-slate-100 dark:hover:border-slate-600`}
+          onMouseEnter={() =>
+            sidebarCollapsed && setShowTooltip("feedback")
+          }
+          onMouseLeave={() => setShowTooltip(null)}
+        >
+          <MessageCircle className="w-5 h-5 flex-shrink-0" />
+          <span
+            className={`whitespace-nowrap flex-1 transition-all duration-300 text-left ${sidebarCollapsed
+              ? "opacity-0 w-0 overflow-hidden"
+              : "opacity-100"
+              }`}
+          >
+            {t("Send Feedback")}
+          </span>
+        </button>
+        {/* Feedback Tooltip */}
+        {sidebarCollapsed && showTooltip === "feedback" && (
+          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+            {t("Send Feedback")}
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
+          </div>
+        )}
+        {/* Theme Switcher */}
+        <div className={`flex items-center gap-0 ${sidebarCollapsed ? "justify-center" : ""}`}>
+          <button
+            onClick={() => updateTheme("light")}
+            className={`flex items-center justify-center rounded-md transition-all duration-200 ${sidebarCollapsed ? "p-2" : "px-2.5 py-1.5 flex-1"
+              } ${uiSettings.theme === "light"
+                ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm border border-slate-100 dark:border-slate-600"
+                : "text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
+              }`}
+            title={t("Light")}
+          >
+            <Sun className="w-4 h-4" />
+            {!sidebarCollapsed && (
+              <span className="text-xs ml-1.5">{t("Light")}</span>
+            )}
+          </button>
+          <button
+            onClick={() => updateTheme("dark")}
+            className={`flex items-center justify-center rounded-md transition-all duration-200 ${sidebarCollapsed ? "p-2" : "px-2.5 py-1.5 flex-1"
+              } ${uiSettings.theme === "dark"
+                ? "bg-white dark:bg-slate-700 text-blue-500 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-slate-600"
+                : "text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
+              }`}
+            title={t("Dark")}
+          >
+            <Moon className="w-4 h-4" />
+            {!sidebarCollapsed && (
+              <span className="text-xs ml-1.5">{t("Dark")}</span>
+            )}
+          </button>
+        </div>
+
 
         {/* Expand/Collapse button at bottom */}
         <button
           onClick={toggleSidebar}
-          className={`w-full mt-2 flex items-center rounded-md text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-500 dark:hover:text-blue-400 hover:shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600 transition-all duration-200 ${
-            sidebarCollapsed ? "justify-center p-2" : "gap-2.5 pl-2 pr-1.5 py-2"
-          }`}
+          className={`w-full mt-2 flex items-center rounded-md text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-500 dark:hover:text-blue-400 hover:shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600 transition-all duration-200 ${sidebarCollapsed ? "justify-center p-2" : "gap-2.5 pl-2 pr-1.5 py-2"
+            }`}
           title={sidebarCollapsed ? t("Expand sidebar") : t("Collapse sidebar")}
         >
           <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -501,14 +651,19 @@ export default function Sidebar() {
             )}
           </div>
           <span
-            className={`text-sm whitespace-nowrap flex-1 transition-all duration-300 ${
-              sidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
-            }`}
+            className={`text-sm whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
+              }`}
           >
             {t("Collapse sidebar")}
           </span>
         </button>
       </div>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+      />
     </div>
   );
 }

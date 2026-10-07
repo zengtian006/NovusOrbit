@@ -1,6 +1,6 @@
 # Data Preparation
 
-DeepTutor provides demo knowledge bases and sample questions to help you get started quickly.
+NovusOrbit provides demo knowledge bases and sample questions to help you get started quickly.
 
 ## Demo Knowledge Bases
 
@@ -62,7 +62,7 @@ Visit our [Google Drive folder](https://drive.google.com/drive/folders/1iWwfZXiT
 Extract the downloaded files into the `data/` directory:
 
 ```
-DeepTutor/
+NovusOrbit/
 ├── data/
 │   └── knowledge_bases/
 │       ├── research_papers/      # Research papers KB
@@ -73,7 +73,7 @@ DeepTutor/
 
 ### Step 3: Verify
 
-After extracting, your knowledge bases will be automatically available when you start DeepTutor.
+After extracting, your knowledge bases will be automatically available when you start NovusOrbit.
 
 ::: warning Embedding Compatibility
 Our demo knowledge bases use `text-embedding-3-large` with `dimensions = 3072`.

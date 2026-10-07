@@ -4,5 +4,15 @@
   "common.loading": "加载中...",
   "common.save": "保存",
   "common.cancel": "取消",
-  "common.close": "关闭"
+  "common.close": "关闭",
+  "Send Feedback": "发送反馈",
+  "Name": "姓名",
+  "Email": "邮箱",
+  "Message": "消息",
+  "Your name": "您的姓名",
+  "Tell us what you think...": "告诉我们您的想法...",
+  "Sending...": "发送中...",
+  "Thank you! Your feedback has been sent successfully.": "谢谢！您的反馈已成功发送。",
+  "Failed to send feedback. Please try again.": "发送反馈失败，请重试。",
+  "We'd love to hear your thoughts, suggestions, or issues you've encountered.": "我们很乐意听到您的想法、建议或遇到的问题。"
 }

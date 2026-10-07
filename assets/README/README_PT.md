@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="../../assets/logo-ver2.png" alt="DeepTutor Logo" width="150" style="border-radius: 15px;">
+<img src="../../assets/logo-ver2.png" alt="NovusOrbit Logo" width="150" style="border-radius: 15px;">
 
-# DeepTutor: Seu Assistente Pessoal de Aprendizado
+# NovusOrbit: Seu Assistente Pessoal de Aprendizado
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)](../../LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=flat&logo=discord&logoColor=white)](https://discord.gg/eRsjPgMU4t)
 [![Feishu](https://img.shields.io/badge/Feishu-Group-blue?style=flat)](../../Communication.md)
-[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/DeepTutor/issues/78)
+[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/NovusOrbit/issues/78)
 
 
 
@@ -28,14 +28,14 @@
 </div>
 
 ---
-> **[2026.1.1]** Feliz Ano Novo! Junte-se à nossa [Comunidade no Discord](https://discord.gg/zpP9cssj), à [Comunidade no WeChat](https://github.com/HKUDS/DeepTutor/issues/78), ou ao [Discussions](https://github.com/HKUDS/DeepTutor/discussions) — molde o futuro do DeepTutor! 💬
+> **[2026.1.1]** Feliz Ano Novo! Junte-se à nossa [Comunidade no Discord](https://discord.gg/zpP9cssj), à [Comunidade no WeChat](https://github.com/HKUDS/NovusOrbit/issues/78), ou ao [Discussions](https://github.com/HKUDS/NovusOrbit/discussions) — molde o futuro do NovusOrbit! 💬
 
-> **[2025.12.30]** Visite nosso [Site Oficial](https://hkuds.github.io/DeepTutor/) para mais detalhes!
+> **[2025.12.30]** Visite nosso [Site Oficial](https://hkuds.github.io/NovusOrbit/) para mais detalhes!
 
-> **[2025.12.29]** DeepTutor já está disponível! ✨
+> **[2025.12.29]** NovusOrbit já está disponível! ✨
 ---
 
-## Características Principais do DeepTutor
+## Características Principais do NovusOrbit
 
 ### 📚 Q&A de Conhecimento de Documentos Massivos
 • **Base de Conhecimento Inteligente**: Faça upload de livros didáticos, artigos de pesquisa, manuais técnicos e documentos específicos do domínio. Construa um repositório de conhecimento abrangente alimentado por IA para acesso instantâneo.<br>
@@ -186,14 +186,14 @@
 </table>
 
 <p align="center">
-  <sub>🌙 Use DeepTutor no <b>Modo Escuro</b>!</sub>
+  <sub>🌙 Use NovusOrbit no <b>Modo Escuro</b>!</sub>
 </p>
 
 <details>
 <summary><b>Arquitetura do Sistema</b></summary>
 <br>
 
-![DeepTutor Full-Stack Workflow](../../assets/figs/full-pipe.png)
+![NovusOrbit Full-Stack Workflow](../../assets/figs/full-pipe.png)
 
 </details>
 
@@ -201,7 +201,7 @@
 
 > Siga-nos para nossas futuras atualizações!
 - [ ] Suporte para serviços LLM locais (ex. ollama)
-- [ ] Refatoração do módulo RAG (ver [Discussions](https://github.com/HKUDS/DeepTutor/discussions))
+- [ ] Refatoração do módulo RAG (ver [Discussions](https://github.com/HKUDS/NovusOrbit/discussions))
 - [ ] Codificação profunda a partir da geração de ideias
 - [ ] Interação personalizada com o caderno
 
@@ -212,8 +212,8 @@
 **① Clonar Repositório**
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 **② Configurar Variáveis de Ambiente**
@@ -297,12 +297,12 @@ cp .env.example .env
 
 ```bash
 # Funciona em todas as plataformas — Docker detecta sua arquitetura automaticamente
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 
 # Windows PowerShell: use ${PWD} em vez de $(pwd)
 ```
@@ -310,12 +310,12 @@ docker run -d --name deeptutor \
 Ou usar arquivo `.env`:
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 </details>
@@ -340,7 +340,7 @@ docker compose up -d      # Iniciar
 docker compose logs -f    # Logs
 docker compose down       # Parar
 docker compose up --build # Reconstruir
-docker pull ghcr.io/hkuds/deeptutor:latest  # Atualizar imagem
+docker pull ghcr.io/hkuds/novusorbit:latest  # Atualizar imagem
 ```
 
 > **Modo Dev**: Adicionar `-f docker-compose.dev.yml`
@@ -359,8 +359,8 @@ docker pull ghcr.io/hkuds/deeptutor:latest  # Atualizar imagem
 
 ```bash
 # Usando conda (Recomendado)
-conda create -n deeptutor python=3.10
-conda activate deeptutor
+conda create -n novusorbit python=3.10
+conda activate novusorbit
 
 # Ou usando venv
 python -m venv venv
@@ -649,11 +649,11 @@ Este projeto está licenciado sob **[AGPL-3.0](../../LICENSE)**.
 ## ⭐ Histórico de Stars
 
 <div align="center">
-<a href="https://star-history.com/#HKUDS/DeepTutor&Date">
+<a href="https://star-history.com/#HKUDS/NovusOrbit&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
  </picture>
 </a>
 </div>
@@ -681,7 +681,7 @@ conda install -c conda-forge pre-commit
 
 **Passo 2: Instalar os hooks do Git**
 ```bash
-cd DeepTutor
+cd NovusOrbit
 pre-commit install
 ```
 
@@ -757,11 +757,11 @@ git commit --no-verify -m "Correção de emergência"
 
 **[Laboratório de Inteligência de Dados @ HKU](https://github.com/HKUDS)**
 
-[⭐ Siga-nos](https://github.com/HKUDS/DeepTutor/stargazers) · [🐛 Reportar um bug](https://github.com/HKUDS/DeepTutor/issues) · [💬 Discussões](https://github.com/HKUDS/DeepTutor/discussions)
+[⭐ Siga-nos](https://github.com/HKUDS/NovusOrbit/stargazers) · [🐛 Reportar um bug](https://github.com/HKUDS/NovusOrbit/issues) · [💬 Discussões](https://github.com/HKUDS/NovusOrbit/discussions)
 
 ---
-*✨ Obrigado por visitar **DeepTutor**!*
+*✨ Obrigado por visitar **NovusOrbit**!*
 
-<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.DeepTutor&style=for-the-badge&color=00d4ff" alt="Views">
+<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.NovusOrbit&style=for-the-badge&color=00d4ff" alt="Views">
 
 </div>

@@ -121,16 +121,16 @@ def list_pipelines() -> List[Dict[str, str]]:
             "name": "LightRAG",
             "description": "Lightweight knowledge graph retrieval, fast processing of text documents.",
         },
-        {
-            "id": "raganything",
-            "name": "RAG-Anything (MinerU)",
-            "description": "Multimodal document processing with MinerU parser. Best for academic PDFs with complex equations and formulas.",
-        },
-        {
-            "id": "raganything_docling",
-            "name": "RAG-Anything (Docling)",
-            "description": "Multimodal document processing with Docling parser. Better for Office documents (.docx, .pptx) and HTML. Easier to install.",
-        },
+        # {
+        #     "id": "raganything",
+        #     "name": "RAG-Anything (MinerU)",
+        #     "description": "Multimodal document processing with MinerU parser. Best for academic PDFs with complex equations and formulas.",
+        # },
+        # {
+        #     "id": "raganything_docling",
+        #     "name": "RAG-Anything (Docling)",
+        #     "description": "Multimodal document processing with Docling parser. Better for Office documents (.docx, .pptx) and HTML. Easier to install.",
+        # },
     ]
 
 

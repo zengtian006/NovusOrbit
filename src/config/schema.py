@@ -10,7 +10,7 @@ class LLMConfig(BaseModel):
 
 class PathsConfig(BaseModel):
     user_data_dir: str
-    knowledge_bases_dir: str
+    portfolios_dir: str
     user_log_dir: str
 
 

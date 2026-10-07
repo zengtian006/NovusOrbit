@@ -6,7 +6,6 @@
 export { CompositeProvider } from "./CompositeProvider";
 
 // Individual context hooks
-export { useSolver, SolverProvider } from "./solver";
 export { useQuestion, QuestionProvider } from "./question";
 export { useResearch, ResearchProvider } from "./research";
 export { useChat, ChatProvider } from "./chat";

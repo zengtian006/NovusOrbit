@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="../../assets/logo-ver2.png" alt="DeepTutor Logo" width="150" style="border-radius: 15px;">
+<img src="../../assets/logo-ver2.png" alt="NovusOrbit Logo" width="150" style="border-radius: 15px;">
 
-# DeepTutor: あなたのパーソナル学習アシスタント
+# NovusOrbit: あなたのパーソナル学習アシスタント
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)](../../LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=flat&logo=discord&logoColor=white)](https://discord.gg/eRsjPgMU4t)
 [![Feishu](https://img.shields.io/badge/Feishu-Group-blue?style=flat)](../../Communication.md)
-[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/DeepTutor/issues/78)
+[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/NovusOrbit/issues/78)
 
 
 
@@ -28,14 +28,14 @@
 </div>
 
 ---
-> **[2026.1.1]** 新年あけましておめでとうございます！[Discord コミュニティ](https://discord.gg/zpP9cssj)、[WeChat コミュニティ](https://github.com/HKUDS/DeepTutor/issues/78)、または [Discussions](https://github.com/HKUDS/DeepTutor/discussions) に参加して、DeepTutor の未来を一緒に創りましょう！💬
+> **[2026.1.1]** 新年あけましておめでとうございます！[Discord コミュニティ](https://discord.gg/zpP9cssj)、[WeChat コミュニティ](https://github.com/HKUDS/NovusOrbit/issues/78)、または [Discussions](https://github.com/HKUDS/NovusOrbit/discussions) に参加して、NovusOrbit の未来を一緒に創りましょう！💬
 
-> **[2025.12.30]** 詳細は [公式ウェブサイト](https://hkuds.github.io/DeepTutor/) をご覧ください！
+> **[2025.12.30]** 詳細は [公式ウェブサイト](https://hkuds.github.io/NovusOrbit/) をご覧ください！
 
-> **[2025.12.29]** DeepTutor が公開されました！✨
+> **[2025.12.29]** NovusOrbit が公開されました！✨
 ---
 
-## DeepTutor の主要機能
+## NovusOrbit の主要機能
 
 ### 📚 大規模ドキュメント知識Q&A
 • **スマート知識ベース**：教科書、研究論文、技術マニュアル、ドメイン固有のドキュメントをアップロード。包括的な AI 駆動の知識リポジトリを構築し、即座にアクセス可能にします。<br>
@@ -186,15 +186,15 @@
 </table>
 
 <p align="center">
-  <sub>🌙 <b>ダークモード</b> で DeepTutor を使用！</sub>
+  <sub>🌙 <b>ダークモード</b> で NovusOrbit を使用！</sub>
 </p>
 
 ---
 
-## 🏛️ DeepTutor のフレームワーク
+## 🏛️ NovusOrbit のフレームワーク
 
 <div align="center">
-<img src="../../assets/figs/full-pipe.png" alt="DeepTutor Full-Stack Workflow" width="100%">
+<img src="../../assets/figs/full-pipe.png" alt="NovusOrbit Full-Stack Workflow" width="100%">
 </div>
 
 ### 💬 ユーザーインターフェース層
@@ -219,7 +219,7 @@
 
 > 🌟 今後の更新をフォローするために Star してください！
 - [ ] ローカル LLM サービスのサポート（例：ollama）
-- [ ] RAG モジュールのリファクタリング（[Discussions](https://github.com/HKUDS/DeepTutor/discussions) を参照）
+- [ ] RAG モジュールのリファクタリング（[Discussions](https://github.com/HKUDS/NovusOrbit/discussions) を参照）
 - [ ] アイデア生成からの深いコーディング
 - [ ] ノートブックとのパーソナライズされたインタラクション
 
@@ -230,8 +230,8 @@
 **① リポジトリをクローン**
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 **② 環境変数を設定**
@@ -315,12 +315,12 @@ cp .env.example .env
 
 ```bash
 # すべてのプラットフォームで動作（Docker がアーキテクチャを自動判別）
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 
 # Windows PowerShell: $(pwd) の代わりに ${PWD} を使用
 ```
@@ -347,7 +347,7 @@ docker compose up -d      # 起動
 docker compose logs -f    # ログ
 docker compose down       # 停止
 docker compose up --build # 再ビルド
-docker pull ghcr.io/hkuds/deeptutor:latest  # イメージを更新
+docker pull ghcr.io/hkuds/novusorbit:latest  # イメージを更新
 ```
 
 > **開発モード**：`-f docker-compose.dev.yml` を追加
@@ -366,8 +366,8 @@ docker pull ghcr.io/hkuds/deeptutor:latest  # イメージを更新
 
 ```bash
 # conda を使用（推奨）
-conda create -n deeptutor python=3.10
-conda activate deeptutor
+conda create -n novusorbit python=3.10
+conda activate novusorbit
 
 # または venv を使用
 python -m venv venv
@@ -419,11 +419,11 @@ python scripts/start.py
 ## ⭐ Star History
 
 <div align="center">
-<a href="https://star-history.com/#HKUDS/DeepTutor&Date">
+<a href="https://star-history.com/#HKUDS/NovusOrbit&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
  </picture>
 </a>
 </div>
@@ -451,7 +451,7 @@ conda install -c conda-forge pre-commit
 
 **ステップ 2: Git hooks をインストール**
 ```bash
-cd DeepTutor
+cd NovusOrbit
 pre-commit install
 ```
 
@@ -527,11 +527,11 @@ git commit --no-verify -m "緊急修正"
 
 **[香港大学データインテリジェンスラボ](https://github.com/HKUDS)**
 
-[⭐ Star us](https://github.com/HKUDS/DeepTutor/stargazers) · [🐛 Report a bug](https://github.com/HKUDS/DeepTutor/issues) · [💬 Discussions](https://github.com/HKUDS/DeepTutor/discussions)
+[⭐ Star us](https://github.com/HKUDS/NovusOrbit/stargazers) · [🐛 Report a bug](https://github.com/HKUDS/NovusOrbit/issues) · [💬 Discussions](https://github.com/HKUDS/NovusOrbit/discussions)
 
 ---
-*✨ **DeepTutor** のご利用ありがとうございます！*
+*✨ **NovusOrbit** のご利用ありがとうございます！*
 
-<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.DeepTutor&style=for-the-badge&color=00d4ff" alt="Views">
+<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.NovusOrbit&style=for-the-badge&color=00d4ff" alt="Views">
 
 </div>

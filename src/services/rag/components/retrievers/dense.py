@@ -38,7 +38,7 @@ class DenseRetriever(BaseComponent):
         self.kb_base_dir = kb_base_dir or str(
             Path(__file__).resolve().parent.parent.parent.parent.parent.parent
             / "data"
-            / "knowledge_bases"
+            / "portfolios"
         )
         self.top_k = top_k
 

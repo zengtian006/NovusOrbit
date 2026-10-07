@@ -1,7 +1,7 @@
 // Shared types used across multiple contexts
 
 /**
- * Generic log entry used by Solver, Question, Research contexts
+ * Generic log entry used by Question, Research contexts
  */
 export interface LogEntry {
   type: string;

@@ -880,8 +880,8 @@ def main():
     )
     parser.add_argument(
         "--base-dir",
-        help="Data storage base directory (default: ./knowledge_bases)",
-        default="./knowledge_bases",
+        help="Data storage base directory (default: ./portfolios)",
+        default="./portfolios",
     )
     parser.add_argument(
         "--batch-size",

@@ -9,7 +9,7 @@ Outputs summary via the unified logging system.
 Usage:
     from src.logging import LLMStats
 
-    stats = LLMStats("Solver")
+    stats = LLMStats("Research")
 
     # After each LLM call:
     stats.add_call(

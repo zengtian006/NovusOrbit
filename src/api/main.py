@@ -8,17 +8,20 @@ from fastapi.staticfiles import StaticFiles
 from src.api.routers import (
     agent_config,
     chat,
-    co_writer,
     config,
     dashboard,
+    feedback,
     guide,
     ideagen,
+    interview,
+    job_suggest,
+    jobs,
     knowledge,
     notebook,
     question,
     research,
+    resume_writer,
     settings,
-    solve,
     system,
 )
 from src.logging import get_logger
@@ -148,13 +151,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="DeepTutor API",
+    title="NovusOrbit API",
     version="1.0.0",
     lifespan=lifespan,
     # Disable automatic trailing slash redirects to prevent protocol downgrade issues
     # when deployed behind HTTPS reverse proxies (e.g., nginx).
     # Without this, FastAPI's 307 redirects may change HTTPS to HTTP.
-    # See: https://github.com/HKUDS/DeepTutor/issues/112
+    # See: https://github.com/NovusOrbit/NovusOrbit/issues/112
     redirect_slashes=False,
 )
 
@@ -170,7 +173,7 @@ app.add_middleware(
 # Mount user directory as static root for generated artifacts
 # This allows frontend to access generated artifacts (images, PDFs, etc.)
 # URL: /api/outputs/solve/solve_xxx/artifacts/image.png
-# Physical Path: DeepTutor/data/user/solve/solve_xxx/artifacts/image.png
+# Physical Path: NovusOrbit/data/user/solve/solve_xxx/artifacts/image.png
 project_root = Path(__file__).parent.parent.parent
 user_dir = project_root / "data" / "user"
 
@@ -187,25 +190,28 @@ except Exception:
 app.mount("/api/outputs", StaticFiles(directory=str(user_dir)), name="outputs")
 
 # Include routers
-app.include_router(solve.router, prefix="/api/v1", tags=["solve"])
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
 app.include_router(question.router, prefix="/api/v1/question", tags=["question"])
 app.include_router(research.router, prefix="/api/v1/research", tags=["research"])
-app.include_router(knowledge.router, prefix="/api/v1/knowledge", tags=["knowledge"])
+app.include_router(knowledge.router, prefix="/api/v1/portfolio", tags=["portfolio"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
-app.include_router(co_writer.router, prefix="/api/v1/co_writer", tags=["co_writer"])
+app.include_router(resume_writer.router, prefix="/api/v1/resume_writer", tags=["resume_writer"])
 app.include_router(notebook.router, prefix="/api/v1/notebook", tags=["notebook"])
+app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
+app.include_router(interview.router, prefix="/api/v1/interview", tags=["interview"])
+app.include_router(job_suggest.router, prefix="/api/v1/job-suggest", tags=["job-suggest"])
 app.include_router(guide.router, prefix="/api/v1/guide", tags=["guide"])
 app.include_router(ideagen.router, prefix="/api/v1/ideagen", tags=["ideagen"])
 app.include_router(settings.router, prefix="/api/v1/settings", tags=["settings"])
 app.include_router(system.router, prefix="/api/v1/system", tags=["system"])
 app.include_router(config.router, prefix="/api/v1/config", tags=["config"])
 app.include_router(agent_config.router, prefix="/api/v1/agent-config", tags=["agent-config"])
+app.include_router(feedback.router, prefix="/api", tags=["feedback"])
 
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to DeepTutor API"}
+    return {"message": "Welcome to NovusOrbit API"}
 
 
 if __name__ == "__main__":

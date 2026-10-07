@@ -1,0 +1,10 @@
+# ============================================
+# Job Search MCP Server — Additional Dependencies
+# ============================================
+# These are on top of the base project requirements.
+# Install: pip install -r src/mcp/requirements.txt
+
+mcp>=1.0.0               # Model Context Protocol SDK
+httpx>=0.27.0             # Async HTTP client (already in base requirements)
+beautifulsoup4>=4.12.0    # HTML parser for scraping job boards
+markdownify>=0.13.0       # Convert HTML job descriptions to Markdown

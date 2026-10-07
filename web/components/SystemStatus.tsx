@@ -77,7 +77,7 @@ export default function SystemStatus() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-        const response = await fetch(apiUrl("/api/v1/knowledge/health"), {
+        const response = await fetch(apiUrl("/api/v1/portfolio/health"), {
           method: "GET",
           signal: controller.signal,
         });

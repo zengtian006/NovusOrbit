@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   Settings as SettingsIcon,
   Brain,
@@ -23,9 +25,23 @@ import { LANGUAGE_OPTIONS } from "./constants";
 import { getStorageStats } from "@/lib/persistence";
 
 export default function SettingsPage() {
+  const { data: session, status: authStatus } = useSession();
+  const router = useRouter();
   const { uiSettings, updateTheme, updateLanguage, clearAllPersistence } =
     useGlobal();
   const { t } = useTranslation();
+
+  // Check if user is admin
+  useEffect(() => {
+    if (authStatus === "unauthenticated") {
+      router.push("/auth/signin");
+    } else if (authStatus === "authenticated") {
+      const userRole = (session?.user as any)?.role;
+      if (userRole !== "ADMIN") {
+        router.push("/");
+      }
+    }
+  }, [authStatus, session, router]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [storageStats, setStorageStats] = useState<{
     totalSize: number;
@@ -132,22 +148,20 @@ export default function SettingsPage() {
               <div className="flex p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
                 <button
                   onClick={() => updateTheme("light")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all ${
-                    uiSettings.theme === "light"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all ${uiSettings.theme === "light"
                       ? "bg-white dark:bg-slate-600 text-slate-900 dark:text-slate-100 shadow-sm"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+                    }`}
                 >
                   <Sun className="w-3.5 h-3.5" />
                   {t("Light")}
                 </button>
                 <button
                   onClick={() => updateTheme("dark")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all ${
-                    uiSettings.theme === "dark"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all ${uiSettings.theme === "dark"
                       ? "bg-white dark:bg-slate-600 text-slate-900 dark:text-slate-100 shadow-sm"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+                    }`}
                 >
                   <Moon className="w-3.5 h-3.5" />
                   {t("Dark")}
@@ -169,11 +183,10 @@ export default function SettingsPage() {
                   <button
                     key={lang.value}
                     onClick={() => updateLanguage(lang.value)}
-                    className={`px-3 py-1.5 rounded-md text-sm transition-all ${
-                      uiSettings.language === lang.value
+                    className={`px-3 py-1.5 rounded-md text-sm transition-all ${uiSettings.language === lang.value
                         ? "bg-white dark:bg-slate-600 text-slate-900 dark:text-slate-100 shadow-sm"
                         : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                    }`}
+                      }`}
                   >
                     {lang.label}
                   </button>
@@ -224,7 +237,7 @@ export default function SettingsPage() {
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
                 {t(
-                  "Including: chat history, solver history, question results, research reports, idea generation, guided learning progress, Co-Writer content, etc. This action cannot be undone.",
+                  "Including: chat history, question results, research reports, idea generation, guided learning progress, Co-Writer content, etc. This action cannot be undone.",
                 )}
               </p>
               <div className="flex justify-end gap-3">
@@ -255,11 +268,10 @@ export default function SettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
                   ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
+                }`}
             >
               {tab.icon}
               {tab.label}

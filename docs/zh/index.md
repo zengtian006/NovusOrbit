@@ -2,19 +2,19 @@
 layout: home
 
 hero:
-  name: "DeepTutor"
+  name: "NovusOrbit"
   text: "你的 AI 学习伙伴"
   tagline: 将任何文档转化为多智能体驱动的互动学习体验
   image:
     src: /logo.png
-    alt: DeepTutor
+    alt: NovusOrbit
   actions:
     - theme: brand
       text: 快速开始 →
       link: /zh/guide/pre-config
     - theme: alt
       text: GitHub
-      link: https://github.com/HKUDS/DeepTutor
+      link: https://github.com/HKUDS/NovusOrbit
 
 features:
   - icon: 📚
@@ -37,7 +37,7 @@ features:
     details: AI 辅助头脑风暴，知识提取与多阶段筛选。
 ---
 
-## 为什么选择 DeepTutor？
+## 为什么选择 NovusOrbit？
 
 - **深度理解** — 不只是答案，而是带有可视化讲解的引导式学习之旅
 - **多模态支持** — PDF、LaTeX、图片、代码执行等全面支持

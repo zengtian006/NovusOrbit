@@ -39,7 +39,7 @@ export const INITIAL_CHAT_STATE: ChatState = {
   messages: [],
   isLoading: false,
   selectedKb: "",
-  enableRag: false,
+  enableRag: true,
   enableWebSearch: false,
   currentStage: null,
 };

@@ -4,7 +4,7 @@
  */
 
 // Storage key prefix to avoid conflicts with other apps
-const STORAGE_PREFIX = "deeptutor_";
+const STORAGE_PREFIX = "novusorbit_";
 
 // Current storage version for data migration support
 const STORAGE_VERSION = 1;
@@ -107,7 +107,7 @@ export function removeFromStorage(key: string): void {
 }
 
 /**
- * Clear all DeepTutor data from localStorage
+ * Clear all NovusOrbit data from localStorage
  */
 export function clearAllStorage(): void {
   if (typeof window === "undefined") {
@@ -125,7 +125,7 @@ export function clearAllStorage(): void {
     }
 
     keysToRemove.forEach((key) => localStorage.removeItem(key));
-    console.info(`Cleared ${keysToRemove.length} DeepTutor storage items`);
+    console.info(`Cleared ${keysToRemove.length} NovusOrbit storage items`);
   } catch (error) {
     console.warn("Failed to clear localStorage:", error);
   }
@@ -224,12 +224,11 @@ export function getStorageStats(): {
  */
 export const STORAGE_KEYS = {
   CHAT_STATE: "chat_state",
-  SOLVER_STATE: "solver_state",
   QUESTION_STATE: "question_state",
   RESEARCH_STATE: "research_state",
   IDEAGEN_STATE: "ideagen_state",
   GUIDE_SESSION: "guide_session",
-  COWRITER_CONTENT: "cowriter_content",
+  RESUME_WRITER_CONTENT: "resume_writer_content",
 } as const;
 
 /**
@@ -238,13 +237,6 @@ export const STORAGE_KEYS = {
  */
 export const EXCLUDE_FIELDS = {
   CHAT: ["isLoading", "currentStage"] as const,
-  SOLVER: [
-    "isSolving",
-    "logs",
-    "agentStatus",
-    "tokenStats",
-    "progress",
-  ] as const,
   QUESTION: [
     "logs",
     "progress",

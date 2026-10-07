@@ -20,7 +20,7 @@
 
 <div class="community-header">
   <h2>🤝 共创未来！</h2>
-  <p>DeepTutor 由社区构建，为社区服务。</p>
+  <p>NovusOrbit 由社区构建，为社区服务。</p>
 </div>
 
 <div class="community-grid">
@@ -32,10 +32,10 @@
   <div class="card-links">
     <div class="link-row">
       <a href="https://discord.gg/zpP9cssj" class="discord">Discord</a>
-      <a href="https://github.com/HKUDS/DeepTutor/issues/78" class="wechat">微信群</a>
+      <a href="https://github.com/HKUDS/NovusOrbit/issues/78" class="wechat">微信群</a>
     </div>
     <div class="link-row">
-      <a href="https://github.com/HKUDS/DeepTutor/discussions" class="github">GitHub Discussions</a>
+      <a href="https://github.com/HKUDS/NovusOrbit/discussions" class="github">GitHub Discussions</a>
     </div>
   </div>
 </div>
@@ -45,7 +45,7 @@
   <div class="card-title">代码</div>
   <div class="card-desc">欢迎向 <code>dev</code> 分支提交 PR</div>
   <div class="card-links">
-    <a href="https://github.com/HKUDS/DeepTutor/blob/main/CONTRIBUTING.md" class="github">贡献指南 →</a>
+    <a href="https://github.com/HKUDS/NovusOrbit/blob/main/CONTRIBUTING.md" class="github">贡献指南 →</a>
   </div>
 </div>
 

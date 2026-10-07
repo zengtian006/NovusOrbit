@@ -23,8 +23,8 @@ export const API_BASE_URL =
 
 /**
  * Construct a full API URL from a path
- * @param path - API path (e.g., '/api/v1/knowledge/list')
- * @returns Full URL (e.g., 'http://localhost:8000/api/v1/knowledge/list')
+ * @param path - API path (e.g., '/api/v1/portfolio/list')
+ * @returns Full URL (e.g., 'http://localhost:8000/api/v1/portfolio/list')
  */
 export function apiUrl(path: string): string {
   // Remove leading slash if present to avoid double slashes

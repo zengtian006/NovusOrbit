@@ -4,7 +4,7 @@
 Configuration Loader
 ====================
 
-Unified configuration loading for all DeepTutor modules.
+Unified configuration loading for all NovusOrbit modules.
 Provides YAML configuration loading, path resolution, and language parsing.
 """
 
@@ -14,12 +14,12 @@ from typing import Any
 
 import yaml
 
-# PROJECT_ROOT points to the actual project root directory (DeepTutor/)
+# PROJECT_ROOT points to the actual project root directory (NovusOrbit/)
 # Path(__file__) = src/services/config/loader.py
 # .parent = src/services/config/
 # .parent.parent = src/services/
 # .parent.parent.parent = src/
-# .parent.parent.parent.parent = DeepTutor/ (project root)
+# .parent.parent.parent.parent = NovusOrbit/ (project root)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 
@@ -207,11 +207,10 @@ def get_agent_params(module_name: str) -> dict:
     Args:
         module_name: Module name, one of:
             - "guide": Guide module agents
-            - "solve": Solve module agents
             - "research": Research module agents
             - "question": Question module agents
             - "ideagen": IdeaGen module agents
-            - "co_writer": CoWriter module agents
+            - "resume_writer": Resume Writer module agents
             - "narrator": Narrator agent (independent, for TTS)
 
     Returns:

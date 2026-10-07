@@ -109,12 +109,33 @@ class LocateAgent(BaseAgent):
                 if isinstance(result, list):
                     knowledge_points = result
                 elif isinstance(result, dict):
-                    knowledge_points = (
-                        result.get("knowledge_points")
-                        or result.get("points")
-                        or result.get("data")
-                        or []
-                    )
+                    # Check if this dict IS a single knowledge point itself
+                    # (LLM returned a flat object instead of an array)
+                    if "knowledge_title" in result or "knowledge_summary" in result:
+                        self.logger.info(
+                            "LLM returned a single knowledge point as flat dict, wrapping in list"
+                        )
+                        knowledge_points = [result]
+                    else:
+                        # Try common key names
+                        knowledge_points = (
+                            result.get("knowledge_points")
+                            or result.get("points")
+                            or result.get("data")
+                            or result.get("knowledge_point_list")
+                            or result.get("result")
+                            or result.get("results")
+                            or []
+                        )
+                        # Fallback: find the first list value in the dict
+                        if not knowledge_points:
+                            for key, value in result.items():
+                                if isinstance(value, list) and len(value) > 0:
+                                    self.logger.info(
+                                        f"Found knowledge points under unexpected key: '{key}'"
+                                    )
+                                    knowledge_points = value
+                                    break
                 else:
                     knowledge_points = []
 

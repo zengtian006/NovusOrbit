@@ -18,7 +18,7 @@ class RecordType(str, Enum):
     SOLVE = "solve"
     QUESTION = "question"
     RESEARCH = "research"
-    CO_WRITER = "co_writer"
+    RESUME_WRITER = "resume_writer"
 
 
 class NotebookRecord(BaseModel):
@@ -58,8 +58,8 @@ class NotebookManager:
             base_dir: Notebook storage directory, defaults to project root/user/notebook
         """
         if base_dir is None:
-            # Current file: DeepTutor/src/api/utils/notebook_manager.py
-            # Project root should be three levels up: DeepTutor/
+            # Current file: NovusOrbit/src/api/utils/notebook_manager.py
+            # Project root should be three levels up: NovusOrbit/
             project_root = Path(__file__).resolve().parents[3]
             base_dir_path = project_root / "data" / "user" / "notebook"
         else:
@@ -392,7 +392,7 @@ class NotebookManager:
         notebooks = self.list_notebooks()
 
         total_records = 0
-        type_counts = {"solve": 0, "question": 0, "research": 0, "co_writer": 0}
+        type_counts = {"solve": 0, "question": 0, "research": 0, "resume_writer": 0}
 
         for nb_info in notebooks:
             notebook = self._load_notebook(nb_info["id"])

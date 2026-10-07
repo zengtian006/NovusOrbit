@@ -104,8 +104,6 @@ const getRecordIcon = (type: string) => {
 
 const getRecordLabel = (type: string) => {
   switch (type) {
-    case "solve":
-      return "Solver";
     case "question":
       return "Question";
     case "research":
@@ -537,11 +535,10 @@ export default function NotebookPage() {
                 <div
                   key={nb.id}
                   onClick={() => fetchNotebookDetail(nb.id)}
-                  className={`p-3 rounded-xl cursor-pointer transition-all group ${
-                    selectedNotebook?.id === nb.id
+                  className={`p-3 rounded-xl cursor-pointer transition-all group ${selectedNotebook?.id === nb.id
                       ? "bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-700"
                       : "hover:bg-slate-50 dark:hover:bg-slate-700/50 border-2 border-transparent"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-3">
                     <div
@@ -687,7 +684,7 @@ export default function NotebookPage() {
                   </p>
                   <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
                     {t(
-                      "Add records from Solver, Question, Research, or Co-Writer",
+                      "Add records from Question, Research, or Co-Writer",
                     )}
                   </p>
                 </div>
@@ -697,11 +694,10 @@ export default function NotebookPage() {
                     <div
                       key={record.id}
                       onClick={() => setSelectedRecord(record)}
-                      className={`p-3 rounded-xl cursor-pointer transition-all group border ${
-                        selectedRecord?.id === record.id
+                      className={`p-3 rounded-xl cursor-pointer transition-all group border ${selectedRecord?.id === record.id
                           ? "bg-slate-50 dark:bg-slate-700/50 border-slate-300 dark:border-slate-600"
                           : "hover:bg-slate-50 dark:hover:bg-slate-700/50 border-transparent hover:border-slate-200 dark:hover:border-slate-600"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <div
@@ -985,11 +981,10 @@ export default function NotebookPage() {
                       onClick={() =>
                         setNewNotebook((prev) => ({ ...prev, color }))
                       }
-                      className={`w-8 h-8 rounded-lg transition-all ${
-                        newNotebook.color === color
+                      className={`w-8 h-8 rounded-lg transition-all ${newNotebook.color === color
                           ? "ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 dark:ring-offset-slate-800 scale-110"
                           : ""
-                      }`}
+                        }`}
                       style={{ backgroundColor: color }}
                     />
                   ))}
@@ -1078,11 +1073,10 @@ export default function NotebookPage() {
                           prev ? { ...prev, color } : null,
                         )
                       }
-                      className={`w-8 h-8 rounded-lg transition-all ${
-                        editingNotebook.color === color
+                      className={`w-8 h-8 rounded-lg transition-all ${editingNotebook.color === color
                           ? "ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 dark:ring-offset-slate-800 scale-110"
                           : ""
-                      }`}
+                        }`}
                       style={{ backgroundColor: color }}
                     />
                   ))}
@@ -1231,19 +1225,17 @@ export default function NotebookPage() {
                         <div
                           key={record.id}
                           onClick={() => toggleImportRecord(record.id)}
-                          className={`p-3 rounded-xl cursor-pointer transition-all border ${
-                            selectedImportRecords.has(record.id)
+                          className={`p-3 rounded-xl cursor-pointer transition-all border ${selectedImportRecords.has(record.id)
                               ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700"
                               : "hover:bg-slate-50 dark:hover:bg-slate-700/50 border-slate-200 dark:border-slate-600"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <div
-                              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${
-                                selectedImportRecords.has(record.id)
+                              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${selectedImportRecords.has(record.id)
                                   ? "bg-indigo-500 border-indigo-500 text-white"
                                   : "border-slate-300 dark:border-slate-500"
-                              }`}
+                                }`}
                             >
                               {selectedImportRecords.has(record.id) && (
                                 <Check className="w-3 h-3" />

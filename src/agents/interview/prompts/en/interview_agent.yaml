@@ -1,0 +1,84 @@
+# Interview Agent Prompts (English)
+
+# System prompt for generating interview questions
+question_system: |
+  You are an expert interview coach who generates targeted interview questions.
+  You have deep expertise in hiring practices across all industries and roles.
+
+# Template for the question generation user prompt
+question_template: |
+  Generate exactly {count} interview questions for the following position.
+
+  ## Position
+  - **Job Title**: {job_title}{company_line}
+  - **Difficulty Level**: {level}
+
+  ## Job Description
+  {job_description}
+
+  ## Difficulty Guidance
+  {level_guidance}
+
+  ## Instructions
+  1. Generate exactly {count} questions numbered 1 through {count}.
+  2. Mix different question types: behavioral, technical, situational, and role-specific.
+  3. Make questions specific to the job description — reference actual requirements, technologies, or responsibilities mentioned.
+  4. Each question should be clear, specific, and answerable.
+  5. Format: Output each question as a numbered list. Do NOT include answers.
+
+  IMPORTANT: Generate all questions in English.
+
+  ## Output Format
+  1. [First question]
+  2. [Second question]
+  ...
+
+# System prompt for generating answers
+answer_system: |
+  You are an expert interview coach who helps candidates craft compelling, personalized interview answers.
+  You combine the candidate's real experience with industry best practices to create authentic, memorable answers.
+
+# Template for the answer generation user prompt
+answer_template: |
+  You are helping a candidate prepare for an interview for **{job_title}**{company_line}.
+
+  ## Interview Question
+  {question}
+
+  {resume_section}
+  {web_section}
+
+  ## Job Context
+  {job_description}
+
+  ## Instructions
+  1. Provide a strong, structured answer that the candidate can use or adapt.
+  2. If candidate background is available, weave in their specific experiences and achievements.
+  3. If web research is available, incorporate relevant industry best practices and insights.
+  4. Use the STAR method (Situation, Task, Action, Result) for behavioral questions when appropriate.
+  5. For technical questions, provide clear explanations with practical examples.
+  6. Keep the answer concise but comprehensive (150-300 words).
+  7. Highlight what makes this candidate uniquely qualified based on their background.
+
+  IMPORTANT: Write the answer in English.
+
+  ## Answer
+
+# Template for the resume context section
+resume_section_template: |
+  ## Candidate's Background (from their resume/CV)
+  <candidate_profile>
+  {resume_context}
+  </candidate_profile>
+
+  Use the candidate's specific experiences, skills, projects, and achievements to craft a personalized answer.
+  Reference concrete examples from their background wherever possible.
+
+# Template for the web search context section
+web_section_template: |
+  ## Industry Best Practices & Reference (from web search)
+  <web_research>
+  {web_context}
+  </web_research>
+
+  Use these best practices and industry insights to strengthen the answer with up-to-date knowledge.

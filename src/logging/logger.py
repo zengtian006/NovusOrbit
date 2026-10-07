@@ -7,8 +7,8 @@ Unified logging with consistent format across all modules.
 Format: [LEVEL]   [Module]  Message
 
 Example outputs:
-    [INFO]     [Solver]        Ready in 2.3s
     [INFO]     [Research]      Starting deep research...
+    [INFO]     [Question]      Generating questions...
     [INFO]     [Guide]         Compiling knowledge points
     [INFO]     [Knowledge]     Indexed 150 documents
     [ERROR]    [EmbeddingClient]  Embedding request failed
@@ -128,7 +128,7 @@ class FileFormatter(logging.Formatter):
 
 class Logger:
     """
-    Unified logger for DeepTutor.
+    Unified logger for NovusOrbit.
 
     Features:
     - Consistent format across all modules
@@ -139,7 +139,7 @@ class Logger:
     - Optional service layer prefix (Backend/Frontend)
 
     Usage:
-        logger = Logger("Solver")
+        logger = Logger("Research")
         logger.info("Processing...")
         logger.success("Done!", elapsed=2.3)
         logger.progress("Step 1/5")
@@ -158,7 +158,7 @@ class Logger:
         Initialize logger.
 
         Args:
-            name: Module name (e.g., "Solver", "Research", "Guide")
+            name: Module name (e.g., "Research", "Question", "Guide")
             level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
             console_output: Whether to output to console
             file_output: Whether to output to file
@@ -170,7 +170,7 @@ class Logger:
         self.service_prefix = service_prefix
 
         # Create underlying Python logger
-        self.logger = logging.getLogger(f"deeptutor.{name}")
+        self.logger = logging.getLogger(f"novusorbit.{name}")
         self.logger.setLevel(logging.DEBUG)  # Capture all, filter at handlers
         self.logger.handlers.clear()
         self.logger.propagate = False  # Prevent duplicate logs from root logger
@@ -197,7 +197,7 @@ class Logger:
         # File handler
         if file_output:
             timestamp = datetime.now().strftime("%Y%m%d")
-            log_file = log_dir_path / f"deeptutor_{timestamp}.log"
+            log_file = log_dir_path / f"novusorbit_{timestamp}.log"
 
             file_handler = logging.FileHandler(log_file, encoding="utf-8")
             file_handler.setLevel(logging.DEBUG)  # Log everything to file

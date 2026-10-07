@@ -42,9 +42,6 @@ def init_user_directories(project_root: Path | None = None) -> None:
     │   └── reports/        # Research reports
     ├── guide/              # Guided learning outputs
     ├── notebook/           # Notebook data
-    ├── co-writer/          # Co-writer outputs
-    │   ├── audio/          # TTS audio files
-    │   └── tool_calls/     # Tool call history
     ├── logs/               # User logs
     ├── run_code_workspace/ # Code execution workspace
     └── user_history.json   # User history file
@@ -57,7 +54,7 @@ def init_user_directories(project_root: Path | None = None) -> None:
         # .parent = src/services/setup/
         # .parent.parent = src/services/
         # .parent.parent.parent = src/
-        # .parent.parent.parent.parent = DeepTutor/ (project root)
+        # .parent.parent.parent.parent = NovusOrbit/ (project root)
         project_root = Path(__file__).parent.parent.parent.parent
 
     # Get user data directory from config
@@ -81,17 +78,11 @@ def init_user_directories(project_root: Path | None = None) -> None:
         "research",  # Research outputs (will have cache/ and reports/ subdirs)
         "guide",  # Guided learning outputs
         "notebook",  # Notebook data
-        "co-writer",  # Co-writer outputs
         "logs",  # User logs
         "run_code_workspace",  # Code execution workspace
     ]
 
     # Additional subdirectories for specific modules
-    co_writer_subdirs = [
-        "audio",  # TTS audio files
-        "tool_calls",  # Tool call history
-    ]
-
     research_subdirs = [
         "cache",  # Research cache
         "reports",  # Research reports
@@ -129,13 +120,6 @@ def init_user_directories(project_root: Path | None = None) -> None:
             dir_path = user_data_dir / dir_name
             dir_path.mkdir(parents=True, exist_ok=True)
             logger.success(f"Created: {dir_name}/")
-
-        # Create co-writer subdirectories
-        co_writer_dir = user_data_dir / "co-writer"
-        for subdir_name in co_writer_subdirs:
-            subdir_path = co_writer_dir / subdir_name
-            subdir_path.mkdir(parents=True, exist_ok=True)
-            logger.success(f"Created: co-writer/{subdir_name}/")
 
         # Create research subdirectories
         research_dir = user_data_dir / "research"
@@ -176,12 +160,6 @@ def init_user_directories(project_root: Path | None = None) -> None:
         for dir_name in required_dirs:
             dir_path = user_data_dir / dir_name
             dir_path.mkdir(parents=True, exist_ok=True)
-
-        # Ensure co-writer subdirectories exist
-        co_writer_dir = user_data_dir / "co-writer"
-        for subdir_name in co_writer_subdirs:
-            subdir_path = co_writer_dir / subdir_name
-            subdir_path.mkdir(parents=True, exist_ok=True)
 
         # Ensure research subdirectories exist
         research_dir = user_data_dir / "research"

@@ -1,14 +1,14 @@
 # Make Contribution
 
-We hope DeepTutor could become a gift for the community. 🎁
+We hope NovusOrbit could become a gift for the community. 🎁
 
 ## Join Our Community
 
 <div class="community-links">
-  <a href="https://github.com/HKUDS/DeepTutor/issues/78" class="community-badge wechat">
+  <a href="https://github.com/HKUDS/NovusOrbit/issues/78" class="community-badge wechat">
     💬 WeChat Community
   </a>
-  <a href="https://github.com/HKUDS/DeepTutor/issues/167" class="community-badge wechat-collab">
+  <a href="https://github.com/HKUDS/NovusOrbit/issues/167" class="community-badge wechat-collab">
     🤝 WeChat Co-creators
   </a>
   <a href="https://discord.gg/eRsjPgMU4t" class="community-badge discord">
@@ -29,7 +29,7 @@ Whether you're fixing bugs, improving documentation, or adding new features, you
 
 ### Contribution Guidelines
 
-For detailed guidelines, see [CONTRIBUTING.md](https://github.com/HKUDS/DeepTutor/blob/dev/CONTRIBUTING.md).
+For detailed guidelines, see [CONTRIBUTING.md](https://github.com/HKUDS/NovusOrbit/blob/dev/CONTRIBUTING.md).
 
 **Key Points:**
 
@@ -41,8 +41,8 @@ For detailed guidelines, see [CONTRIBUTING.md](https://github.com/HKUDS/DeepTuto
 
 ```bash
 # Fork and clone
-git clone https://github.com/YOUR_USERNAME/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/YOUR_USERNAME/NovusOrbit.git
+cd NovusOrbit
 
 # Create feature branch from dev
 git checkout dev && git pull origin dev
@@ -56,13 +56,13 @@ pip install pre-commit && pre-commit install
 
 ## Our Contributors
 
-<a href="https://github.com/HKUDS/DeepTutor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=HKUDS/DeepTutor&max=999" alt="Contributors" />
+<a href="https://github.com/HKUDS/NovusOrbit/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=HKUDS/NovusOrbit&max=999" alt="Contributors" />
 </a>
 
 ---
 
-Thank you for your interest in contributing to DeepTutor! 🚀
+Thank you for your interest in contributing to NovusOrbit! 🚀
 
 <style>
 .community-links {

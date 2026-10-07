@@ -25,7 +25,7 @@ from src.services.embedding import get_embedding_client, get_embedding_config
 
 # Default knowledge base directory
 DEFAULT_KB_BASE_DIR = str(
-    Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "knowledge_bases"
+    Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "portfolios"
 )
 
 
@@ -62,19 +62,25 @@ class CustomEmbedding(BaseEmbedding):
 
     def _get_query_embedding(self, query: str) -> List[float]:
         """Sync version - called by LlamaIndex sync API."""
-        # Use nest_asyncio to allow nested event loops
-        import nest_asyncio
-
-        nest_asyncio.apply()
-        return asyncio.run(self._aget_query_embedding(query))
+        # Create a new event loop for this thread to avoid conflicts with uvloop
+        # This is called from within a thread pool executor, so it's safe
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self._aget_query_embedding(query))
+        finally:
+            loop.close()
 
     def _get_text_embedding(self, text: str) -> List[float]:
         """Sync version - called by LlamaIndex sync API."""
-        # Use nest_asyncio to allow nested event loops
-        import nest_asyncio
-
-        nest_asyncio.apply()
-        return asyncio.run(self._aget_text_embedding(text))
+        # Create a new event loop for this thread to avoid conflicts with uvloop
+        # This is called from within a thread pool executor, so it's safe
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self._aget_text_embedding(text))
+        finally:
+            loop.close()
 
     async def _aget_text_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Get embeddings for multiple texts."""
@@ -193,7 +199,8 @@ class LlamaIndexPipeline:
             import traceback
 
             self.logger.error(traceback.format_exc())
-            return False
+            # Raise exception instead of returning False for better error reporting
+            raise RuntimeError(f"LlamaIndex initialization failed: {e}") from e
 
     def _extract_pdf_text(self, file_path: Path) -> str:
         """Extract text from PDF using PyMuPDF."""

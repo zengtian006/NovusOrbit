@@ -26,10 +26,10 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /
 
 ```bash [Conda（推荐）]
 # 创建环境
-conda create -n deeptutor python=3.10
+conda create -n novusorbit python=3.10
 
 # 激活环境
-conda activate deeptutor
+conda activate novusorbit
 ```
 
 ```bash [venv]

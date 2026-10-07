@@ -1,8 +1,8 @@
 <div align="center" dir="rtl">
 
-<img src="../../assets/logo-ver2.png" alt="DeepTutor Logo" width="150" style="border-radius: 15px;">
+<img src="../../assets/logo-ver2.png" alt="NovusOrbit Logo" width="150" style="border-radius: 15px;">
 
-# DeepTutor: مساعدك الشخصي للتعلم
+# NovusOrbit: مساعدك الشخصي للتعلم
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)](../../LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=flat&logo=discord&logoColor=white)](https://discord.gg/eRsjPgMU4t)
 [![Feishu](https://img.shields.io/badge/Feishu-Group-blue?style=flat)](../../Communication.md)
-[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/DeepTutor/issues/78)
+[![WeChat](https://img.shields.io/badge/WeChat-Group-green?style=flat&logo=wechat)](https://github.com/HKUDS/NovusOrbit/issues/78)
 
 
 
@@ -28,14 +28,14 @@
 </div>
 
 ---
-> **[2026.1.1]** سنة جديدة سعيدة! انضم إلى [مجتمع Discord](https://discord.gg/zpP9cssj)، أو [مجتمع WeChat](https://github.com/HKUDS/DeepTutor/issues/78)، أو [Discussions](https://github.com/HKUDS/DeepTutor/discussions) — ساهم في تشكيل مستقبل DeepTutor! 💬
+> **[2026.1.1]** سنة جديدة سعيدة! انضم إلى [مجتمع Discord](https://discord.gg/zpP9cssj)، أو [مجتمع WeChat](https://github.com/HKUDS/NovusOrbit/issues/78)، أو [Discussions](https://github.com/HKUDS/NovusOrbit/discussions) — ساهم في تشكيل مستقبل NovusOrbit! 💬
 
-> **[2025.12.30]** زر [موقعنا الرسمي](https://hkuds.github.io/DeepTutor/) لمزيد من التفاصيل!
+> **[2025.12.30]** زر [موقعنا الرسمي](https://hkuds.github.io/NovusOrbit/) لمزيد من التفاصيل!
 
-> **[2025.12.29]** DeepTutor متاح الآن! ✨
+> **[2025.12.29]** NovusOrbit متاح الآن! ✨
 ---
 
-## الميزات الرئيسية لـ DeepTutor
+## الميزات الرئيسية لـ NovusOrbit
 
 ### 📚 Q&A للمعرفة الوثائقية الضخمة
 • **قاعدة المعرفة الذكية**: ارفع الكتب المدرسية وأوراق البحث والكتيبات التقنية والوثائق الخاصة بالمجال. أنشئ مستودع معرفة شامل مدعوم بالذكاء الاصطناعي للوصول الفوري.<br>
@@ -186,14 +186,14 @@
 </table>
 
 <p align="center">
-  <sub>🌙 استخدم DeepTutor في <b>الوضع الداكن</b>!</sub>
+  <sub>🌙 استخدم NovusOrbit في <b>الوضع الداكن</b>!</sub>
 </p>
 
 <details>
 <summary><b>معمارية النظام</b></summary>
 <br>
 
-![DeepTutor Full-Stack Workflow](../../assets/figs/full-pipe.png)
+![NovusOrbit Full-Stack Workflow](../../assets/figs/full-pipe.png)
 
 </details>
 
@@ -201,7 +201,7 @@
 
 > تابعنا للحصول على تحديثات مستقبلية!
 - [ ] دعم خدمات LLM المحلية (مثل ollama)
-- [ ] إعادة هيكلة وحدة RAG (انظر [Discussions](https://github.com/HKUDS/DeepTutor/discussions))
+- [ ] إعادة هيكلة وحدة RAG (انظر [Discussions](https://github.com/HKUDS/NovusOrbit/discussions))
 - [ ] الترميز العميق من توليد الأفكار
 - [ ] التفاعل المخصص مع دفتر الملاحظات
 
@@ -212,8 +212,8 @@
 **① استنساخ المستودع**
 
 ```bash
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 ```
 
 **② تكوين متغيرات البيئة**
@@ -297,12 +297,12 @@ cp .env.example .env
 
 ```bash
 # يعمل على جميع الأنظمة: Docker يحدد المعمارية تلقائياً
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 
 # Windows PowerShell: استخدم ${PWD} بدلاً من $(pwd)
 ```
@@ -310,12 +310,12 @@ docker run -d --name deeptutor \
 أو استخدام ملف `.env`:
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 </details>
@@ -340,7 +340,7 @@ docker compose up -d      # البدء
 docker compose logs -f    # السجلات
 docker compose down       # الإيقاف
 docker compose up --build # إعادة البناء
-docker pull ghcr.io/hkuds/deeptutor:latest  # تحديث الصورة
+docker pull ghcr.io/hkuds/novusorbit:latest  # تحديث الصورة
 ```
 
 > **وضع التطوير**: أضف `-f docker-compose.dev.yml`
@@ -359,8 +359,8 @@ docker pull ghcr.io/hkuds/deeptutor:latest  # تحديث الصورة
 
 ```bash
 # استخدام conda (موصى به)
-conda create -n deeptutor python=3.10
-conda activate deeptutor
+conda create -n novusorbit python=3.10
+conda activate novusorbit
 
 # أو استخدام venv
 python -m venv venv
@@ -647,11 +647,11 @@ python src/knowledge/extract_numbered_items.py --kb <kb_name> --base-dir ./data/
 ## ⭐ سجل النجوم
 
 <div align="center">
-<a href="https://star-history.com/#HKUDS/DeepTutor&Date">
+<a href="https://star-history.com/#HKUDS/NovusOrbit&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/DeepTutor&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/NovusOrbit&type=Date" />
  </picture>
 </a>
 </div>
@@ -679,7 +679,7 @@ conda install -c conda-forge pre-commit
 
 **الخطوة 2: تثبيت خطافات Git**
 ```bash
-cd DeepTutor
+cd NovusOrbit
 pre-commit install
 ```
 
@@ -755,11 +755,11 @@ git commit --no-verify -m "إصلاح الطوارئ"
 
 **[مختبر ذكاء البيانات @ جامعة هونج كونج](https://github.com/HKUDS)**
 
-[⭐ Star us](https://github.com/HKUDS/DeepTutor/stargazers) · [🐛 Report a bug](https://github.com/HKUDS/DeepTutor/issues) · [💬 Discussions](https://github.com/HKUDS/DeepTutor/discussions)
+[⭐ Star us](https://github.com/HKUDS/NovusOrbit/stargazers) · [🐛 Report a bug](https://github.com/HKUDS/NovusOrbit/issues) · [💬 Discussions](https://github.com/HKUDS/NovusOrbit/discussions)
 
 ---
-*✨ شكراً لزيارتك **DeepTutor**!*
+*✨ شكراً لزيارتك **NovusOrbit**!*
 
-<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.DeepTutor&style=for-the-badge&color=00d4ff" alt="Views">
+<img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.NovusOrbit&style=for-the-badge&color=00d4ff" alt="Views">
 
 </div>

@@ -15,12 +15,12 @@ Docker 部署无需 Python 或 Node.js 设置——一切都在容器中运行�
 
 ### 选项 A：从源码构建
 
-从源代码本地构建并运行 DeepTutor。
+从源代码本地构建并运行 NovusOrbit。
 
 ```bash
 # 克隆仓库（如果尚未完成）
-git clone https://github.com/HKUDS/DeepTutor.git
-cd DeepTutor
+git clone https://github.com/HKUDS/NovusOrbit.git
+cd NovusOrbit
 
 # 创建并配置 .env 文件
 cp .env.example .env
@@ -61,24 +61,24 @@ docker compose build --no-cache
 
 ```bash
 # 适用于所有平台 - Docker 自动检测您的架构
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/config:/app/config:ro \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 ::: warning Windows PowerShell
 使用 `${PWD}` 代替 `$(pwd)`：
 
 ```powershell
-docker run -d --name deeptutor `
+docker run -d --name novusorbit `
   -p 8001:8001 -p 3782:3782 `
   --env-file .env `
   -v ${PWD}/data:/app/data `
   -v ${PWD}/config:/app/config:ro `
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 :::
 
@@ -102,12 +102,12 @@ docker run -d --name deeptutor `
 部署到云服务器时，必须设置外部 API URL：
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 8001:8001 -p 3782:3782 \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=https://your-server.com:8001 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 ::: warning 为什么需要这样做？
@@ -119,14 +119,14 @@ docker run -d --name deeptutor \
 使用不同的端口：
 
 ```bash
-docker run -d --name deeptutor \
+docker run -d --name novusorbit \
   -p 9001:9001 -p 4000:4000 \
   -e BACKEND_PORT=9001 \
   -e FRONTEND_PORT=4000 \
   -e NEXT_PUBLIC_API_BASE_EXTERNAL=http://localhost:9001 \
   --env-file .env \
   -v $(pwd)/data:/app/data \
-  ghcr.io/hkuds/deeptutor:latest
+  ghcr.io/hkuds/novusorbit:latest
 ```
 
 ::: warning 重要
@@ -151,26 +151,26 @@ docker ps
 ### 停止容器
 
 ```bash
-docker stop deeptutor
+docker stop novusorbit
 ```
 
 ### 删除容器
 
 ```bash
-docker rm deeptutor
+docker rm novusorbit
 ```
 
 ### 查看日志
 
 ```bash
 # 所有日志
-docker logs deeptutor
+docker logs novusorbit
 
 # 实时跟踪日志
-docker logs -f deeptutor
+docker logs -f novusorbit
 
 # 最后 100 行
-docker logs --tail 100 deeptutor
+docker logs --tail 100 novusorbit
 ```
 
 ## 故障排除

@@ -1,6 +1,6 @@
-# 🏛️ DeepTutor's Framework
+# 🏛️ NovusOrbit's Framework
 
-<img src="/full-pipe.png" alt="DeepTutor Full-Stack Workflow" width="100%">
+<img src="/full-pipe.png" alt="NovusOrbit Full-Stack Workflow" width="100%">
 
 ## 💬 User Interface Layer
 • **Intuitive Interaction**: Simple bidirectional query-response flow for intuitive interaction.  
@@ -25,7 +25,7 @@
 
 ---
 
-# Key Features of DeepTutor
+# Key Features of NovusOrbit
 
 ## 📚 Massive Document Knowledge Q&A
 

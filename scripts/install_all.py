@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-DeepTutor One-Click Installation Script
+NovusOrbit One-Click Installation Script
 
 Automatically installs all frontend and backend dependencies without interaction.
 Execution flow: Install backend -> Install frontend -> Verify all packages
@@ -595,7 +595,7 @@ def verify_installation(project_root: Path) -> bool:
 def main():
     """Main function"""
     print("\n" + "=" * 60)
-    print("🚀 DeepTutor One-Click Installation Script")
+    print("🚀 NovusOrbit One-Click Installation Script")
     print("=" * 60)
     print("This script will automatically install all frontend and backend dependencies")
     print("Execution flow: Backend dependencies -> Frontend dependencies -> Verify installation")

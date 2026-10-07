@@ -76,7 +76,7 @@ export default function QuestionPage() {
     let isMounted = true;
     const controller = new AbortController();
 
-    fetch(apiUrl("/api/v1/knowledge/list"), { signal: controller.signal })
+    fetch(apiUrl("/api/v1/portfolio/list"), { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
         if (!isMounted) return;
@@ -166,7 +166,7 @@ export default function QuestionPage() {
     questionState.mode === "knowledge"
       ? questionState.topic.trim().length > 0
       : questionState.uploadedFile !== null ||
-        questionState.paperPath.trim().length > 0;
+      questionState.paperPath.trim().length > 0;
 
   return (
     <div className="h-screen flex gap-0 p-4 animate-fade-in overflow-hidden">
@@ -187,11 +187,10 @@ export default function QuestionPage() {
                   onClick={() =>
                     setQuestionState((prev) => ({ ...prev, mode: "knowledge" }))
                   }
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    questionState.mode === "knowledge"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${questionState.mode === "knowledge"
                       ? "bg-white dark:bg-slate-600 text-purple-700 dark:text-purple-400 shadow-sm"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                  }`}
+                    }`}
                 >
                   <BrainCircuit className="w-4 h-4" />
                   {t("Custom")}
@@ -200,11 +199,10 @@ export default function QuestionPage() {
                   onClick={() =>
                     setQuestionState((prev) => ({ ...prev, mode: "mimic" }))
                   }
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    questionState.mode === "mimic"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${questionState.mode === "mimic"
                       ? "bg-white dark:bg-slate-600 text-purple-700 dark:text-purple-400 shadow-sm"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                  }`}
+                    }`}
                 >
                   <FileText className="w-4 h-4" />
                   {t("Mimic Exam")}
@@ -295,11 +293,10 @@ export default function QuestionPage() {
               <div className="max-w-2xl mx-auto space-y-6">
                 {/* Mode Info Banner */}
                 <div
-                  className={`p-4 rounded-xl border ${
-                    questionState.mode === "knowledge"
+                  className={`p-4 rounded-xl border ${questionState.mode === "knowledge"
                       ? "bg-purple-50 dark:bg-purple-900/30 border-purple-200 dark:border-purple-800"
                       : "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     {questionState.mode === "knowledge" ? (
@@ -309,11 +306,10 @@ export default function QuestionPage() {
                     )}
                     <div>
                       <h3
-                        className={`font-semibold ${
-                          questionState.mode === "knowledge"
+                        className={`font-semibold ${questionState.mode === "knowledge"
                             ? "text-purple-800 dark:text-purple-300"
                             : "text-blue-800 dark:text-blue-300"
-                        }`}
+                          }`}
                       >
                         {questionState.mode === "knowledge"
                           ? t("Custom Mode")
@@ -322,11 +318,11 @@ export default function QuestionPage() {
                       <p className="text-sm text-slate-600 dark:text-slate-400">
                         {questionState.mode === "knowledge"
                           ? t(
-                              "Generate questions based on knowledge base content",
-                            )
+                            "Generate questions based on knowledge base content",
+                          )
                           : t(
-                              "Generate similar questions based on an exam paper",
-                            )}
+                            "Generate similar questions based on an exam paper",
+                          )}
                       </p>
                     </div>
                   </div>
@@ -566,23 +562,21 @@ export default function QuestionPage() {
                     <button
                       key={idx}
                       onClick={() => setActiveIdx(idx)}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg transition-all mb-1 ${
-                        activeIdx === idx
+                      className={`w-full text-left px-3 py-2.5 rounded-lg transition-all mb-1 ${activeIdx === idx
                           ? "bg-purple-50 dark:bg-purple-900/30 border-l-2 border-purple-500"
                           : "hover:bg-slate-50 dark:hover:bg-slate-700"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            result.extended
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${result.extended
                               ? "bg-amber-100 dark:bg-amber-900/40 text-amber-600"
                               : submittedMap[idx]
                                 ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600"
                                 : activeIdx === idx
                                   ? "bg-purple-100 dark:bg-purple-900/40 text-purple-600"
                                   : "bg-slate-100 dark:bg-slate-700 text-slate-500"
-                          }`}
+                            }`}
                         >
                           {result.extended ? (
                             <Zap className="w-3.5 h-3.5" />
@@ -663,8 +657,8 @@ export default function QuestionPage() {
                       {/* Options or Input */}
                       {(currentQuestion.question.question_type === "choice" ||
                         currentQuestion.question.type === "choice") &&
-                      currentQuestion.question.options &&
-                      Object.keys(currentQuestion.question.options).length >
+                        currentQuestion.question.options &&
+                        Object.keys(currentQuestion.question.options).length >
                         0 ? (
                         <div className="space-y-3">
                           {Object.entries(currentQuestion.question.options).map(
@@ -682,8 +676,7 @@ export default function QuestionPage() {
                                     handleAnswer(key)
                                   }
                                   disabled={submittedMap[activeIdx]}
-                                  className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 prose dark:prose-invert max-w-none ${
-                                    showCorrectness
+                                  className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 prose dark:prose-invert max-w-none ${showCorrectness
                                       ? isCorrect
                                         ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300"
                                         : isSelected
@@ -692,20 +685,19 @@ export default function QuestionPage() {
                                       : isSelected
                                         ? "bg-purple-50 dark:bg-purple-900/30 border-purple-300"
                                         : "bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:border-purple-300"
-                                  }`}
+                                    }`}
                                 >
                                   <span
-                                    className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
-                                      showCorrectness && isCorrect
+                                    className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${showCorrectness && isCorrect
                                         ? "bg-emerald-500 text-white"
                                         : showCorrectness &&
-                                            isSelected &&
-                                            !isCorrect
+                                          isSelected &&
+                                          !isCorrect
                                           ? "bg-red-500 text-white"
                                           : isSelected
                                             ? "bg-purple-500 text-white"
                                             : "bg-slate-100 dark:bg-slate-600 text-slate-600 dark:text-slate-300"
-                                    }`}
+                                      }`}
                                   >
                                     {key}
                                   </span>
@@ -828,27 +820,27 @@ export default function QuestionPage() {
                                   )}
                                   {currentQuestion.validation
                                     .extension_points && (
-                                    <div>
-                                      <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">
-                                        <Zap className="w-3 h-3" />
-                                        {t("Extension Points")}
+                                      <div>
+                                        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">
+                                          <Zap className="w-3 h-3" />
+                                          {t("Extension Points")}
+                                        </div>
+                                        <div className="text-slate-600 dark:text-slate-300 prose prose-xs dark:prose-invert max-w-none">
+                                          <ReactMarkdown
+                                            remarkPlugins={[
+                                              remarkGfm,
+                                              remarkMath,
+                                            ]}
+                                            rehypePlugins={[rehypeKatex]}
+                                          >
+                                            {processLatexContent(
+                                              currentQuestion.validation
+                                                .extension_points,
+                                            )}
+                                          </ReactMarkdown>
+                                        </div>
                                       </div>
-                                      <div className="text-slate-600 dark:text-slate-300 prose prose-xs dark:prose-invert max-w-none">
-                                        <ReactMarkdown
-                                          remarkPlugins={[
-                                            remarkGfm,
-                                            remarkMath,
-                                          ]}
-                                          rehypePlugins={[rehypeKatex]}
-                                        >
-                                          {processLatexContent(
-                                            currentQuestion.validation
-                                              .extension_points,
-                                          )}
-                                        </ReactMarkdown>
-                                      </div>
-                                    </div>
-                                  )}
+                                    )}
                                   {currentQuestion.extended &&
                                     currentQuestion.validation
                                       .kb_connection && (
@@ -998,13 +990,12 @@ export default function QuestionPage() {
           recordType="question"
           title={`${questionState.topic} - ${currentQuestion.question.type || currentQuestion.question.question_type}`}
           userQuery={`Topic: ${questionState.topic}\nDifficulty: ${questionState.difficulty}\nType: ${questionState.type}`}
-          output={`**Question:**\n${currentQuestion.question.question}\n\n**Options:**\n${
-            currentQuestion.question.options
+          output={`**Question:**\n${currentQuestion.question.question}\n\n**Options:**\n${currentQuestion.question.options
               ? Object.entries(currentQuestion.question.options)
-                  .map(([k, v]) => `${k}. ${v}`)
-                  .join("\n")
+                .map(([k, v]) => `${k}. ${v}`)
+                .join("\n")
               : "N/A"
-          }\n\n**Correct Answer:** ${currentQuestion.question.correct_answer}\n\n**Explanation:**\n${currentQuestion.question.explanation}`}
+            }\n\n**Correct Answer:** ${currentQuestion.question.correct_answer}\n\n**Explanation:**\n${currentQuestion.question.explanation}`}
           metadata={{
             difficulty: questionState.difficulty,
             question_type: questionState.type,

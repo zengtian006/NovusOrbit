@@ -6,11 +6,11 @@ Knowledge Base Path Configuration Module - Unified management of all paths
 import os
 from pathlib import Path
 
-# Project root directory (DeepTutor/)
+# Project root directory (NovusOrbit/)
 PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
 
 # Knowledge base base directory
-KNOWLEDGE_BASES_DIR = PROJECT_ROOT / "data" / "knowledge_bases"
+KNOWLEDGE_BASES_DIR = PROJECT_ROOT / "data" / "portfolios"
 
 # raganything module path
 RAGANYTHING_PATH = PROJECT_ROOT.parent / "raganything" / "RAG-Anything"

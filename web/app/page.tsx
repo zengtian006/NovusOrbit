@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   Send,
   Loader2,
@@ -9,19 +11,15 @@ import {
   Database,
   Globe,
   Calculator,
-  FileText,
   Microscope,
   Lightbulb,
   Trash2,
   ExternalLink,
   BookOpen,
-  Sparkles,
   Edit3,
   GraduationCap,
   PenTool,
-  Save,
 } from "lucide-react";
-import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -30,8 +28,8 @@ import "katex/dist/katex.min.css";
 import { useGlobal } from "@/context/GlobalContext";
 import { apiUrl } from "@/lib/api";
 import { processLatexContent } from "@/lib/latex";
-import AddToNotebookModal from "@/components/AddToNotebookModal";
 import { useTranslation } from "react-i18next";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface KnowledgeBase {
   name: string;
@@ -39,6 +37,7 @@ interface KnowledgeBase {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const {
     chatState,
     setChatState,
@@ -47,58 +46,26 @@ export default function HomePage() {
     newChatSession,
   } = useGlobal();
   const { t } = useTranslation();
+  const { trackEvent } = useAnalytics();
 
   const [inputMessage, setInputMessage] = useState("");
   const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
+  const [showRagWarning, setShowRagWarning] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [showNotebookModal, setShowNotebookModal] = useState(false);
-
-  // Format chat history for notebook
-  const formatChatForNotebook = () => {
-    if (chatState.messages.length === 0)
-      return { title: "", userQuery: "", output: "" };
-
-    // Use the first user message as title
-    const firstUserMsg = chatState.messages.find((m) => m.role === "user");
-    const title =
-      firstUserMsg?.content.slice(0, 50) +
-        (firstUserMsg && firstUserMsg.content.length > 50 ? "..." : "") ||
-      t("Chat Session");
-
-    // Format all messages as markdown
-    const formattedMessages = chatState.messages
-      .map((msg, idx) => {
-        const roleLabel =
-          msg.role === "user"
-            ? `👤 **${t("User")}**`
-            : `🤖 **${t("Assistant")}**`;
-        return `### ${roleLabel}\n\n${msg.content}`;
-      })
-      .join("\n\n---\n\n");
-
-    // User query is the concatenation of all user messages
-    const userQueries = chatState.messages
-      .filter((m) => m.role === "user")
-      .map((m) => m.content)
-      .join("\n\n");
-
-    return {
-      title: `Chat: ${title}`,
-      userQuery: userQueries,
-      output: formattedMessages,
-    };
-  };
 
   // Fetch knowledge bases
   useEffect(() => {
-    fetch(apiUrl("/api/v1/knowledge/list"))
+    fetch(apiUrl("/api/v1/portfolio/list"))
       .then((res) => res.json())
       .then((data) => {
         // Ensure data is an array before processing
         const kbList = Array.isArray(data) ? data : [];
         setKbs(kbList);
-        if (!chatState.selectedKb && kbList.length > 0) {
+        if (kbList.length === 0) {
+          // Clear selectedKb if no portfolios exist
+          setChatState((prev) => ({ ...prev, selectedKb: "" }));
+        } else if (!chatState.selectedKb) {
           const defaultKb = kbList.find((kb: KnowledgeBase) => kb.is_default);
           if (defaultKb) {
             setChatState((prev) => ({ ...prev, selectedKb: defaultKb.name }));
@@ -125,8 +92,17 @@ export default function HomePage() {
 
   const handleSend = () => {
     if (!inputMessage.trim() || chatState.isLoading) return;
+    // Check if RAG is enabled or portfolio is selected
+    if (!chatState.enableRag || !chatState.selectedKb) {
+      setShowRagWarning(true);
+      // Hide warning after 4 seconds
+      setTimeout(() => setShowRagWarning(false), 4000);
+      return;
+    }
+    trackEvent({ action: "send_message", feature: "/", metadata: { messageLength: inputMessage.length } });
     sendChatMessage(inputMessage);
     setInputMessage("");
+    setShowRagWarning(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -136,14 +112,19 @@ export default function HomePage() {
     }
   };
 
+  const handlePortfolioChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value === "add-portfolio") {
+      router.push("/portfolio");
+    } else {
+      setChatState((prev) => ({
+        ...prev,
+        selectedKb: value,
+      }));
+    }
+  };
+
   const quickActions = [
-    {
-      icon: Calculator,
-      label: t("Smart Problem Solving"),
-      href: "/solver",
-      color: "blue",
-      description: t("Multi-agent reasoning"),
-    },
     {
       icon: PenTool,
       label: t("Generate Practice Questions"),
@@ -172,13 +153,6 @@ export default function HomePage() {
       color: "indigo",
       description: t("Step-by-step tutoring"),
     },
-    {
-      icon: Edit3,
-      label: t("Co-Writer"),
-      href: "/co_writer",
-      color: "pink",
-      description: t("Collaborative writing"),
-    },
   ];
 
   const hasMessages = chatState.messages.length > 0;
@@ -190,7 +164,7 @@ export default function HomePage() {
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <div className="text-center max-w-2xl mx-auto mb-8">
             <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
-              {t("Welcome to DeepTutor")}
+              {t("Welcome to NovusOrbit")}
             </h1>
             <p className="text-lg text-slate-500 dark:text-slate-400">
               {t("How can I help you today?")}
@@ -202,63 +176,91 @@ export default function HomePage() {
             {/* Mode Toggles */}
             <div className="flex items-center justify-between mb-3 px-1">
               <div className="flex items-center gap-2">
-                {/* RAG Toggle */}
-                <button
-                  onClick={() =>
-                    setChatState((prev) => ({
-                      ...prev,
-                      enableRag: !prev.enableRag,
-                    }))
-                  }
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    chatState.enableRag
-                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  }`}
-                >
-                  <Database className="w-3.5 h-3.5" />
-                  {t("RAG")}
-                </button>
 
                 {/* Web Search Toggle */}
                 <button
-                  onClick={() =>
+                  onClick={() => {
+                    trackEvent({ action: "toggle_web_search", feature: "/", metadata: { enabled: !chatState.enableWebSearch } });
                     setChatState((prev) => ({
                       ...prev,
                       enableWebSearch: !prev.enableWebSearch,
-                    }))
-                  }
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    chatState.enableWebSearch
-                      ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
-                  }`}
+                    }));
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${chatState.enableWebSearch
+                    ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
                 >
                   <Globe className="w-3.5 h-3.5" />
                   {t("Web Search")}
                 </button>
-              </div>
-
-              {/* KB Selector */}
-              {chatState.enableRag && (
-                <select
-                  value={chatState.selectedKb}
-                  onChange={(e) =>
+                {/* RAG Toggle */}
+                <button
+                  onClick={() => {
+                    trackEvent({ action: "toggle_rag", feature: "/", metadata: { enabled: !chatState.enableRag } });
                     setChatState((prev) => ({
                       ...prev,
-                      selectedKb: e.target.value,
-                    }))
-                  }
-                  className="text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 outline-none focus:border-blue-400 dark:text-slate-200"
+                      enableRag: !prev.enableRag,
+                    }));
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${chatState.enableRag
+                    ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    }`}
                 >
-                  {kbs.map((kb) => (
-                    <option key={kb.name} value={kb.name}>
-                      {kb.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+                  <Database className="w-3.5 h-3.5" />
+                  {t("Portfolio")}
+                </button>
+                {/* <span
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
+                >
+                  <Database className="w-3.5 h-3.5" />
+                  {t("Resume")}
+                </span> */}
+
+                {/* KB Selector */}
+                {chatState.enableRag && (
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={chatState.selectedKb || ""}
+                      onChange={handlePortfolioChange}
+                      className="text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 outline-none focus:border-blue-400 dark:text-slate-200"
+                    >
+                      {kbs.length === 0 ? (
+                        <option value="" disabled>
+                          {t("No portfolios")}
+                        </option>
+                      ) : (
+                        kbs.map((kb) => (
+                          <option key={kb.name} value={kb.name}>
+                            {kb.name}
+                          </option>
+                        ))
+                      )}
+                      <option value="add-portfolio" className="text-blue-600">
+                        + {t("Add Portfolio")}
+                      </option>
+
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Portfolio Required Banner */}
+            {showRagWarning && (
+              <div className="mb-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <Database className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                    {t("Portfolio is required to start chatting")}
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    {t("Enable your Portfolio above to unlock personalized career advice tailored to your background")}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Input Field */}
             <div className="relative">
@@ -266,7 +268,10 @@ export default function HomePage() {
                 ref={inputRef}
                 type="text"
                 className="w-full px-5 py-4 pr-14 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50"
-                placeholder={t("Ask anything...")}
+                placeholder={chatState.enableRag && chatState.selectedKb
+                  ? t("Ask anything about") + " " + chatState.selectedKb + "..."
+                  : t("Enable Portfolio and select one to get started...")
+                }
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -276,6 +281,7 @@ export default function HomePage() {
                 onClick={handleSend}
                 disabled={chatState.isLoading || !inputMessage.trim()}
                 className="absolute right-2 top-2 bottom-2 aspect-square bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all shadow-md shadow-blue-500/20"
+                title={t("Send message")}
               >
                 {chatState.isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -284,10 +290,44 @@ export default function HomePage() {
                 )}
               </button>
             </div>
+
+            {/* Sample Queries */}
+            <div className="flex flex-wrap gap-2 mt-3 justify-center">
+              {[
+                t("Review my resume and suggest improvements"),
+                t("What skills should I develop for a promotion?"),
+                t("Help me prepare for a job interview"),
+                t("Analyze my career path and suggest next steps"),
+              ].map((query, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    trackEvent({ action: "quick_query_click", feature: "/", metadata: { query } });
+                    setInputMessage(query);
+                    // Use setTimeout to ensure state is updated before calling handleSend
+                    setTimeout(() => {
+                      // Check if RAG is enabled or portfolio is selected
+                      if (!chatState.enableRag || !chatState.selectedKb) {
+                        setShowRagWarning(true);
+                        setTimeout(() => setShowRagWarning(false), 4000);
+                        setInputMessage("");
+                        return;
+                      }
+                      sendChatMessage(query);
+                      setInputMessage("");
+                      setShowRagWarning(false);
+                    }, 0);
+                  }}
+                  className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                >
+                  {query}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Quick Actions Grid */}
-          <div className="w-full max-w-3xl mx-auto">
+          {/* <div className="w-full max-w-3xl mx-auto">
             <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 text-center">
               {t("Explore Modules")}
             </h3>
@@ -314,7 +354,7 @@ export default function HomePage() {
                 </Link>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
       )}
 
@@ -324,72 +364,79 @@ export default function HomePage() {
           {/* Header Bar */}
           <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              {/* Mode Toggles */}
-              <button
-                onClick={() =>
-                  setChatState((prev) => ({
-                    ...prev,
-                    enableRag: !prev.enableRag,
-                  }))
-                }
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                  chatState.enableRag
-                    ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}
-              >
-                <Database className="w-3 h-3" />
-                {t("RAG")}
-              </button>
 
               <button
-                onClick={() =>
+                onClick={() => {
+                  trackEvent({ action: "toggle_web_search", feature: "/", metadata: { enabled: !chatState.enableWebSearch } });
                   setChatState((prev) => ({
                     ...prev,
                     enableWebSearch: !prev.enableWebSearch,
-                  }))
-                }
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                  chatState.enableWebSearch
-                    ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}
+                  }));
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${chatState.enableWebSearch
+                  ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}
               >
                 <Globe className="w-3 h-3" />
                 {t("Web Search")}
               </button>
+              {/* Mode Toggles */}
+              <button
+                onClick={() => {
+                  trackEvent({ action: "toggle_rag", feature: "/", metadata: { enabled: !chatState.enableRag } });
+                  setChatState((prev) => ({
+                    ...prev,
+                    enableRag: !prev.enableRag,
+                  }));
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${chatState.enableRag
+                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}
+              >
+                <Database className="w-3 h-3" />
+                {t("Portfolio")}
+              </button>
+              {/* <span
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+              >
+                <Database className="w-3 h-3" />
+                {t("Portfolio")}
+              </span> */}
+
+
 
               {chatState.enableRag && (
                 <select
-                  value={chatState.selectedKb}
-                  onChange={(e) =>
-                    setChatState((prev) => ({
-                      ...prev,
-                      selectedKb: e.target.value,
-                    }))
-                  }
+                  value={chatState.selectedKb || ""}
+                  onChange={handlePortfolioChange}
                   className="text-xs bg-slate-100 dark:bg-slate-800 border-0 rounded-lg px-2 py-1 outline-none dark:text-slate-200"
                 >
-                  {kbs.map((kb) => (
-                    <option key={kb.name} value={kb.name}>
-                      {kb.name}
+                  {kbs.length === 0 ? (
+                    <option value="" disabled>
+                      {t("No portfolios - Add one below")}
                     </option>
-                  ))}
+                  ) : (
+                    kbs.map((kb) => (
+                      <option key={kb.name} value={kb.name}>
+                        {kb.name}
+                      </option>
+                    ))
+                  )}
+                  <option value="add-portfolio" className="text-blue-600">
+                    + {t("Add Portfolio")}
+                  </option>
                 </select>
               )}
             </div>
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowNotebookModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
-                title={t("Save to Notebook")}
-              >
-                <Save className="w-3.5 h-3.5" />
-                {t("Save to Notebook")}
-              </button>
-              <button
-                onClick={newChatSession}
+                onClick={() => {
+                  trackEvent({ action: "new_chat_session", feature: "/" });
+                  newChatSession();
+                }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -445,8 +492,8 @@ export default function HomePage() {
                       {/* Sources */}
                       {msg.sources &&
                         (msg.sources.rag?.length ?? 0) +
-                          (msg.sources.web?.length ?? 0) >
-                          0 && (
+                        (msg.sources.web?.length ?? 0) >
+                        0 && (
                           <div className="flex flex-wrap gap-2">
                             {msg.sources.rag?.map((source, i) => (
                               <div
@@ -509,6 +556,20 @@ export default function HomePage() {
 
           {/* Input Area - Fixed at bottom */}
           <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-6 py-4">
+            {/* Portfolio Required Banner */}
+            {showRagWarning && (
+              <div className="mb-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <Database className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                    {t("Portfolio is required to start chatting")}
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    {t("Enable your Portfolio above to unlock personalized career advice tailored to your background")}
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="max-w-4xl mx-auto relative">
               <input
                 ref={inputRef}
@@ -524,6 +585,7 @@ export default function HomePage() {
                 onClick={handleSend}
                 disabled={chatState.isLoading || !inputMessage.trim()}
                 className="absolute right-2 top-2 bottom-2 aspect-square bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
+                title={t("Send message")}
               >
                 {chatState.isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -537,21 +599,6 @@ export default function HomePage() {
       )}
 
       {/* Add to Notebook Modal */}
-      <AddToNotebookModal
-        isOpen={showNotebookModal}
-        onClose={() => setShowNotebookModal(false)}
-        recordType="chat"
-        title={formatChatForNotebook().title}
-        userQuery={formatChatForNotebook().userQuery}
-        output={formatChatForNotebook().output}
-        metadata={{
-          session_id: chatState.sessionId,
-          message_count: chatState.messages.length,
-          enable_rag: chatState.enableRag,
-          enable_web_search: chatState.enableWebSearch,
-        }}
-        kbName={chatState.enableRag ? chatState.selectedKb : undefined}
-      />
     </div>
   );
 }

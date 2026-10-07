@@ -4,7 +4,7 @@
 Knowledge Base Migration Script
 ===============================
 
-Migrate existing knowledge bases into DeepTutor's knowledge base system.
+Migrate existing knowledge bases into NovusOrbit's knowledge base system.
 
 Features:
 - Auto-detect RAG provider type (LlamaIndex or LightRAG/RAGAnything)
@@ -463,7 +463,7 @@ async def migrate_kb(
     force: bool = False,
 ) -> bool:
     """
-    Migrate a knowledge base to DeepTutor.
+    Migrate a knowledge base to NovusOrbit.
 
     Args:
         source_path: Path to source knowledge base
@@ -568,7 +568,7 @@ async def migrate_kb(
 
     print("=" * 60)
     print("✓ Migration complete!")
-    print(f"  Knowledge base '{kb_name}' is now available in DeepTutor.")
+    print(f"  Knowledge base '{kb_name}' is now available in NovusOrbit.")
     print("=" * 60)
 
     return True
@@ -581,7 +581,7 @@ async def migrate_kb(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Migrate knowledge bases into DeepTutor",
+        description="Migrate knowledge bases into NovusOrbit",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

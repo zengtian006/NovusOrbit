@@ -81,7 +81,7 @@ export default function ResearchPage() {
 
   // Initialize Knowledge Bases
   useEffect(() => {
-    fetch(apiUrl("/api/v1/knowledge/list"))
+    fetch(apiUrl("/api/v1/portfolio/list"))
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {

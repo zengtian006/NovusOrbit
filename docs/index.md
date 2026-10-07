@@ -2,19 +2,19 @@
 layout: home
 
 hero:
-  name: "DeepTutor"
+  name: "NovusOrbit"
   text: "Your AI Learning Companion"
   tagline: Transform any document into an interactive learning experience with multi-agent intelligence
   image:
     src: /logo.png
-    alt: DeepTutor
+    alt: NovusOrbit
   actions:
     - theme: brand
       text: Get Started →
       link: /guide/pre-config
     - theme: alt
       text: GitHub
-      link: https://github.com/HKUDS/DeepTutor
+      link: https://github.com/HKUDS/NovusOrbit
 
 features:
   - icon: 📚
@@ -37,7 +37,7 @@ features:
     details: AI-assisted brainstorming with knowledge extraction and multi-stage filtering.
 ---
 
-## Why DeepTutor?
+## Why NovusOrbit?
 
 - **Deep Understanding** — Not just answers, but guided learning journeys with visual explanations
 - **Multi-Modal Support** — PDF, LaTeX, images, code execution, and more

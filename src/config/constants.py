@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Constants for DeepTutor
+Constants for NovusOrbit
 """
 
 from pathlib import Path

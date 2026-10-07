@@ -63,7 +63,7 @@ def format_bytes_human_readable(size_bytes: int) -> str:
         return f"{size_bytes} bytes"
 
 
-_kb_base_dir = _project_root / "data" / "knowledge_bases"
+_kb_base_dir = _project_root / "data" / "portfolios"
 
 # Lazy initialization
 kb_manager = None
