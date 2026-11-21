@@ -96,12 +96,6 @@ python scripts/start_web.py
 
 这将同时启动 **前端**（Next.js）和 **后端**（FastAPI）服务器。
 
-### 替代方案：仅 CLI 界面
-
-```bash
-python scripts/start.py
-```
-
 ### 访问地址
 
 | 服务 | URL | 说明 |
