@@ -144,7 +144,6 @@ def check_backend_packages() -> tuple[bool, int, int]:
         ("docling", "docling", "2.31.0", True),  # Optional
         ("PyMuPDF", "fitz", "1.26.0", False),
         # Academic
-        ("arxiv", "arxiv", "2.0.0", False),
         # Optional API clients
         ("perplexityai", "perplexity", "0.1.0", True),
         ("dashscope", "dashscope", "1.14.0", True),

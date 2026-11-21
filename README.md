@@ -38,11 +38,10 @@ The sidebar has two groups. Users can reorder items by dragging them.
 | Job Suggestions | `/job-suggest` | Analyzes your portfolio, scrapes real listings from Indeed and LinkedIn, then ranks and explains the matches |
 | Resume Writer | `/resume-writer` | AI editor for rewriting and marking up resume text, with Markdown/PDF export and optional TTS narration |
 
-Learning tools carried over from the original codebase are still available by URL: Question Generator (`/question`), Guided Learning (`/guide`), Deep Research (`/research`), IdeaGen (`/ideagen`) and Notebooks (`/notebook`).
-
 Other platform features:
 - Google sign-in, with per-page sign-in requirements set in `config/page_settings.yaml`
 - Admin pages for user roles and usage analytics
+- Send Feedback form (emails the team over SMTP)
 - English and Chinese UI
 - Light and dark themes
 
@@ -95,11 +94,11 @@ docker compose up -d --build      # reads .env, serves on :3782 and :8001
 ```
 src/
   api/            FastAPI app (main.py) and routers, one per feature
-  agents/         LLM agents: interview, job_suggest, resume_writer, chat, research, question, guide, ideagen
+  agents/         LLM agents: chat, interview, job_suggest, resume_writer
   services/       llm, embedding, rag, search, prompt, config, tts
   knowledge/      Portfolio (knowledge base) creation and indexing
   mcp/            MCP server + Indeed/LinkedIn scrapers used by Job Suggestions
-  tools/          RAG, web search, code execution and paper search tools used by agents
+  tools/          RAG search and web search tools used by agents
   logging/        Structured logging and LLM usage stats
 web/              Next.js 16 app (App Router), NextAuth, Prisma schema, i18n locales
 config/           main.yaml, agents.yaml, page_settings.yaml

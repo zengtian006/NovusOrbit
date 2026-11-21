@@ -224,10 +224,6 @@ export function getStorageStats(): {
  */
 export const STORAGE_KEYS = {
   CHAT_STATE: "chat_state",
-  QUESTION_STATE: "question_state",
-  RESEARCH_STATE: "research_state",
-  IDEAGEN_STATE: "ideagen_state",
-  GUIDE_SESSION: "guide_session",
   RESUME_WRITER_CONTENT: "resume_writer_content",
 } as const;
 
@@ -237,14 +233,4 @@ export const STORAGE_KEYS = {
  */
 export const EXCLUDE_FIELDS = {
   CHAT: ["isLoading", "currentStage"] as const,
-  QUESTION: [
-    "logs",
-    "progress",
-    "agentStatus",
-    "tokenStats",
-    "uploadedFile",
-  ] as const,
-  RESEARCH: ["status", "logs", "progress"] as const,
-  IDEAGEN: ["isGenerating", "progress"] as const,
-  GUIDE: ["isLoading", "loadingMessage"] as const,
 } as const;

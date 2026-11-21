@@ -122,7 +122,6 @@ def install_with_pip_staged(requirements_file: Path, project_root: Path) -> bool
         "websockets>=12.0",
         "python-multipart>=0.0.6",
         "pydantic>=2.0.0",
-        "arxiv>=2.0.0",
         "pre-commit>=3.0.0",
     ]
 

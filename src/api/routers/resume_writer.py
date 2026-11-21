@@ -30,7 +30,7 @@ router = APIRouter()
 
 # Initialize logger with config
 project_root = Path(__file__).parent.parent.parent.parent
-config = load_config_with_main("solve_config.yaml", project_root)  # Use any config to get main.yaml
+config = load_config_with_main("main.yaml", project_root)  # Use any config to get main.yaml
 log_dir = config.get("paths", {}).get("user_log_dir") or config.get("logging", {}).get("log_dir")
 logger = get_logger("ResumeWriter", level="INFO", log_dir=log_dir)
 

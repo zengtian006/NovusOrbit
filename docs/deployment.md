@@ -89,7 +89,7 @@ App data lives under `/opt/novusorbit/data/` on the instance's EBS root volume a
 
 | Host path | Container path | Contents |
 |---|---|---|
-| `/opt/novusorbit/data/user` | `/app/data/user` | Job boards, sessions, notebooks, settings, logs |
+| `/opt/novusorbit/data/user` | `/app/data/user` | Job boards, sessions, resume writer history, settings, logs |
 | `/opt/novusorbit/data/portfolios` | `/app/data/portfolios` | Uploaded CVs and their indexes |
 | `/opt/novusorbit/data/knowledge_bases` | `/app/data/knowledge_bases` | Legacy, unused |
 

@@ -7,14 +7,9 @@ import yaml from "js-yaml";
 // Routes that *might* require authentication (default to protected)
 // Actual requirement is determined by global page_settings.yaml
 const PROTECTED_ROUTES = [
-  "/research",
   "/interview",
-  "/guide",
-  "/question",
   "/settings",
-  "/notebook",
   "/job-suggest",
-  "/ideagen",
 ];
 
 // Cache for page settings
@@ -66,14 +61,9 @@ function routeRequiresSSO(pathname: string): boolean {
 export const config = {
   runtime: "nodejs",
   matcher: [
-    "/research",
     "/interview",
-    "/guide",
-    "/question",
     "/settings",
-    "/notebook",
     "/job-suggest",
-    "/ideagen",
   ],
 };
 

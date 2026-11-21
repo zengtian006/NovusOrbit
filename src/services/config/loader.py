@@ -63,7 +63,7 @@ def load_config_with_main(config_file: str, project_root: Path | None = None) ->
     Load configuration file, automatically merge with main.yaml common configuration
 
     Args:
-        config_file: Sub-module configuration file name (e.g., "solve_config.yaml")
+        config_file: Sub-module configuration file name (e.g., "main.yaml")
         project_root: Project root directory (if None, will try to auto-detect)
 
     Returns:
@@ -104,7 +104,7 @@ def get_path_from_config(config: dict[str, Any], path_key: str, default: str = N
 
     Args:
         config: Configuration dictionary
-        path_key: Path key name (e.g., "log_dir", "workspace")
+        path_key: Path key name (e.g., "user_log_dir")
         default: Default value
 
     Returns:
@@ -117,11 +117,6 @@ def get_path_from_config(config: dict[str, Any], path_key: str, default: str = N
     # Search in system (backward compatibility)
     if "system" in config and path_key in config["system"]:
         return config["system"][path_key]
-
-    # Search in tools (e.g., run_code.workspace)
-    if "tools" in config:
-        if path_key == "workspace" and "run_code" in config["tools"]:
-            return config["tools"]["run_code"].get("workspace", default)
 
     return default
 
@@ -162,11 +157,8 @@ def get_agent_params(module_name: str) -> dict:
 
     Args:
         module_name: Module name, one of:
-            - "guide": Guide module agents
-            - "research": Research module agents
-            - "question": Question module agents
-            - "ideagen": IdeaGen module agents
             - "resume_writer": Resume Writer module agents
+            - (other modules, e.g. "chat", "interview", fall back to defaults)
             - "narrator": Narrator agent (independent, for TTS)
 
     Returns:

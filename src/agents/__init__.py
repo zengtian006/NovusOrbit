@@ -1,13 +1,11 @@
 """
-Agents Module - Unified agent system for OpenTutor.
+Agents Module - Unified agent system for NovusOrbit.
 
 This module provides a unified BaseAgent class and module-specific agents:
-- research: Deep research agents (DecomposeAgent, ResearchAgent, etc.)
-- guide: Guided learning agents (ChatAgent, LocateAgent, etc.)
-- ideagen: Idea generation agents (IdeaGenerationWorkflow, etc.)
-- resume_writer: Resume writing agents (EditAgent, NarratorAgent)
-- question: Question generation agents (ReAct architecture, separate base)
-- chat: Lightweight conversational agent with session management
+- chat: Home chat assistant with session management
+- interview: Interview question and answer generation
+- job_suggest: Portfolio-based job recommendations (Indeed/LinkedIn scrapers)
+- resume_writer: Resume editing and narration agents (EditAgent, NarratorAgent)
 
 Usage:
     from src.agents.base_agent import BaseAgent

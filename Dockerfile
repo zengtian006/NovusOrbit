@@ -145,18 +145,9 @@ COPY requirements.txt ./
 
 # Create necessary directories (these will be overwritten by volume mounts)
 RUN mkdir -p \
-    data/user/solve \
-    data/user/question \
-    data/user/research/cache \
-    data/user/research/reports \
-    data/user/guide \
-    data/user/notebook \
-    data/user/co-writer/audio \
-    data/user/co-writer/tool_calls \
     data/user/logs \
-    data/user/run_code_workspace \
-    data/user/performance \
-    data/knowledge_bases
+    data/user/settings \
+    data/portfolios
 
 # Create supervisord configuration for running both services
 # Log output goes to stdout/stderr so docker logs can capture them
