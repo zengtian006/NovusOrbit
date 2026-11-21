@@ -98,50 +98,6 @@ def load_config_with_main(config_file: str, project_root: Path | None = None) ->
     return merged_config
 
 
-async def load_config_with_main_async(
-    config_file: str, project_root: Path | None = None
-) -> dict[str, Any]:
-    """
-    Async version of load_config_with_main for non-blocking file operations.
-
-    Load configuration file, automatically merge with main.yaml common configuration
-
-    Args:
-        config_file: Sub-module configuration file name (e.g., "solve_config.yaml")
-        project_root: Project root directory (if None, will try to auto-detect)
-
-    Returns:
-        Merged configuration dictionary
-    """
-    if project_root is None:
-        project_root = PROJECT_ROOT
-
-    config_dir = project_root / "config"
-
-    # 1. Load main.yaml (common configuration)
-    main_config = {}
-    main_config_path = config_dir / "main.yaml"
-    if main_config_path.exists():
-        try:
-            main_config = await _load_yaml_file_async(main_config_path)
-        except Exception as e:
-            print(f"⚠️ Failed to load main.yaml: {e}")
-
-    # 2. Load sub-module configuration file
-    module_config = {}
-    module_config_path = config_dir / config_file
-    if module_config_path.exists():
-        try:
-            module_config = await _load_yaml_file_async(module_config_path)
-        except Exception as e:
-            print(f"⚠️ Failed to load {config_file}: {e}")
-
-    # 3. Merge configurations: main.yaml as base, sub-module config overrides
-    merged_config = _deep_merge(main_config, module_config)
-
-    return merged_config
-
-
 def get_path_from_config(config: dict[str, Any], path_key: str, default: str = None) -> str:
     """
     Get path from configuration, supports searching in paths and system
