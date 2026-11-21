@@ -18,10 +18,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^1.4.0",
     "@prisma/client": "^5.9.1",
-    "bcryptjs": "^2.4.3",
-    "clsx": "^2.1.1",
     "cytoscape": "^3.33.1",
-    "framer-motion": "^12.24.0",
     "html2canvas": "^1.4.1",
     "i18next": "^25.8.0",
     "js-yaml": "^4.1.0",
@@ -37,8 +34,7 @@
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
-    "remark-math": "^6.0.0",
-    "tailwind-merge": "^3.4.0"
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2",

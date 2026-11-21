@@ -97,7 +97,8 @@ python src/agents/research/main.py --topic "Reinforcement Learning" --preset aut
 ```python
 import asyncio
 from src.agents.research import ResearchPipeline
-from src.core.core import get_llm_config, load_config_with_main
+from src.services.config import load_config_with_main
+from src.services.llm import get_llm_config
 
 async def main():
     # Load configuration (from main.yaml, agent params from agents.yaml)

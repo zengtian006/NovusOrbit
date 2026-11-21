@@ -44,29 +44,18 @@ resource "aws_instance" "app" {
     delete_on_termination = true
   }
 
+  # App settings and secrets reach the host through the Secrets Manager
+  # DOTENV key (see secrets.tf), not through user_data.
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    aws_region          = var.aws_region
-    project_name        = var.project_name
-    environment         = var.environment
-    ecr_repo_url        = aws_ecr_repository.app.repository_url
-    ecr_registry        = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
-    image_tag           = var.docker_image_tag
-    secret_arn          = aws_secretsmanager_secret.app_secrets.arn
-    domain_name         = var.domain_name
-    backend_port        = var.backend_port
-    frontend_port       = var.frontend_port
-    llm_binding         = var.llm_binding
-    llm_model           = var.llm_model
-    llm_host            = var.llm_host
-    embedding_binding   = var.embedding_binding
-    embedding_model     = var.embedding_model
-    embedding_host      = var.embedding_host
-    embedding_dimension = var.embedding_dimension
-    search_provider     = var.search_provider
-    tts_model           = var.tts_model
-    smtp_server         = var.smtp_server
-    smtp_port           = var.smtp_port
-    feedback_email_from = var.feedback_email_from
+    aws_region        = var.aws_region
+    ecr_repo_url      = aws_ecr_repository.app.repository_url
+    ecr_registry      = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
+    image_tag         = var.docker_image_tag
+    secret_arn        = aws_secretsmanager_secret.app_secrets.arn
+    domain_name       = var.domain_name
+    backend_port      = var.backend_port
+    frontend_port     = var.frontend_port
+    update_script_b64 = filebase64("${path.module}/host/update.sh")
   }))
 
   metadata_options {

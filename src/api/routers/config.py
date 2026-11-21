@@ -90,12 +90,6 @@ class ConfigUpdate(BaseModel):
     api_version: Optional[str] = None
 
 
-class SetActiveRequest(BaseModel):
-    """Request to set active configuration."""
-
-    config_id: str
-
-
 class TestConnectionRequest(BaseModel):
     """Request to test a connection.
 

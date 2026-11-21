@@ -732,13 +732,3 @@ def reset_logger(name: Optional[str] = None):
     for key in keys_to_remove:
         _loggers.pop(key, None)
 
-
-def reload_loggers():
-    """
-    Reload configuration for all cached loggers.
-
-    This method clears the logger cache, forcing recreation with current config
-    on next get_logger() calls.
-    """
-    global _loggers
-    _loggers.clear()
