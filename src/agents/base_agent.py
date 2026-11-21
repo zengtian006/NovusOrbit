@@ -3,11 +3,10 @@
 Unified BaseAgent - Base class for all module agents.
 
 This is the single source of truth for agent base functionality across:
-- research module
-- guide module
-- ideagen module
-- resume_writer module
-- question module (unified in Jan 2026 refactor)
+- chat module
+- interview module
+- job_suggest module
+- resume_writer module (edit and narrator agents)
 """
 
 from abc import ABC, abstractmethod
@@ -67,8 +66,8 @@ class BaseAgent(ABC):
         Initialize base Agent.
 
         Args:
-            module_name: Module name (research/guide/ideagen/resume_writer)
-            agent_name: Agent name (e.g., "solve_agent", "note_agent")
+            module_name: Module name (chat/interview/job_suggest/resume_writer)
+            agent_name: Agent name (e.g., "interview_agent", "edit_agent")
             api_key: API key (optional, defaults to environment variable)
             base_url: API endpoint (optional, defaults to environment variable)
             model: Model name (optional, defaults to environment variable)

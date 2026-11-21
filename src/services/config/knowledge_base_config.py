@@ -205,7 +205,16 @@ class KnowledgeBaseConfigService:
                     self.sync_from_metadata(kb_dir.name, kb_base_dir)
 
 
+_services_by_path: Dict[str, KnowledgeBaseConfigService] = {}
+
+
 # Convenience function
 def get_kb_config_service() -> KnowledgeBaseConfigService:
-    """Get the knowledge base config service instance."""
-    return KnowledgeBaseConfigService.get_instance()
+    """Get the KB config service for the current user's portfolios (kb_config.json)."""
+    from src.services.user_context import portfolios_dir
+
+    path = portfolios_dir() / "kb_config.json"
+    key = str(path)
+    if key not in _services_by_path:
+        _services_by_path[key] = KnowledgeBaseConfigService(path)
+    return _services_by_path[key]

@@ -23,7 +23,7 @@ from src.services.llm.config import get_llm_config
 from src.services.settings.interface_settings import get_ui_language
 
 # Initialize logger
-config = load_config_with_main("solve_config.yaml", project_root)
+config = load_config_with_main("main.yaml", project_root)
 log_dir = config.get("paths", {}).get("user_log_dir") or config.get("logging", {}).get("log_dir")
 logger = get_logger("InterviewAPI", level="INFO", log_dir=log_dir)
 

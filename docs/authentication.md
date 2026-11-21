@@ -17,7 +17,7 @@ Browser → /auth/signin → Google consent → /api/auth/callback/google
 
 `web/middleware.ts` runs on the paths in its `matcher` and checks `config/page_settings.yaml`. For pages marked `requireSSO: true`, signed-out users are redirected to `/auth/signin?callbackUrl=<page>`. See [configuration.md](configuration.md#configpage_settingsyaml).
 
-Signing in on the frontend doesn't protect the FastAPI endpoints (`/api/v1/*`). The backend doesn't check sessions.
+Signing in on the frontend doesn't protect the FastAPI endpoints (`/api/v1/*`). The backend reads the same session cookie only to decide **whose data** a request uses: each signed-in user gets their own portfolios, job boards and history, and signed-out visitors share an anonymous space. It never rejects a request. See [architecture.md](architecture.md#per-user-data).
 
 ## Google OAuth setup
 

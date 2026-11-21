@@ -10,6 +10,7 @@ import time
 import uuid
 
 from pydantic import BaseModel
+from src.services.user_context import user_data_dir
 
 
 class JobStatus(str, Enum):
@@ -63,20 +64,19 @@ class JobBoardManager:
         Args:
             base_dir: Job board storage directory, defaults to project root/data/user/jobs
         """
-        if base_dir is None:
-            # Current file: NovusOrbit/src/api/utils/job_board_manager.py
-            # Project root should be three levels up: NovusOrbit/
-            project_root = Path(__file__).resolve().parents[3]
-            base_dir_path = project_root / "data" / "user" / "jobs"
-        else:
-            base_dir_path = Path(base_dir)
+        # None -> resolve per request from the signed-in user (src/services/user_context)
+        self._fixed_base_dir = Path(base_dir) if base_dir is not None else None
 
-        self.base_dir = base_dir_path
-        self.base_dir.mkdir(parents=True, exist_ok=True)
+    @property
+    def base_dir(self) -> Path:
+        """Storage directory for the current user (or the fixed base_dir if given)."""
+        path = self._fixed_base_dir if self._fixed_base_dir is not None else user_data_dir() / "jobs"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
-        # Job board index file
-        self.index_file = self.base_dir / "jobs_index.json"
-        self._ensure_index()
+    @property
+    def index_file(self) -> Path:
+        return self.base_dir / "jobs_index.json"
 
     def _ensure_index(self):
         """Ensure index file exists"""

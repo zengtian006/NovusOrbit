@@ -26,7 +26,7 @@ class PromptManager:
     }
 
     # Supported modules
-    MODULES = ["research", "guide", "question", "ideagen", "resume_writer"]
+    MODULES = ["chat", "interview", "job_suggest", "resume_writer", "narrator"]
 
     def __new__(cls) -> "PromptManager":
         if cls._instance is None:
@@ -44,10 +44,10 @@ class PromptManager:
         Load prompts for an agent.
 
         Args:
-            module_name: Module name (research, guide, question, ideagen, resume_writer)
+            module_name: Module name (chat, interview, job_suggest, resume_writer)
             agent_name: Agent name (filename without .yaml)
             language: Language code ('zh' or 'en')
-            subdirectory: Optional subdirectory (e.g., 'solve_loop' for solve module)
+            subdirectory: Optional subdirectory under prompts/<lang>/
 
         Returns:
             Loaded prompt configuration dictionary

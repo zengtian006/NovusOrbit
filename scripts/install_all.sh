@@ -121,7 +121,6 @@ install_with_pip_staged() {
         "websockets>=12.0" \
         "python-multipart>=0.0.6" \
         "pydantic>=2.0.0" \
-        "arxiv>=2.0.0" \
         "pre-commit>=3.0.0"; then
         print_success "Core dependencies installed"
     else
