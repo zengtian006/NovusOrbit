@@ -8,7 +8,6 @@ import yaml from "js-yaml";
 // Actual requirement is determined by global page_settings.yaml
 const PROTECTED_ROUTES = [
   "/research",
-  "/solve",
   "/interview",
   "/guide",
   "/question",
@@ -68,7 +67,6 @@ export const config = {
   runtime: "nodejs",
   matcher: [
     "/research",
-    "/solve",
     "/interview",
     "/guide",
     "/question",

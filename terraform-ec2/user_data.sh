@@ -63,83 +63,13 @@ systemctl daemon-reload
 systemctl enable caddy
 
 # ---- Create app directories ----
-mkdir -p /opt/novusorbit/{data/user,data/knowledge_bases,config}
+mkdir -p /opt/novusorbit/{data/user,data/knowledge_bases,data/portfolios,config}
 
-# ---- Pull secrets from Secrets Manager ----
-echo "Fetching secrets..."
-SECRETS=$(aws secretsmanager get-secret-value \
-  --region "${aws_region}" \
-  --secret-id "${secret_arn}" \
-  --query 'SecretString' --output text)
-
-LLM_API_KEY=$(echo "$SECRETS" | jq -r '.LLM_API_KEY')
-EMBEDDING_API_KEY=$(echo "$SECRETS" | jq -r '.EMBEDDING_API_KEY')
-DATABASE_URL=$(echo "$SECRETS" | jq -r '.DATABASE_URL')
-NEXTAUTH_SECRET=$(echo "$SECRETS" | jq -r '.NEXTAUTH_SECRET')
-GOOGLE_CLIENT_ID=$(echo "$SECRETS" | jq -r '.GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET=$(echo "$SECRETS" | jq -r '.GOOGLE_CLIENT_SECRET')
-SEARCH_API_KEY=$(echo "$SECRETS" | jq -r '.SEARCH_API_KEY')
-TTS_API_KEY=$(echo "$SECRETS" | jq -r '.TTS_API_KEY')
-SMTP_USER=$(echo "$SECRETS" | jq -r '.SMTP_USER')
-SMTP_PASSWORD=$(echo "$SECRETS" | jq -r '.SMTP_PASSWORD')
-
-# ---- Determine base URL ----
-%{ if domain_name != "" }
-BASE_URL="https://www.${domain_name}"
-%{ else }
-# Get public IP from instance metadata (IMDSv2)
-TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" \
-  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-PUBLIC_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
-  http://169.254.169.254/latest/meta-data/public-ipv4)
-BASE_URL="http://$PUBLIC_IP"
-%{ endif }
-
-# ---- Login to ECR ----
-echo "Logging in to ECR..."
-aws ecr get-login-password --region "${aws_region}" | \
-  docker login --username AWS --password-stdin "${ecr_registry}"
-
-# ---- Create .env file ----
-cat > /opt/novusorbit/.env <<ENVEOF
-# NovusOrbit Environment Configuration
-LLM_BINDING=${llm_binding}
-LLM_MODEL=${llm_model}
-LLM_API_KEY=$LLM_API_KEY
-LLM_HOST=${llm_host}
-EMBEDDING_BINDING=${embedding_binding}
-EMBEDDING_MODEL=${embedding_model}
-EMBEDDING_API_KEY=$EMBEDDING_API_KEY
-EMBEDDING_HOST=${embedding_host}
-EMBEDDING_DIMENSION=${embedding_dimension}
-EMBEDDING_MAX_TOKENS=8192
-SEARCH_PROVIDER=${search_provider}
-SEARCH_API_KEY=$SEARCH_API_KEY
-TTS_MODEL=${tts_model}
-TTS_API_KEY=$TTS_API_KEY
-TTS_URL=${llm_host}
-TTS_VOICE=alloy
-DISABLE_SSL_VERIFY=false
-BACKEND_PORT=${backend_port}
-FRONTEND_PORT=${frontend_port}
-NODE_ENV=production
-DATABASE_URL=$DATABASE_URL
-NEXTAUTH_URL=$BASE_URL
-AUTH_URL=$BASE_URL
-AUTH_TRUST_HOST=true
-NEXTAUTH_SECRET=$NEXTAUTH_SECRET
-GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
-NEXT_PUBLIC_API_BASE=$BASE_URL
-NEXT_PUBLIC_API_BASE_EXTERNAL=$BASE_URL
-SMTP_USER=$SMTP_USER
-SMTP_PASSWORD=$SMTP_PASSWORD
-SMTP_SERVER=${smtp_server}
-SMTP_PORT=${smtp_port}
-FEEDBACK_EMAIL_FROM=${feedback_email_from}
-ENVEOF
-
-chmod 600 /opt/novusorbit/.env
+# ---- Install the update script (shared with deploy.sh: host/update.sh) ----
+# It writes .env from the Secrets Manager DOTENV key, pulls the image and
+# starts the container. deploy.sh re-installs and re-runs it on every deploy.
+echo "${update_script_b64}" | base64 -d > /opt/novusorbit/update.sh
+chmod 700 /opt/novusorbit/update.sh
 
 # ---- Create docker-compose.yml ----
 cat > /opt/novusorbit/docker-compose.yml <<'COMPOSEEOF'
@@ -156,6 +86,7 @@ services:
     volumes:
       - ./data/user:/app/data/user
       - ./data/knowledge_bases:/app/data/knowledge_bases
+      - ./data/portfolios:/app/data/portfolios
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${backend_port}/"]
       interval: 30s
@@ -239,38 +170,14 @@ cat > /etc/caddy/Caddyfile <<'CADDYEOF'
 CADDYEOF
 %{ endif }
 
-# ---- Pull and start the app ----
-echo "Pulling Docker image..."
-docker pull "${ecr_repo_url}:${image_tag}"
-
+# ---- Fetch .env, pull and start the app ----
 echo "Starting NovusOrbit..."
-cd /opt/novusorbit
-docker compose up -d
+AWS_REGION="${aws_region}" \
+SECRET_ID="${secret_arn}" \
+ECR_REGISTRY="${ecr_registry}" \
+  /opt/novusorbit/update.sh
 
 echo "Starting Caddy..."
 systemctl restart caddy
-
-# ---- Create update script ----
-cat > /opt/novusorbit/update.sh <<'UPDATEEOF'
-#!/bin/bash
-set -euo pipefail
-cd /opt/novusorbit
-
-echo "Logging in to ECR..."
-aws ecr get-login-password --region "${aws_region}" | \
-  docker login --username AWS --password-stdin "${ecr_registry}"
-
-echo "Pulling latest image..."
-docker compose pull
-
-echo "Restarting app..."
-docker compose up -d --force-recreate
-
-echo "Cleaning up old images..."
-docker image prune -f
-
-echo "Done! App updated."
-UPDATEEOF
-chmod +x /opt/novusorbit/update.sh
 
 echo "=== NovusOrbit EC2 Bootstrap Complete ==="

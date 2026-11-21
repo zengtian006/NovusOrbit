@@ -18,9 +18,6 @@
 *.md
 !README.md
 docs/
-assets/gifs/
-assets/figs/
-assets/README/
 
 # ============================================
 # Python

@@ -85,19 +85,6 @@ ENV_VAR_MAPPINGS = {
 }
 
 
-def _resolve_env_value(value: Any) -> Any:
-    """
-    Resolve a value that may reference an environment variable.
-
-    If value is {"use_env": "VAR_NAME"}, returns os.environ.get("VAR_NAME").
-    Otherwise, returns the value as-is.
-    """
-    if isinstance(value, dict) and "use_env" in value:
-        env_var = value["use_env"]
-        return os.environ.get(env_var, "")
-    return value
-
-
 def _get_env_value(env_var: str) -> Optional[str]:
     """Get and strip an environment variable value."""
     value = os.environ.get(env_var)

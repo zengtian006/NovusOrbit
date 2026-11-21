@@ -66,6 +66,12 @@ print_info "============================================"
 print_info "Region:     $AWS_REGION"
 print_info "Image Tag:  $IMAGE_TAG"
 
+# Verify jq (used to build the SSM command)
+if ! command -v jq &> /dev/null; then
+    print_error "jq not found. Install: brew install jq"
+    exit 1
+fi
+
 # Verify AWS CLI
 if ! command -v aws &> /dev/null; then
     print_error "AWS CLI not found. Install: https://aws.amazon.com/cli/"
@@ -138,36 +144,58 @@ print_info ""
 print_info "Step 3: Updating EC2 instance..."
 print_info "Instance: $INSTANCE_ID"
 
+# Ship the repo's host/update.sh with each deploy so the host always runs the
+# current version (refreshes .env from Secrets Manager, keeps data volumes
+# right), then run it.
+SECRET_ID="${PROJECT_NAME}-${ENVIRONMENT}-secrets"
+ECR_REGISTRY="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+SCRIPT_B64=$(base64 < "$SCRIPT_DIR/host/update.sh" | tr -d '\n')
+SSM_PARAMS=$(jq -n \
+    --arg b64 "$SCRIPT_B64" --arg region "$AWS_REGION" \
+    --arg secret "$SECRET_ID" --arg registry "$ECR_REGISTRY" \
+    '{commands: [
+        "echo \($b64) | base64 -d > /opt/novusorbit/update.sh",
+        "chmod 700 /opt/novusorbit/update.sh",
+        "AWS_REGION=\($region) SECRET_ID=\($secret) ECR_REGISTRY=\($registry) /opt/novusorbit/update.sh"
+     ], executionTimeout: ["900"]}')
+
 COMMAND_ID=$(aws ssm send-command \
     --instance-ids "$INSTANCE_ID" \
     --document-name "AWS-RunShellScript" \
-    --parameters "commands=[\"/opt/novusorbit/update.sh\"]" \
+    --comment "NovusOrbit deploy $IMAGE_TAG" \
+    --parameters "$SSM_PARAMS" \
     --region "$AWS_REGION" \
     --query "Command.CommandId" \
     --output text)
 
 print_info "SSM Command ID: $COMMAND_ID"
-print_info "Waiting for update to complete..."
+print_info "Waiting for update to complete (up to 10 minutes)..."
 
-# Wait for command to finish (up to 5 minutes)
-for i in $(seq 1 30); do
+STATUS="Pending"
+for i in $(seq 1 60); do
+    sleep 10
     STATUS=$(aws ssm get-command-invocation \
         --command-id "$COMMAND_ID" \
         --instance-id "$INSTANCE_ID" \
         --region "$AWS_REGION" \
         --query "Status" --output text 2>/dev/null || echo "Pending")
-    
-    if [ "$STATUS" = "Success" ]; then
-        print_info "Update completed successfully!"
-        break
-    elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "TimedOut" ]; then
-        print_error "Update failed with status: $STATUS"
-        print_error "Check logs: aws ssm get-command-invocation --command-id $COMMAND_ID --instance-id $INSTANCE_ID --region $AWS_REGION"
-        exit 1
-    fi
-    
-    sleep 10
+    case "$STATUS" in
+        Success|Failed|TimedOut|Cancelled) break ;;
+    esac
 done
+
+# Show the host-side output (update.sh logs each step)
+aws ssm get-command-invocation \
+    --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --region "$AWS_REGION" \
+    --query "[StandardOutputContent, StandardErrorContent]" --output text 2>/dev/null | sed 's/^/  [host] /' || true
+
+if [ "$STATUS" = "Success" ]; then
+    print_info "Update completed successfully!"
+else
+    print_error "Update did not succeed (status: $STATUS)"
+    print_error "Details: aws ssm get-command-invocation --command-id $COMMAND_ID --instance-id $INSTANCE_ID --region $AWS_REGION"
+    exit 1
+fi
 
 # ---- Done ----
 APP_URL=$(cd "$SCRIPT_DIR" && terraform output -raw app_url 2>/dev/null)

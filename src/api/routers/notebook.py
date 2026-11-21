@@ -53,12 +53,6 @@ class AddRecordRequest(BaseModel):
     kb_name: str | None = None
 
 
-class RemoveRecordRequest(BaseModel):
-    """Remove record request"""
-
-    record_id: str
-
-
 # === API Endpoints ===
 
 
