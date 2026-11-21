@@ -15,7 +15,7 @@ if str(project_root) not in sys.path:
 import json
 
 from src.agents.resume_writer.edit_agent import (
-    TOOL_CALLS_DIR,
+    tool_calls_dir,
     EditAgent,
     load_history,
     print_stats,
@@ -30,7 +30,7 @@ router = APIRouter()
 
 # Initialize logger with config
 project_root = Path(__file__).parent.parent.parent.parent
-config = load_config_with_main("solve_config.yaml", project_root)  # Use any config to get main.yaml
+config = load_config_with_main("main.yaml", project_root)  # Use any config to get main.yaml
 log_dir = config.get("paths", {}).get("user_log_dir") or config.get("logging", {}).get("log_dir")
 logger = get_logger("ResumeWriter", level="INFO", log_dir=log_dir)
 
@@ -172,7 +172,7 @@ async def get_tool_call(operation_id: str):
     """Get tool call details"""
     try:
         # Find matching file
-        for filepath in TOOL_CALLS_DIR.glob(f"{operation_id}_*.json"):
+        for filepath in tool_calls_dir().glob(f"{operation_id}_*.json"):
             with open(filepath, encoding="utf-8") as f:
                 return json.load(f)
         raise HTTPException(status_code=404, detail="Tool call not found")

@@ -57,7 +57,11 @@ class RAGService:
                       Defaults to RAG_PROVIDER env var or "raganything".
         """
         self.logger = get_logger("RAGService")
-        self.kb_base_dir = kb_base_dir or DEFAULT_KB_BASE_DIR
+        if kb_base_dir is None:
+            from src.services.user_context import portfolios_dir
+
+            kb_base_dir = str(portfolios_dir())
+        self.kb_base_dir = kb_base_dir
         self.provider = provider or os.getenv("RAG_PROVIDER", "raganything")
         self._pipeline = None
 

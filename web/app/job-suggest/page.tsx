@@ -288,6 +288,8 @@ export default function JobSuggestPage() {
   const [usedPortfolio, setUsedPortfolio] = useState(false);
   const [usedJobSearch, setUsedJobSearch] = useState(false);
   const [jobCount, setJobCount] = useState(0);
+  // Set when Indeed/LinkedIn returned nothing and results are AI-generated
+  const [isFallback, setIsFallback] = useState(false);
 
   // Add-to-board state
   const [boards, setBoards] = useState<JobBoardSummary[]>([]);
@@ -512,6 +514,7 @@ export default function JobSuggestPage() {
         setUsedPortfolio(data.used_portfolio || false);
         setUsedJobSearch(data.used_job_search || false);
         setJobCount(data.job_count || 0);
+        setIsFallback(Boolean(data.fallback_reason));
 
         const fetchedRealJobs = data.real_jobs || [];
         if (fetchedRealJobs.length) setRealJobs(fetchedRealJobs);
@@ -839,6 +842,19 @@ export default function JobSuggestPage() {
 
         {/* Scrollable results */}
         <div ref={resultsRef} className="flex-1 overflow-y-auto p-4">
+          {isFallback && suggestions.length > 0 && (
+            <div
+              role="status"
+              className="mb-3 flex items-start gap-2 p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 text-xs"
+            >
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>
+                {t(
+                  "Live listings from Indeed and LinkedIn are unavailable right now. These are AI-generated role ideas based on your portfolio, not real job postings.",
+                )}
+              </span>
+            </div>
+          )}
           {suggestions.length > 0 ? (
             <div className="space-y-3">
               {suggestions.map((job, idx) => (

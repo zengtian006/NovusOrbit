@@ -3,6 +3,7 @@ Feedback API Router
 Handles user feedback submissions and email notifications
 """
 
+import asyncio
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -131,11 +132,15 @@ This is an automated message from NovusOrbit feedback system.
             if smtp_user and smtp_password:
                 logger.info(f"Attempting to send email via {smtp_server}:{smtp_port}")
                 
-                # Set a 10-second timeout to prevent hanging
-                with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
-                    server.starttls()
-                    server.login(smtp_user, smtp_password)
-                    server.send_message(msg)
+                def _send():
+                    # 10-second timeout to prevent hanging
+                    with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
+                        server.starttls()
+                        server.login(smtp_user, smtp_password)
+                        server.send_message(msg)
+
+                # smtplib is blocking; keep it off the event loop
+                await asyncio.to_thread(_send)
                     
                 logger.info("Email sent successfully")
                 return FeedbackResponse(

@@ -6,7 +6,7 @@ import { useState, Suspense } from "react";
 
 function SignInContent() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/chat";
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const error = searchParams.get("error");
   const [isLoading, setIsLoading] = useState(false);
 

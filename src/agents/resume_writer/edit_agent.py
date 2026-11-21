@@ -11,25 +11,34 @@ import uuid
 
 from src.agents.base_agent import BaseAgent
 from src.tools.rag_tool import rag_search
-from src.tools.web_search import web_search
+from src.services.user_context import user_data_dir
+from src.tools.web_search import aweb_search
 
-USER_DIR = Path(__file__).parent.parent.parent.parent / "data" / "user" / "resume-writer"
-HISTORY_FILE = USER_DIR / "history.json"
-TOOL_CALLS_DIR = USER_DIR / "tool_calls"
+def resume_writer_dir() -> Path:
+    """Resume writer storage for the current user (data/user/accounts/<uid>/resume-writer)."""
+    return user_data_dir() / "resume-writer"
+
+
+def history_file() -> Path:
+    return resume_writer_dir() / "history.json"
+
+
+def tool_calls_dir() -> Path:
+    return resume_writer_dir() / "tool_calls"
 
 
 def ensure_dirs():
     """Ensure directories exist"""
-    USER_DIR.mkdir(parents=True, exist_ok=True)
-    TOOL_CALLS_DIR.mkdir(parents=True, exist_ok=True)
+    resume_writer_dir().mkdir(parents=True, exist_ok=True)
+    tool_calls_dir().mkdir(parents=True, exist_ok=True)
 
 
 def load_history() -> list:
     """Load history"""
     ensure_dirs()
-    if HISTORY_FILE.exists():
+    if history_file().exists():
         try:
-            with open(HISTORY_FILE, encoding="utf-8") as f:
+            with open(history_file(), encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
             return []
@@ -39,7 +48,7 @@ def load_history() -> list:
 def save_history(history: list):
     """Save history"""
     ensure_dirs()
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+    with open(history_file(), "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
 
 
@@ -47,7 +56,7 @@ def save_tool_call(call_id: str, tool_type: str, data: dict[str, Any]) -> str:
     """Save tool call result, return file path"""
     ensure_dirs()
     filename = f"{call_id}_{tool_type}.json"
-    filepath = TOOL_CALLS_DIR / filename
+    filepath = tool_calls_dir() / filename
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     return str(filepath)
@@ -128,7 +137,7 @@ class EditAgent(BaseAgent):
         elif source == "web":
             self.logger.info(f"Searching Web for: {instruction}")
             try:
-                search_result = web_search(instruction)
+                search_result = await aweb_search(instruction)
                 context = search_result.get("answer", "")
                 self.logger.info(f"Web context found: {len(context)} chars")
 

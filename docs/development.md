@@ -53,7 +53,6 @@ Use `docker-compose.dev.yml` to mount `src/` and `config/` read-only for faster 
 
 ```bash
 python -m src.knowledge.start_kb init <name> --docs <file.pdf>   # build a portfolio index from files
-python src/agents/research/main.py --topic "..." --preset quick  # run Deep Research headless
 python -m src.mcp.server                                         # job-search MCP server (Indeed/LinkedIn)
 cd web && npx tsx scripts/manage-users.ts list|promote|demote <email>   # user roles
 ```

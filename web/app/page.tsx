@@ -10,15 +10,9 @@ import {
   User,
   Database,
   Globe,
-  Calculator,
-  Microscope,
-  Lightbulb,
   Trash2,
   ExternalLink,
   BookOpen,
-  Edit3,
-  GraduationCap,
-  PenTool,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -123,37 +117,6 @@ export default function HomePage() {
       }));
     }
   };
-
-  const quickActions = [
-    {
-      icon: PenTool,
-      label: t("Generate Practice Questions"),
-      href: "/question",
-      color: "purple",
-      description: t("Auto-validated quizzes"),
-    },
-    {
-      icon: Microscope,
-      label: t("Deep Research Reports"),
-      href: "/research",
-      color: "emerald",
-      description: t("Comprehensive analysis"),
-    },
-    {
-      icon: Lightbulb,
-      label: t("Generate Novel Ideas"),
-      href: "/ideagen",
-      color: "amber",
-      description: t("Brainstorm & synthesize"),
-    },
-    {
-      icon: GraduationCap,
-      label: t("Guided Learning"),
-      href: "/guide",
-      color: "indigo",
-      description: t("Step-by-step tutoring"),
-    },
-  ];
 
   const hasMessages = chatState.messages.length > 0;
 
@@ -326,35 +289,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Quick Actions Grid */}
-          {/* <div className="w-full max-w-3xl mx-auto">
-            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 text-center">
-              {t("Explore Modules")}
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {quickActions.map((action, i) => (
-                <Link
-                  key={i}
-                  href={action.href}
-                  className={`group p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-lg hover:border-${action.color}-300 dark:hover:border-${action.color}-600 transition-all`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-${action.color}-100 dark:bg-${action.color}-900/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}
-                  >
-                    <action.icon
-                      className={`w-5 h-5 text-${action.color}-600 dark:text-${action.color}-400`}
-                    />
-                  </div>
-                  <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
-                    {action.label}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {action.description}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </div> */}
         </div>
       )}
 
@@ -598,7 +532,6 @@ export default function HomePage() {
         </>
       )}
 
-      {/* Add to Notebook Modal */}
     </div>
   );
 }

@@ -25,7 +25,7 @@ from src.services.llm.config import get_llm_config
 from src.services.settings.interface_settings import get_ui_language
 
 # Initialize logger
-config = load_config_with_main("solve_config.yaml", project_root)
+config = load_config_with_main("main.yaml", project_root)
 log_dir = config.get("paths", {}).get("user_log_dir") or config.get("logging", {}).get("log_dir")
 logger = get_logger("JobSuggestAPI", level="INFO", log_dir=log_dir)
 
@@ -163,6 +163,8 @@ async def suggest_jobs(request: SuggestJobsRequest):
             "used_portfolio": result["used_portfolio"],
             "used_job_search": result.get("used_job_search", False),
             "job_count": result.get("job_count", 0),
+            "source_status": result.get("source_status", {}),
+            "fallback_reason": result.get("fallback_reason"),
             "kb_name": request.kb_name,
             "preferences": preferences,
         }

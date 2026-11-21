@@ -89,14 +89,16 @@ App data lives under `/opt/novusorbit/data/` on the instance's EBS root volume a
 
 | Host path | Container path | Contents |
 |---|---|---|
-| `/opt/novusorbit/data/user` | `/app/data/user` | Job boards, sessions, notebooks, settings, logs |
-| `/opt/novusorbit/data/portfolios` | `/app/data/portfolios` | Uploaded CVs and their indexes |
+| `/opt/novusorbit/data/user` | `/app/data/user` | Per-user job boards, sessions and resume writer data in `accounts/<uid>/`; shared settings and logs |
+| `/opt/novusorbit/data/portfolios` | `/app/data/portfolios` | Per-user portfolios in `users/<uid>/` (uploaded CVs and their indexes) |
 | `/opt/novusorbit/data/knowledge_bases` | `/app/data/knowledge_bases` | Legacy, unused |
 
 Before November 2026 the portfolios volume wasn't mounted, so portfolios were lost on every redeploy. `update.sh` fixes older hosts automatically. On the first deploy that finds the volume missing, it:
 1. copies any portfolios out of the running container
 2. adds the volume line (after backing up `docker-compose.yml.bak`)
 3. recreates the container
+
+**Per-user data migration.** The first deploy with per-user data moves the old shared portfolios, job boards and sessions into the earliest ADMIN user's account. It writes `data/user/.legacy_data_migrated.json` and is postponed until an admin exists. `deploy.sh` prints the backend's `[DataMigration]` and `[UserContext]` log lines after each deploy so you can confirm it ran.
 
 There are no automated backups. If you want them, consider EBS snapshots, for example with AWS Data Lifecycle Manager.
 

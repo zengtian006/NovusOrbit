@@ -14,6 +14,10 @@ from ..config import DEFAULT_HEADERS, REQUEST_DELAY_SECONDS, REQUEST_TIMEOUT_SEC
 
 logger = logging.getLogger(__name__)
 
+# Retry policy for transient HTTP failures
+MAX_ATTEMPTS = 3
+BACKOFF_BASE_SECONDS = 1.0
+
 
 def html_to_markdown(html_content: str) -> str:
     """
@@ -93,20 +97,32 @@ class BaseScraper:
         params: Optional[dict] = None,
         headers: Optional[dict] = None,
     ) -> httpx.Response:
-        """Make a rate-limited GET request using the persistent session."""
-        await self._rate_limit()
+        """
+        Make a rate-limited GET request using the persistent session.
 
-        client = await self._get_client()
-
-        try:
-            response = await client.get(
-                url, params=params, headers=headers or {}
-            )
-            response.raise_for_status()
-            return response
-        except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error {e.response.status_code} for {url}")
-            raise
-        except httpx.RequestError as e:
-            logger.error(f"Request error for {url}: {e}")
-            raise
+        Transient failures (timeouts, connection errors, 429 and 5xx) are retried
+        with exponential backoff; other 4xx responses (e.g. 403 bot blocks) fail
+        immediately since retrying won't help.
+        """
+        attempts = MAX_ATTEMPTS
+        for attempt in range(1, attempts + 1):
+            await self._rate_limit()
+            client = await self._get_client()
+            try:
+                response = await client.get(url, params=params, headers=headers or {})
+                response.raise_for_status()
+                return response
+            except httpx.HTTPStatusError as e:
+                code = e.response.status_code
+                retriable = code == 429 or code >= 500
+                if not retriable or attempt == attempts:
+                    logger.error(f"HTTP error {code} for {url} (attempt {attempt}/{attempts})")
+                    raise
+                logger.warning(f"HTTP {code} for {url}; retrying (attempt {attempt}/{attempts})")
+            except httpx.RequestError as e:
+                if attempt == attempts:
+                    logger.error(f"Request error for {url} (attempt {attempt}/{attempts}): {e}")
+                    raise
+                logger.warning(f"Request error for {url}; retrying (attempt {attempt}/{attempts}): {e}")
+            await asyncio.sleep(BACKOFF_BASE_SECONDS * (2 ** (attempt - 1)))
+        raise RuntimeError("unreachable")

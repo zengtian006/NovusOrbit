@@ -38,7 +38,7 @@ try:
 
     project_root = Path(__file__).parent.parent.parent.parent
     config = load_config_with_main(
-        "solve_config.yaml", project_root
+        "main.yaml", project_root
     )  # Use any config to get main.yaml
     log_dir = config.get("paths", {}).get("user_log_dir") or config.get("logging", {}).get(
         "log_dir"

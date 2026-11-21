@@ -6,14 +6,10 @@ import { useTranslation } from "react-i18next";
 import {
   History,
   Clock,
-  ChevronRight,
-  Calculator,
   FileText,
-  Microscope,
   MessageCircle,
   Filter,
   Search,
-  Calendar,
   X,
   MessageSquare,
   Loader2,
@@ -31,39 +27,8 @@ import { formatDate } from "@/lib/datetime";
 import { useGlobal } from "@/context/GlobalContext";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import ActivityDetail from "@/components/ActivityDetail";
 import ChatSessionDetail from "@/components/ChatSessionDetail";
 import { useAnalytics } from "@/hooks/useAnalytics";
-
-interface HistoryEntry {
-  id: string;
-  type: "question" | "research" | "chat";
-  title: string;
-  summary: string;
-  timestamp: number;
-  content: any;
-}
-
-const TYPE_CONFIG = {
-  question: {
-    icon: FileText,
-    color: "purple",
-    bgColor: "bg-purple-100 dark:bg-purple-900/30",
-    textColor: "text-purple-600 dark:text-purple-400",
-  },
-  research: {
-    icon: Microscope,
-    color: "emerald",
-    bgColor: "bg-emerald-100 dark:bg-emerald-900/30",
-    textColor: "text-emerald-600 dark:text-emerald-400",
-  },
-  chat: {
-    icon: MessageCircle,
-    color: "amber",
-    bgColor: "bg-amber-100 dark:bg-amber-900/30",
-    textColor: "text-amber-600 dark:text-amber-400",
-  },
-};
 
 // Chat session interface
 interface ChatSession {
@@ -131,14 +96,12 @@ export default function HistoryPage() {
   const { trackEvent } = useAnalytics();
   const router = useRouter();
 
-  const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [interviewSessions, setInterviewSessions] = useState<InterviewSession[]>([]);
   const [jobSuggestSessions, setJobSuggestSessions] = useState<JobSuggestSession[]>([]);
   const [resumeWriterOperations, setResumeWriterOperations] = useState<ResumeWriterOperation[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingSessionId, setLoadingSessionId] = useState<string | null>(null);
-  const [selectedEntry, setSelectedEntry] = useState<HistoryEntry | null>(null);
   const [selectedChatSession, setSelectedChatSession] = useState<string | null>(
     null,
   );
@@ -154,21 +117,6 @@ export default function HistoryPage() {
   const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch regular activity history
-      if (
-        filterType === "all" ||
-        (filterType !== "chat" && filterType !== "interview" && filterType !== "job-suggest" && filterType !== "resume-writer")
-      ) {
-        const typeParam = filterType !== "all" ? `&type=${filterType}` : "";
-        const res = await fetch(
-          apiUrl(`/api/v1/dashboard/recent?limit=50${typeParam}`),
-        );
-        const data = await res.json();
-        setEntries(data);
-      } else {
-        setEntries([]);
-      }
-
       // Fetch chat sessions
       if (filterType === "all" || filterType === "chat") {
         try {
@@ -247,7 +195,7 @@ export default function HistoryPage() {
     setLoadingSessionId(sessionId);
     try {
       await loadChatSession(sessionId);
-      router.push("/chat");
+      router.push("/");
     } catch (err) {
       console.error("Failed to load session:", err);
     } finally {
@@ -284,54 +232,6 @@ export default function HistoryPage() {
       setResumeOperationDetail(operation);
     }
   };
-
-  const filteredEntries = entries.filter((entry) => {
-    // Exclude chat type - they are shown in dedicated Chat History section
-    if (entry.type === "chat") return false;
-    // Exclude question and research types
-    if (entry.type === "question" || entry.type === "research") return false;
-
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      entry.title.toLowerCase().includes(query) ||
-      entry.summary?.toLowerCase().includes(query)
-    );
-  });
-
-  const groupEntriesByDate = (entries: HistoryEntry[]) => {
-    const groups: { [key: string]: HistoryEntry[] } = {};
-
-    entries.forEach((entry) => {
-      const date = new Date(entry.timestamp * 1000);
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      let dateKey: string;
-      if (date.toDateString() === today.toDateString()) {
-        dateKey = t("Today");
-      } else if (date.toDateString() === yesterday.toDateString()) {
-        dateKey = t("Yesterday");
-      } else {
-        dateKey = formatDate(date, uiSettings.language, {
-          month: "long",
-          day: "numeric",
-          year:
-            date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
-        });
-      }
-
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(entry);
-    });
-
-    return groups;
-  };
-
-  const groupedEntries = groupEntriesByDate(filteredEntries);
 
   return (
     <div className="h-screen flex flex-col animate-fade-in p-6">
@@ -403,15 +303,14 @@ export default function HistoryPage() {
 
       {/* Scrollable Content Area */}
       <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
-        {/* Regular Activity History */}
+        {/* Loading / empty state */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
           {loading ? (
             <div className="p-12 text-center text-slate-400 dark:text-slate-500">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               {t("Loading")}...
             </div>
-          ) : filteredEntries.length === 0 &&
-            chatSessions.length === 0 &&
+          ) : chatSessions.length === 0 &&
             interviewSessions.length === 0 &&
             jobSuggestSessions.length === 0 &&
             resumeWriterOperations.length === 0 ? (
@@ -426,81 +325,7 @@ export default function HistoryPage() {
                 {t("Your activities will appear here")}
               </p>
             </div>
-          ) : filteredEntries.length > 0 ? (
-            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-              {Object.entries(groupedEntries).map(([dateKey, dateEntries]) => (
-                <div key={dateKey}>
-                  {/* Date Header */}
-                  <div className="px-5 py-3 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
-                    <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-                      <Calendar className="w-4 h-4" />
-                      {dateKey}
-                    </div>
-                  </div>
-
-                  {/* Entries for this date */}
-                  {dateEntries.map((entry) => {
-                    const config = TYPE_CONFIG[entry.type] || TYPE_CONFIG.chat;
-                    const IconComponent = config.icon;
-
-                    return (
-                      <div
-                        key={entry.id}
-                        onClick={() => {
-                          trackEvent({ action: "view_history_entry", feature: "/history", metadata: { entryType: entry.type, entryId: entry.id } });
-                          setSelectedEntry(entry);
-                        }}
-                        className="px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group cursor-pointer"
-                      >
-                        <div className="flex gap-4">
-                          <div className="mt-0.5">
-                            <div
-                              className={`w-10 h-10 rounded-xl ${config.bgColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
-                            >
-                              <IconComponent
-                                className={`w-5 h-5 ${config.textColor}`}
-                              />
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start">
-                              <span
-                                className={`text-xs font-bold uppercase tracking-wider ${config.textColor} mb-1`}
-                              >
-                                {entry.type}
-                              </span>
-                              <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {new Date(
-                                  entry.timestamp * 1000,
-                                ).toLocaleTimeString(
-                                  uiSettings.language === "zh"
-                                    ? "zh-CN"
-                                    : "en-US",
-                                  { hour: "2-digit", minute: "2-digit" },
-                                )}
-                              </span>
-                            </div>
-                            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate pr-4">
-                              {entry.title}
-                            </h3>
-                            {entry.summary && (
-                              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                                {entry.summary}
-                              </p>
-                            )}
-                          </div>
-                          <div className="self-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          ) : null}
+                    ) : null}
         </div>
 
         {/* Chat Sessions Section */}
@@ -909,14 +734,6 @@ export default function HistoryPage() {
             </div>
           )}
       </div>
-
-      {/* Activity Detail Modal */}
-      {selectedEntry && (
-        <ActivityDetail
-          activity={selectedEntry}
-          onClose={() => setSelectedEntry(null)}
-        />
-      )}
 
       {/* Chat Session Detail Modal */}
       {selectedChatSession && (

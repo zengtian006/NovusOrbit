@@ -30,7 +30,7 @@ if str(_project_root) not in sys.path:
 from src.agents.base_agent import BaseAgent
 from src.mcp.scrapers.indeed import IndeedScraper
 from src.mcp.scrapers.linkedin import LinkedInScraper
-from src.tools import rag_search, web_search
+from src.tools import aweb_search, rag_search
 
 
 class JobSuggestAgent(BaseAgent):
@@ -150,7 +150,7 @@ class JobSuggestAgent(BaseAgent):
 
         # --- 3. Scrape real jobs from Indeed + LinkedIn ---
         location = preferences.get("location", "")
-        real_jobs = await self._scrape_jobs(
+        real_jobs, source_status = await self._scrape_jobs(
             search_queries, location, max_per_query=count
         )
         self.logger.info(
@@ -160,9 +160,15 @@ class JobSuggestAgent(BaseAgent):
         if not real_jobs:
             # Fallback: generate hypothetical suggestions if scrapers return nothing
             self.logger.warning("No real jobs found, falling back to LLM suggestions")
-            return await self._fallback_suggest(
-                portfolio_context, preferences, count
+            result = await self._fallback_suggest(portfolio_context, preferences, count)
+            result["search_queries"] = search_queries
+            result["source_status"] = source_status
+            result["fallback_reason"] = (
+                "Indeed and LinkedIn returned no listings for these searches "
+                "(the sites may be blocking requests or have changed). "
+                "These are AI-generated role ideas, not live job postings."
             )
+            return result
 
         # --- 4. LLM ranks and analyzes real jobs against portfolio ---
         analysis = await self._rank_and_analyze_jobs(
@@ -177,6 +183,8 @@ class JobSuggestAgent(BaseAgent):
             "used_portfolio": bool(portfolio_context),
             "used_job_search": True,
             "job_count": len(real_jobs),
+            "source_status": source_status,
+            "fallback_reason": None,
         }
 
     async def get_job_detail(
@@ -242,7 +250,7 @@ class JobSuggestAgent(BaseAgent):
                 f"{job_title}{company_str} job requirements skills salary "
                 f"career path 2025 2026"
             )
-            web_result = web_search(query=web_query, verbose=False)
+            web_result = await aweb_search(query=web_query, verbose=False)
             web_context = web_result.get("answer", "")
         except Exception as e:
             self.logger.warning(f"Web search failed for detail: {e}")
@@ -381,12 +389,18 @@ class JobSuggestAgent(BaseAgent):
         queries: list[str],
         location: str,
         max_per_query: int = 5,
-    ) -> list[dict]:
+    ) -> tuple[list[dict], dict[str, dict]]:
         """
         Scrape jobs from Indeed + LinkedIn for all queries in parallel.
         Deduplicates by title+company.
+
+        Returns:
+            (jobs, source_status) where source_status maps "indeed"/"linkedin"
+            to {"jobs": int, "errors": int, "last_error": str | None} so callers
+            can tell users which sources actually returned listings.
         """
         tasks = []
+        sources = []
         for query in queries:
             tasks.append(
                 self.indeed.search_jobs(
@@ -395,6 +409,7 @@ class JobSuggestAgent(BaseAgent):
                     max_results=max_per_query,
                 )
             )
+            sources.append("indeed")
             tasks.append(
                 self.linkedin.search_jobs(
                     keywords=query,
@@ -402,19 +417,27 @@ class JobSuggestAgent(BaseAgent):
                     max_results=max_per_query,
                 )
             )
+            sources.append("linkedin")
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         all_jobs = []
         seen = set()
+        status = {
+            name: {"jobs": 0, "errors": 0, "last_error": None} for name in ("indeed", "linkedin")
+        }
 
-        for result in results:
+        for source, result in zip(sources, results):
             if isinstance(result, Exception):
-                self.logger.warning(f"Scraper error: {result}")
+                self.logger.warning(f"Scraper error ({source}): {result}")
+                status[source]["errors"] += 1
+                status[source]["last_error"] = str(result)[:200]
                 continue
             if isinstance(result, list):
                 for job in result:
                     if job.get("error"):
+                        status[source]["errors"] += 1
+                        status[source]["last_error"] = str(job["error"])[:200]
                         continue
                     # Deduplicate by title + company (case-insensitive)
                     dedup_key = (
@@ -424,8 +447,16 @@ class JobSuggestAgent(BaseAgent):
                     if dedup_key not in seen and dedup_key[0] != "n/a":
                         seen.add(dedup_key)
                         all_jobs.append(job)
+                        status[source]["jobs"] += 1
 
-        return all_jobs
+        for source, st in status.items():
+            if st["jobs"] == 0:
+                self.logger.warning(
+                    f"{source} returned no listings "
+                    f"({st['errors']} errors; last: {st['last_error']})"
+                )
+
+        return all_jobs, status
 
     # ------------------------------------------------------------------
     # Internal: LLM ranking
@@ -528,7 +559,7 @@ class JobSuggestAgent(BaseAgent):
                 f"Current job market trends and in-demand skills for "
                 f"{role_hint} roles{loc_str} 2025 2026 salary demand"
             )
-            web_result = web_search(query=web_query, verbose=False)
+            web_result = await aweb_search(query=web_query, verbose=False)
             market_context = web_result.get("answer", "")
         except Exception:
             pass

@@ -21,7 +21,7 @@ if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
 from src.agents.base_agent import BaseAgent
-from src.tools import rag_search, web_search
+from src.tools import aweb_search, rag_search
 
 
 class ChatAgent(BaseAgent):
@@ -292,7 +292,7 @@ class ChatAgent(BaseAgent):
         if enable_web_search:
             try:
                 self.logger.info(f"Web search: {message[:50]}...")
-                web_result = web_search(query=message, verbose=False)
+                web_result = await aweb_search(query=message, verbose=False)
                 web_answer = web_result.get("answer", "")
                 web_citations = web_result.get("citations", [])
 

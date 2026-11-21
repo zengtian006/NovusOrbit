@@ -22,7 +22,7 @@ from src.services.settings.interface_settings import get_ui_language
 
 # Initialize logger
 project_root = Path(__file__).parent.parent.parent.parent
-config = load_config_with_main("solve_config.yaml", project_root)
+config = load_config_with_main("main.yaml", project_root)
 log_dir = config.get("paths", {}).get("user_log_dir") or config.get("logging", {}).get("log_dir")
 logger = get_logger("ChatAPI", level="INFO", log_dir=log_dir)
 

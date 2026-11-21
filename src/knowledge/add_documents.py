@@ -38,7 +38,9 @@ from src.services.llm.config import get_llm_config as _early_config_load  # noqa
 logger = get_logger("KnowledgeInit")
 
 # Default base directory for knowledge bases
-DEFAULT_BASE_DIR = "./data/portfolios"
+from src.knowledge.config import KNOWLEDGE_BASES_DIR as _KB_DIR  # noqa: E402
+
+DEFAULT_BASE_DIR = str(_KB_DIR)
 
 
 class DocumentAdder:

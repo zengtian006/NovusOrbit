@@ -237,7 +237,7 @@ export default function SettingsPage() {
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
                 {t(
-                  "Including: chat history, question results, research reports, idea generation, guided learning progress, Co-Writer content, etc. This action cannot be undone.",
+                  "Including: chat history, Resume Writer drafts and saved page preferences. This action cannot be undone.",
                 )}
               </p>
               <div className="flex justify-end gap-3">

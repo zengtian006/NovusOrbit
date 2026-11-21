@@ -104,6 +104,8 @@ for i in $(seq 1 36); do
   if curl -fs -o /dev/null "http://localhost:$BACKEND_PORT/" &&
      curl -fs -o /dev/null "http://localhost:$FRONTEND_PORT/"; then
     echo "[app] Healthy after ~$((i * 5))s"
+    # Surface per-user data / identity status from the backend startup logs
+    docker logs --since 10m "$CONTAINER" 2>&1 | grep -E "\[(DataMigration|UserContext)\]" | tail -15 | sed 's/^/[app-log] /' || true
     echo "Done! App updated."
     exit 0
   fi

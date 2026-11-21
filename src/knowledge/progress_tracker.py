@@ -43,6 +43,8 @@ class ProgressTracker:
         self.base_dir = base_dir
         self.kb_dir = base_dir / kb_name
         self.progress_file = self.kb_dir / ".progress.json"
+        # Matches knowledge router's _progress_key(): "<portfolio owner dir>/<kb_name>"
+        self.broadcast_key = f"{Path(base_dir).name}/{kb_name}"
         self._callbacks: list = []  # Support multiple callbacks
         self.task_id: str | None = None  # Task ID (for log identification)
 
@@ -68,7 +70,7 @@ class ProgressTracker:
             try:
                 loop = asyncio.get_running_loop()
                 # If event loop is running, use create_task (non-blocking)
-                asyncio.create_task(broadcaster.broadcast(self.kb_name, progress))
+                asyncio.create_task(broadcaster.broadcast(self.broadcast_key, progress))
             except RuntimeError:
                 # No running event loop, try to get main event loop
                 try:
@@ -76,11 +78,11 @@ class ProgressTracker:
                     loop = asyncio.get_event_loop()
                     if loop.is_running():
                         # If loop is running, create task
-                        asyncio.create_task(broadcaster.broadcast(self.kb_name, progress))
+                        asyncio.create_task(broadcaster.broadcast(self.broadcast_key, progress))
                     else:
                         # If loop exists but not running, try to run (may fail, but doesn't affect main flow)
                         try:
-                            loop.run_until_complete(broadcaster.broadcast(self.kb_name, progress))
+                            loop.run_until_complete(broadcaster.broadcast(self.broadcast_key, progress))
                         except RuntimeError:
                             # Cannot run, ignore
                             pass

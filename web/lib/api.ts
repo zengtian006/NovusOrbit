@@ -57,3 +57,33 @@ export function wsUrl(path: string): string {
 
   return `${normalizedBase}${normalizedPath}`;
 }
+
+/**
+ * Make browser requests to the backend send the NextAuth session cookie.
+ *
+ * The backend identifies the signed-in user from that cookie to keep each
+ * user's data separate. In production the API is same-origin, so fetch sends
+ * cookies already; in local development the API runs on a different port
+ * (cross-origin), where fetch omits cookies unless `credentials: "include"`.
+ * This applies "include" to requests aimed at API_BASE_URL that don't set
+ * credentials explicitly. WebSockets send cookies on their own.
+ */
+let credentialsInstalled = false;
+export function installApiCredentials(): void {
+  if (credentialsInstalled || typeof window === "undefined") return;
+  credentialsInstalled = true;
+  const base = API_BASE_URL.replace(/\/$/, "");
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const url =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.href
+          : input.url;
+    if (url.startsWith(base) && !(init && init.credentials)) {
+      init = { ...init, credentials: "include" };
+    }
+    return originalFetch(input, init);
+  };
+}
