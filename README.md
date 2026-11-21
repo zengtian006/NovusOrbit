@@ -514,7 +514,6 @@ npm install --prefix web
 
 ```bash
 python scripts/start_web.py    # Start frontend + backend
-# Or: python scripts/start.py  # CLI only
 # Stop: Ctrl+C
 ```
 

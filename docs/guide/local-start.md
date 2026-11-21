@@ -96,12 +96,6 @@ python scripts/start_web.py
 
 This starts both the **frontend** (Next.js) and **backend** (FastAPI) servers.
 
-### Alternative: CLI Interface Only
-
-```bash
-python scripts/start.py
-```
-
 ### Access URLs
 
 | Service | URL | Description |
