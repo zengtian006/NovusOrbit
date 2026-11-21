@@ -76,10 +76,4 @@ PyMuPDF>=1.26.0      # For PDF text extraction (fast and reliable)
 # faiss-cpu>=1.7.4   # Uncomment for CPU-only FAISS support (faster search)
 # faiss-gpu>=1.7.4   # Uncomment if you have GPU and want GPU acceleration
 
-# ============================================
-# Development and testing tools
-# ============================================
-pytest>=7.0.0              # Testing framework
-pre-commit>=3.0.0
-safety<3.0.0               # Pin to stable 2.x version, 3.0.0 is broken
-bandit>=1.8.0
+# Development/testing tools live in requirements-dev.txt
