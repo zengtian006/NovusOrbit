@@ -233,7 +233,7 @@ def install_backend_deps(project_root: Path) -> bool:
     """Install backend dependencies"""
     print_step("Step 1/3: Installing backend dependencies")
 
-    requirements_file = project_root / "requirements.txt"
+    requirements_file = project_root / "requirements-dev.txt"
     if not requirements_file.exists():
         print_error(f"requirements.txt not found: {requirements_file}")
         return False

@@ -71,7 +71,7 @@ fi
 # Step 1: Install backend dependencies
 print_step "Step 1/3: Installing backend dependencies"
 
-REQUIREMENTS_FILE="$PROJECT_ROOT/requirements.txt"
+REQUIREMENTS_FILE="$PROJECT_ROOT/requirements-dev.txt"
 
 if [ ! -f "$REQUIREMENTS_FILE" ]; then
     print_error "requirements.txt not found: $REQUIREMENTS_FILE"

@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  // Emit a self-contained server (.next/standalone) with only the traced
+  // runtime dependencies, so the Docker image doesn't ship all of node_modules
+  output: "standalone",
+
   // Move dev indicator to bottom-right corner
   devIndicators: {
     position: "bottom-right",

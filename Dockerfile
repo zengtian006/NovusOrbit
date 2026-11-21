@@ -80,8 +80,13 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt ./
+# - supervisor is installed via pip so the runtime image doesn't pull in
+#   Debian's separate python3 interpreter
+# - PyMuPDF 2.x drags in pymupdf4llm/pymupdf_layout/onnxruntime (~90MB) for
+#   layout analysis; we only use core text extraction, so remove them
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt supervisor && \
+    pip uninstall -y pymupdf4llm pymupdf_layout onnxruntime
 
 # ============================================
 # Stage 3: Production Image
@@ -105,52 +110,31 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install system dependencies
-# Note: libgl1 and libglib2.0-0 are required for OpenCV (used by mineru)
+# (No OpenCV is installed, so the libgl1/X11 stack — ~200MB incl. LLVM/Mesa —
+# isn't needed. Supervisor comes from pip in the python-base stage.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     bash \
-    supervisor \
-    libgl1 \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Node.js from frontend-builder stage (avoids re-downloading from NodeSource)
+# Copy only the Node.js binary from frontend-builder (npm/npx aren't needed at runtime)
 COPY --from=frontend-builder /usr/local/bin/node /usr/local/bin/node
-COPY --from=frontend-builder /usr/local/lib/node_modules /usr/local/lib/node_modules
-RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
-    && ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
-    && node --version && npm --version
+RUN node --version
 
 # Copy Python packages from builder stage
 COPY --from=python-base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=python-base /usr/local/bin /usr/local/bin
 
-# Copy built frontend from frontend-builder stage
-COPY --from=frontend-builder /app/web/.next ./web/.next
+# Copy the Next.js standalone server (output: "standalone" in next.config.js).
+# It contains server.js plus only the node_modules the server actually uses;
+# static assets and public/ must be copied alongside it.
+COPY --from=frontend-builder /app/web/.next/standalone ./web/
+COPY --from=frontend-builder /app/web/.next/static ./web/.next/static
 COPY --from=frontend-builder /app/web/public ./web/public
-COPY --from=frontend-builder /app/web/package.json ./web/package.json
-COPY --from=frontend-builder /app/web/next.config.js ./web/next.config.js
-COPY --from=frontend-builder /app/web/postcss.config.js ./web/postcss.config.js
-COPY --from=frontend-builder /app/web/tailwind.config.js ./web/tailwind.config.js
-COPY --from=frontend-builder /app/web/node_modules ./web/node_modules
-# Copy Next.js source files (required for next start)
-COPY --from=frontend-builder /app/web/app ./web/app
-COPY --from=frontend-builder /app/web/components ./web/components
-COPY --from=frontend-builder /app/web/context ./web/context
-COPY --from=frontend-builder /app/web/hooks ./web/hooks
-COPY --from=frontend-builder /app/web/i18n ./web/i18n
-COPY --from=frontend-builder /app/web/lib ./web/lib
-COPY --from=frontend-builder /app/web/types ./web/types
-COPY --from=frontend-builder /app/web/locales ./web/locales
-COPY --from=frontend-builder /app/web/prisma ./web/prisma
-COPY --from=frontend-builder /app/web/middleware.ts ./web/middleware.ts
-COPY --from=frontend-builder /app/web/next-env.d.ts ./web/next-env.d.ts
-COPY --from=frontend-builder /app/web/tsconfig.json ./web/tsconfig.json
-COPY --from=frontend-builder /app/web/.env.local ./web/.env.local
+# Prisma's generated client + query engine are loaded dynamically, so copy them
+# explicitly in case output tracing misses the native engine
+COPY --from=frontend-builder /app/web/node_modules/.prisma ./web/node_modules/.prisma
 
 # Copy application source code
 COPY src/ ./src/
@@ -250,7 +234,7 @@ RUN printf '#!/bin/bash\n\
     \n\
     echo "NODE_ENV=production" > /app/web/.env.local\n\
     echo "NEXT_PUBLIC_API_BASE=${API_BASE}" >> /app/web/.env.local\n\
-    cd /app/web && exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p ${FRONTEND_PORT}\n' > /app/start-frontend.sh && \
+    cd /app/web && HOSTNAME=0.0.0.0 PORT=${FRONTEND_PORT} exec node server.js\n' > /app/start-frontend.sh && \
     chmod +x /app/start-frontend.sh
 
 # Create entrypoint script
@@ -281,7 +265,7 @@ RUN printf '#!/bin/bash\n\
     fi\n\
     \n\
     echo "============================================"\n\
-    exec /usr/bin/supervisord -c /etc/supervisor/conf.d/novusorbit.conf\n' > /app/entrypoint.sh && \
+    exec /usr/local/bin/supervisord -c /etc/supervisor/conf.d/novusorbit.conf\n' > /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
 
 # Expose ports
