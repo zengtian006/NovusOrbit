@@ -25,6 +25,8 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 | `BACKEND_PORT` / `FRONTEND_PORT` | optional | Default `8001` and `3782` |
 | `NEXT_PUBLIC_API_BASE` | optional | Backend URL that the browser calls. In production this is `https://www.<domain>`. |
 | `DISABLE_SSL_VERIFY` | optional | Development only |
+| `MIGRATE_LEGACY_DATA` | optional | `1` (the Docker image default) moves pre-per-user shared data into the first admin's account on startup, once. Leave it unset for local development so the repo's `data/` folder isn't touched. |
+| `NOVUS_USER_ID` | optional | For the portfolio CLI (`src.knowledge.start_kb`): which user's portfolios to manage (MongoDB user id). Default: `anonymous`. |
 
 ## Frontend and auth environment (`web/.env` locally, root `.env` in Docker)
 
@@ -41,7 +43,7 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 ## `config/main.yaml`
 
 - **`system.language`**: `en` or `zh`. Sets the prompt language.
-- **`paths.*`**: `user_data_dir` (`data/user`), `portfolios_dir` (`data/portfolios`), `user_log_dir`.
+- **`paths.*`**: `user_data_dir` (`data/user`), `portfolios_dir` (`data/portfolios`), `user_log_dir`. Per-user data lives in `data/user/accounts/<uid>/` and `data/portfolios/users/<uid>/` (see [architecture.md](architecture.md#per-user-data)).
 - **`tools.*`**: tool switches and defaults.
   - `rag_tool.kb_base_dir`: where portfolios live
   - `web_search.enabled`: global on/off switch for web search
@@ -63,7 +65,7 @@ pages:
 
 The middleware re-reads this file every 30 seconds, so changes take effect without a rebuild. To protect a new route, also add it to `config.matcher` in `web/middleware.ts`, because the middleware only runs on listed paths.
 
-Currently Interview Prep and Job Suggestions require sign-in, and the other pages are public. `/resume-writer` is set to `requireSSO: true`, but it isn't in the middleware matcher, so the setting has no effect yet.
+Currently Interview Prep, Job Suggestions, Resume Writer and Settings require sign-in. The other pages are public.
 
 ## Settings page
 

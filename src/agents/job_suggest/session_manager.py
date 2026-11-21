@@ -10,6 +10,7 @@ from pathlib import Path
 import time
 from typing import Any
 import uuid
+from src.services.user_context import user_data_dir
 
 
 class JobSuggestSessionManager:
@@ -26,17 +27,19 @@ class JobSuggestSessionManager:
     """
 
     def __init__(self, base_dir: str | None = None):
-        if base_dir is None:
-            project_root = Path(__file__).resolve().parents[3]
-            base_dir_path = project_root / "data" / "user"
-        else:
-            base_dir_path = Path(base_dir)
+        # None -> resolve per request from the signed-in user (src/services/user_context)
+        self._fixed_base_dir = Path(base_dir) if base_dir is not None else None
 
-        self.base_dir = base_dir_path
-        self.base_dir.mkdir(parents=True, exist_ok=True)
+    @property
+    def base_dir(self) -> Path:
+        """Storage directory for the current user (or the fixed base_dir if given)."""
+        path = self._fixed_base_dir if self._fixed_base_dir is not None else user_data_dir()
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
-        self.sessions_file = self.base_dir / "job_suggest_sessions.json"
-        self._ensure_file()
+    @property
+    def sessions_file(self) -> Path:
+        return self.base_dir / "job_suggest_sessions.json"
 
     def _ensure_file(self):
         if not self.sessions_file.exists():

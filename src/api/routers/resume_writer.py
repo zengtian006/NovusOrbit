@@ -15,7 +15,7 @@ if str(project_root) not in sys.path:
 import json
 
 from src.agents.resume_writer.edit_agent import (
-    TOOL_CALLS_DIR,
+    tool_calls_dir,
     EditAgent,
     load_history,
     print_stats,
@@ -172,7 +172,7 @@ async def get_tool_call(operation_id: str):
     """Get tool call details"""
     try:
         # Find matching file
-        for filepath in TOOL_CALLS_DIR.glob(f"{operation_id}_*.json"):
+        for filepath in tool_calls_dir().glob(f"{operation_id}_*.json"):
             with open(filepath, encoding="utf-8") as f:
                 return json.load(f)
         raise HTTPException(status_code=404, detail="Tool call not found")

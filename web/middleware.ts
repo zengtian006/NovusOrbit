@@ -10,6 +10,7 @@ const PROTECTED_ROUTES = [
   "/interview",
   "/settings",
   "/job-suggest",
+  "/resume-writer",
 ];
 
 // Cache for page settings
@@ -64,6 +65,7 @@ export const config = {
     "/interview",
     "/settings",
     "/job-suggest",
+    "/resume-writer",
   ],
 };
 

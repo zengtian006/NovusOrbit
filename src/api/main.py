@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+import asyncio
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from src.api.routers import (
     chat,
@@ -17,7 +19,9 @@ from src.api.routers import (
     settings,
     system,
 )
+from src.api.user_middleware import UserContextMiddleware
 from src.logging import get_logger
+from src.services.user_context import user_data_dir
 
 # Note: Don't set service_prefix here - start_web.py already adds [Backend] prefix
 logger = get_logger("API")
@@ -31,6 +35,15 @@ async def lifespan(app: FastAPI):
     """
     # Execute on startup
     logger.info("Application startup")
+
+    # One-time move of pre-per-user shared data into the first admin's account
+    # (no-op unless MIGRATE_LEGACY_DATA=1; idempotent)
+    try:
+        from src.services.data_migration import migrate_legacy_data
+
+        await asyncio.to_thread(migrate_legacy_data)
+    except Exception:
+        logger.exception("Legacy data migration failed; continuing startup")
 
     # Initialize LLM client early to set environment variables for LightRAG
     # LightRAG reads OPENAI_API_KEY from os.environ internally, so we must
@@ -68,9 +81,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount user directory as static root for generated artifacts
-# This allows frontend to access generated artifacts (images, PDFs, etc.)
-# URL: /api/outputs/<path> -> NovusOrbit/data/user/<path>
 project_root = Path(__file__).parent.parent.parent
 user_dir = project_root / "data" / "user"
 
@@ -84,7 +94,22 @@ except Exception:
     if not user_dir.exists():
         user_dir.mkdir(parents=True)
 
-app.mount("/api/outputs", StaticFiles(directory=str(user_dir)), name="outputs")
+# Identify the signed-in user (NextAuth session cookie) for per-user data.
+# Never rejects requests; signed-out visitors use the shared anonymous space.
+app.add_middleware(UserContextMiddleware)
+
+
+@app.get("/api/outputs/{file_path:path}", include_in_schema=False)
+async def get_output_file(file_path: str):
+    """
+    Serve generated files (e.g. narration audio) from the current user's data
+    directory: /api/outputs/<path> -> data/user/accounts/<uid>/<path>.
+    """
+    base = user_data_dir().resolve()
+    target = (base / file_path).resolve()
+    if not target.is_relative_to(base) or not target.is_file():
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(target)
 
 # Include routers
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])

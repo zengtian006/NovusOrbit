@@ -50,6 +50,6 @@ except Exception as e:
     traceback.print_exc()
 
 from .rag_tool import rag_search
-from .web_search import web_search
+from .web_search import aweb_search, web_search
 
-__all__ = ["rag_search", "web_search"]
+__all__ = ["aweb_search", "rag_search", "web_search"]

@@ -163,6 +163,8 @@ async def suggest_jobs(request: SuggestJobsRequest):
             "used_portfolio": result["used_portfolio"],
             "used_job_search": result.get("used_job_search", False),
             "job_count": result.get("job_count", 0),
+            "source_status": result.get("source_status", {}),
+            "fallback_reason": result.get("fallback_reason"),
             "kb_name": request.kb_name,
             "preferences": preferences,
         }

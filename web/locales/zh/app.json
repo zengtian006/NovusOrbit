@@ -245,5 +245,6 @@
   "Collapse right panel": "收起右侧面板",
   "Expand right panel": "展开右侧面板",
   "Add Portfolio": "添加作品集",
-  "Send message": "发送消息"
+  "Send message": "发送消息",
+  "Live listings from Indeed and LinkedIn are unavailable right now. These are AI-generated role ideas based on your portfolio, not real job postings.": "暂时无法获取 Indeed 和 LinkedIn 的实时职位。以下是根据你的作品集由 AI 生成的职位方向，并非真实招聘信息。"
 }
