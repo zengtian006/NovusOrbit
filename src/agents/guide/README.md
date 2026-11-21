@@ -7,7 +7,7 @@ Guided Learning is a personalized learning system based on notebook content. The
 ## Features
 
 1. **Intelligent Knowledge Point Location** (LocateAgent)
-   - Analyzes all records in the notebook (solve, question, research, Co-Writer)
+   - Analyzes all records in the notebook (question, research, and resume writer outputs)
    - Identifies core knowledge points and organizes them in progressive relationships
    - Generates 3-5 structured knowledge point learning plans
 
