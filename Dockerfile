@@ -105,7 +105,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NODE_ENV=production \
     # Default ports (can be overridden)
     BACKEND_PORT=8001 \
-    FRONTEND_PORT=3782
+    FRONTEND_PORT=3782 \
+    # Move pre-per-user shared data into the first admin account on first start
+    MIGRATE_LEGACY_DATA=1
 
 WORKDIR /app
 

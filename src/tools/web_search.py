@@ -27,6 +27,8 @@ Available Providers:
 """
 
 # Re-export from services layer
+import asyncio
+
 from src.services.search import (
     CONSOLIDATION_TYPES,
     PROVIDER_TEMPLATES,
@@ -46,7 +48,22 @@ from src.services.search import (
     web_search,
 )
 
+
+
+async def aweb_search(*args, **kwargs):
+    """
+    Async wrapper around web_search().
+
+    Search providers use synchronous HTTP clients; calling web_search() directly
+    from an async handler blocks the event loop (and with it every other request
+    on the single uvicorn worker) for the duration of the search. This runs it
+    in a worker thread instead. Context variables are propagated.
+    """
+    return await asyncio.to_thread(web_search, *args, **kwargs)
+
+
 __all__ = [
+    "aweb_search",
     # Main function
     "web_search",
     "get_current_config",

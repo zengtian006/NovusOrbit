@@ -18,16 +18,21 @@ from openai import AsyncAzureOpenAI, AsyncOpenAI
 
 from src.agents.base_agent import BaseAgent
 from src.services.tts import get_tts_config
+from src.services.user_context import user_data_dir
 
 # Import shared stats from edit_agent for legacy compatibility
 
 # Define storage path (unified under user/resume-writer/ directory)
-USER_DIR = Path(__file__).parent.parent.parent.parent / "data" / "user" / "resume-writer" / "audio"
+
+
+def audio_dir() -> Path:
+    """Narration audio for the current user (served at /api/outputs/resume-writer/audio/)."""
+    return user_data_dir() / "resume-writer" / "audio"
 
 
 def ensure_dirs():
     """Ensure directories exist"""
-    USER_DIR.mkdir(parents=True, exist_ok=True)
+    audio_dir().mkdir(parents=True, exist_ok=True)
 
 
 class NarratorAgent(BaseAgent):
@@ -310,7 +315,7 @@ class NarratorAgent(BaseAgent):
 
         audio_id = datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
         audio_filename = f"narration_{audio_id}.mp3"
-        audio_path = USER_DIR / audio_filename
+        audio_path = audio_dir() / audio_filename
 
         self.logger.info(f"Starting TTS audio generation - ID: {audio_id}, Voice: {voice}")
 

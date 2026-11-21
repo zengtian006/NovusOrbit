@@ -9,8 +9,12 @@ from pathlib import Path
 # Project root directory (NovusOrbit/)
 PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
 
-# Knowledge base base directory
-KNOWLEDGE_BASES_DIR = PROJECT_ROOT / "data" / "portfolios"
+# Knowledge base base directory for the CLI (start_kb / add_documents).
+# Portfolios are stored per user; set NOVUS_USER_ID to manage a specific user's
+# portfolios (their MongoDB user id), otherwise the shared anonymous space is used.
+KNOWLEDGE_BASES_DIR = (
+    PROJECT_ROOT / "data" / "portfolios" / "users" / (os.getenv("NOVUS_USER_ID") or "anonymous")
+)
 
 # raganything module path
 RAGANYTHING_PATH = PROJECT_ROOT.parent / "raganything" / "RAG-Anything"

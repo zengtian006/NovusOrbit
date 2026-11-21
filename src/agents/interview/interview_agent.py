@@ -22,7 +22,7 @@ if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
 from src.agents.base_agent import BaseAgent
-from src.tools import rag_search, web_search
+from src.tools import aweb_search, rag_search
 
 
 # Difficulty level guidance
@@ -202,7 +202,7 @@ class InterviewAgent(BaseAgent):
                 f"Best answer for interview question: {question} "
                 f"for {job_title}{company_part}"
             )
-            web_result = web_search(query=web_query, verbose=False)
+            web_result = await aweb_search(query=web_query, verbose=False)
             web_context = web_result.get("answer", "")
             if web_context:
                 self.logger.info(

@@ -8,7 +8,8 @@ True LlamaIndex integration using official llama-index library.
 
 import asyncio
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+import threading
+from typing import Any, Dict, List, Optional, Tuple
 
 from llama_index.core import (
     Document,
@@ -27,6 +28,37 @@ from src.services.embedding import get_embedding_client, get_embedding_config
 DEFAULT_KB_BASE_DIR = str(
     Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "portfolios"
 )
+
+# Loaded indexes, keyed by storage dir. Each entry stores a signature of the
+# persisted files so an index re-written by another request/process is reloaded.
+_INDEX_CACHE: Dict[str, Tuple[Tuple, Any]] = {}
+_INDEX_CACHE_LOCK = threading.Lock()
+
+
+def _storage_signature(storage_dir: Path) -> Tuple:
+    """(name, mtime, size) of every persisted file; changes whenever the index is re-saved."""
+    return tuple(
+        sorted((f.name, f.stat().st_mtime_ns, f.stat().st_size) for f in storage_dir.glob("*.json"))
+    )
+
+
+def _load_index_cached(storage_dir: Path):
+    """Return the index for storage_dir, loading from disk only when it changed."""
+    key = str(storage_dir)
+    sig = _storage_signature(storage_dir)
+    with _INDEX_CACHE_LOCK:
+        cached = _INDEX_CACHE.get(key)
+        if cached and cached[0] == sig:
+            return cached[1]
+        storage_context = StorageContext.from_defaults(persist_dir=key)
+        index = load_index_from_storage(storage_context)
+        _INDEX_CACHE[key] = (sig, index)
+        return index
+
+
+def _invalidate_index_cache(storage_dir: Path) -> None:
+    with _INDEX_CACHE_LOCK:
+        _INDEX_CACHE.pop(str(storage_dir), None)
 
 
 class CustomEmbedding(BaseEmbedding):
@@ -190,6 +222,7 @@ class LlamaIndexPipeline:
             # Persist index
             index.storage_context.persist(persist_dir=str(storage_dir))
             self.logger.info(f"Index persisted to {storage_dir}")
+            _invalidate_index_cache(storage_dir)
 
             self.logger.info(f"KB '{kb_name}' initialized successfully with LlamaIndex")
             return True
@@ -246,12 +279,14 @@ class LlamaIndexPipeline:
 
         if not storage_dir.exists():
             self.logger.warning(f"No LlamaIndex storage found at {storage_dir}")
+            # Empty answer so callers never feed this message to the LLM as context
             return {
                 "query": query,
-                "answer": "No documents indexed. Please upload documents first.",
+                "answer": "",
                 "content": "",
                 "mode": mode,
                 "provider": "llamaindex",
+                "error": "No documents indexed. Please upload documents first.",
             }
 
         try:
@@ -259,8 +294,7 @@ class LlamaIndexPipeline:
             loop = asyncio.get_event_loop()
 
             def load_and_retrieve():
-                storage_context = StorageContext.from_defaults(persist_dir=str(storage_dir))
-                index = load_index_from_storage(storage_context)
+                index = _load_index_cached(storage_dir)
                 top_k = kwargs.get("top_k", 5)
 
                 # Use retriever instead of query_engine to avoid LLM requirement
@@ -291,12 +325,14 @@ class LlamaIndexPipeline:
             import traceback
 
             self.logger.error(traceback.format_exc())
+            # Empty answer so callers never feed the error text to the LLM as context
             return {
                 "query": query,
-                "answer": f"Search failed: {str(e)}",
+                "answer": "",
                 "content": "",
                 "mode": mode,
                 "provider": "llamaindex",
+                "error": f"Search failed: {e}",
             }
 
     async def add_documents(self, kb_name: str, file_paths: List[str], **kwargs) -> bool:
@@ -361,6 +397,7 @@ class LlamaIndexPipeline:
                 self.logger.info(f"Loading existing index from {storage_dir}...")
 
                 def load_and_insert():
+                    _invalidate_index_cache(storage_dir)
                     storage_context = StorageContext.from_defaults(persist_dir=str(storage_dir))
                     index = load_index_from_storage(storage_context)
 
@@ -387,6 +424,7 @@ class LlamaIndexPipeline:
                 num_added = await loop.run_in_executor(None, create_index)
                 self.logger.info(f"Created new index with {num_added} documents")
 
+            _invalidate_index_cache(storage_dir)
             self.logger.info(f"Successfully added documents to KB '{kb_name}'")
             return True
 
@@ -411,6 +449,7 @@ class LlamaIndexPipeline:
 
         kb_dir = Path(self.kb_base_dir) / kb_name
 
+        _invalidate_index_cache(kb_dir / "llamaindex_storage")
         if kb_dir.exists():
             shutil.rmtree(kb_dir)
             self.logger.info(f"Deleted KB '{kb_name}'")
