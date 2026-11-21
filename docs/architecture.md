@@ -12,7 +12,7 @@ Browser ──HTTPS──▶  │ Caddy :443  (Let's Encrypt TLS, apex → www r
                     │ Docker container "novusorbit" (supervisord)                       │
                     │   ├─ backend:  uvicorn src.api.main:app        :8001              │
                     │   └─ frontend: node server.js (Next standalone) :3782             │
-                    │ volumes: /opt/novusorbit/data/{user,knowledge_bases}              │
+                    │ volumes: /opt/novusorbit/data/{user,portfolios}                    │
                     └───────────────────────────────────────────────────────────────────┘
                                  │                         │
                           LLM / embedding /          MongoDB Atlas
@@ -72,12 +72,11 @@ Every agent extends `BaseAgent`, which provides an LLM client, prompt loading an
 
 | Data | Location | Notes |
 |---|---|---|
-| Portfolios (raw files + vector indexes) | `data/portfolios/<name>/` and `data/portfolios/kb_config.json` | See the warning below |
+| Portfolios (raw files + vector indexes) | `data/portfolios/<name>/` and `data/portfolios/kb_config.json` | Mounted volume in Docker |
 | Job boards | `data/user/jobs/` | JSON files |
 | Chat/interview/job-suggest sessions, notebooks, outputs, logs | `data/user/…` | JSON and Markdown files |
 | Users, OAuth accounts, sessions, analytics | MongoDB (`DATABASE_URL`) | Managed by Prisma |
 
-> **Known issue:** the production and local `docker-compose.yml` mount `data/user` and `data/knowledge_bases`, but portfolios are stored in `data/portfolios`. That directory isn't mounted, so uploaded portfolios are lost whenever the container is recreated, including on every deploy. The fix is to mount `./data/portfolios:/app/data/portfolios`. See [deployment.md](deployment.md#data-persistence).
 
 ## Container image
 

@@ -31,10 +31,8 @@ State is stored locally in `terraform-ec2/terraform.tfstate`; the S3 backend is 
    ```
    On first boot, `user_data.sh` does the following:
    - installs Docker, Docker Compose and Caddy
-   - pulls the secrets into `/opt/novusorbit/.env`
    - writes `/opt/novusorbit/docker-compose.yml` and the Caddyfile
-   - creates `/opt/novusorbit/update.sh`
-   - starts the app
+   - installs `host/update.sh` as `/opt/novusorbit/update.sh` and runs it, which writes `.env` and starts the app
 
    Caddy gets a Let's Encrypt certificate automatically once DNS points to the Elastic IP.
 4. **Google OAuth:** add `https://www.<domain>/api/auth/callback/google` as an authorized redirect URI. See [authentication.md](authentication.md).
@@ -47,7 +45,13 @@ cd terraform-ec2
 ./deploy.sh -s -t v1.2.0   # push and deploy a specific tag
 ```
 
-`update.sh` runs `docker compose pull`, then `docker compose up -d --force-recreate`, then `docker image prune -f`. Expect about 30 seconds of downtime while the container restarts. The script waits up to 5 minutes for the SSM command to finish.
+Each deploy ships the repo's `host/update.sh` to the instance over SSM, so the host always runs the current version. The script:
+1. Writes `.env` from the secret's `DOTENV` key.
+2. Makes sure every data volume is mounted (see [Data persistence](#data-persistence)).
+3. Runs `docker compose pull` and `docker compose up -d --force-recreate`, then prunes old images.
+4. Waits up to 3 minutes for the backend and frontend to respond.
+
+`deploy.sh` prints the host output and exits non-zero if any step fails. Expect about 30 seconds of downtime while the container restarts.
 
 Check the deploy afterwards:
 
@@ -58,15 +62,15 @@ curl -s -o /dev/null -w "%{http_code}\n" https://www.novusorbit.com/api/v1/portf
 
 ## Changing secrets or environment variables
 
-The instance's `.env` is written **only on first boot**, and `ec2.tf` ignores changes to `user_data`. Running `terraform apply` updates Secrets Manager but **not** the running app. To change a value:
+Every app setting and secret comes from `terraform.tfvars`. Terraform renders the complete `.env` (`templates/app.env.tftpl`) into the `DOTENV` key of the Secrets Manager secret, and `host/update.sh` writes it to `/opt/novusorbit/.env` on every deploy:
 
 ```bash
-# 1. Update terraform.tfvars, then: terraform apply   (keeps Secrets Manager in sync)
-# 2. Edit the live .env and restart:
-aws ssm start-session --target <instance_id> --region us-east-1
-sudo vi /opt/novusorbit/.env
-cd /opt/novusorbit && sudo docker compose up -d --force-recreate
+vi terraform.tfvars        # change the value
+terraform apply            # updates the secret (only the secret version changes)
+./deploy.sh -s             # host refreshes .env and recreates the container
 ```
+
+Don't edit `/opt/novusorbit/.env` on the host, because the next deploy overwrites it. To add a new variable, add it to `templates/app.env.tftpl` (plus a variable in `variables.tf` and an entry in `secrets.tf`).
 
 ## Operations
 
@@ -83,15 +87,16 @@ sudo journalctl -u caddy -f                       # proxy/TLS logs
 
 App data lives under `/opt/novusorbit/data/` on the instance's EBS root volume and is bind-mounted into the container:
 
-| Host path | Container path |
-|---|---|
-| `/opt/novusorbit/data/user` | `/app/data/user` |
-| `/opt/novusorbit/data/knowledge_bases` | `/app/data/knowledge_bases` |
+| Host path | Container path | Contents |
+|---|---|---|
+| `/opt/novusorbit/data/user` | `/app/data/user` | Job boards, sessions, notebooks, settings, logs |
+| `/opt/novusorbit/data/portfolios` | `/app/data/portfolios` | Uploaded CVs and their indexes |
+| `/opt/novusorbit/data/knowledge_bases` | `/app/data/knowledge_bases` | Legacy, unused |
 
-> ⚠️ **Portfolios aren't persisted yet.** The backend stores portfolios in `/app/data/portfolios`, which isn't mounted, so every deploy deletes them. To fix this:
-> 1. Add `- ./data/portfolios:/app/data/portfolios` to the volumes in `user_data.sh`. This only applies to newly created instances.
-> 2. Add the same line on the live host in `/opt/novusorbit/docker-compose.yml`, then run `mkdir -p /opt/novusorbit/data/portfolios`.
-> 3. Make the same change in the root `docker-compose.yml`.
+Before November 2026 the portfolios volume wasn't mounted, so portfolios were lost on every redeploy. `update.sh` fixes older hosts automatically. On the first deploy that finds the volume missing, it:
+1. copies any portfolios out of the running container
+2. adds the volume line (after backing up `docker-compose.yml.bak`)
+3. recreates the container
 
 There are no automated backups. If you want them, consider EBS snapshots, for example with AWS Data Lifecycle Manager.
 
