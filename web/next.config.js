@@ -29,6 +29,11 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
+  // The old Knowledge Base page was renamed to My Portfolio
+  async redirects() {
+    return [{ source: "/knowledge", destination: "/portfolio", permanent: true }];
+  },
+
   // Headers for security and SEO
   async headers() {
     return [

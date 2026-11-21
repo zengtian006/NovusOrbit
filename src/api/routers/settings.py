@@ -116,10 +116,6 @@ class SidebarNavOrder(BaseModel):
     advanced: List[str]
 
 
-class PageSettings(BaseModel):
-    requireSSO: bool = False
-
-
 class UISettings(BaseModel):
     theme: Literal["light", "dark"] = "light"
     language: Literal["zh", "en"] = "en"
