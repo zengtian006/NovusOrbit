@@ -22,18 +22,3 @@ pages:
 
   "/jobs":
     requireSSO: false
-
-  "/notebook":
-    requireSSO: false
-    
-  "/question":
-    requireSSO: false
-    
-  "/guide":
-    requireSSO: false
-    
-  "/ideagen":
-    requireSSO: false
-    
-  "/research":
-    requireSSO: false

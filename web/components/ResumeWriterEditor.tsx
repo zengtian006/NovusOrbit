@@ -39,9 +39,7 @@ import {
   ChevronDown,
   ChevronRight,
   LayoutTemplate,
-  Import,
 } from "lucide-react";
-import NotebookImportModal from "./NotebookImportModal";
 import { apiUrl } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -194,7 +192,6 @@ export default function ResumeWriterEditor({
   const [backendConnected, setBackendConnected] = useState<boolean | null>(
     null,
   );
-  const [showImportModal, setShowImportModal] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -690,15 +687,6 @@ export default function ResumeWriterEditor({
             />
           </div>
 
-          <button
-            onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-all"
-            title={t("Import")}
-          >
-            <Import className="w-3.5 h-3.5" />
-            {t("Import")}
-          </button>
-
           <div className="flex-1" />
 
           {backendConnected !== null && (
@@ -1021,18 +1009,6 @@ export default function ResumeWriterEditor({
           </div>
         </div>
       </div>
-
-      {/* Modals */}
-      <NotebookImportModal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onImport={(importedContent) => {
-          const newContent = content
-            ? content + "\n\n" + importedContent
-            : importedContent;
-          setContent(newContent);
-        }}
-      />
     </div>
   );
 }

@@ -86,13 +86,8 @@ def load_page_settings() -> dict:
         "/job-suggest": {"requireSSO": True},
         "/jobs": {"requireSSO": False},
         "/portfolio": {"requireSSO": False},
-        "/notebook": {"requireSSO": False},
         "/history": {"requireSSO": False},
         "/resume-writer": {"requireSSO": False},
-        "/question": {"requireSSO": False},
-        "/guide": {"requireSSO": False},
-        "/ideagen": {"requireSSO": False},
-        "/research": {"requireSSO": False},
     }
 
 

@@ -30,7 +30,7 @@ class TaskIDManager:
         Generate unique ID for task
 
         Args:
-            task_type: Task type (e.g., 'kb_init', 'kb_upload', 'question_gen', 'solve', 'research')
+            task_type: Task type (e.g., 'kb_init', 'kb_upload')
             task_key: Task unique identifier (e.g., knowledge base name, question ID, etc.)
 
         Returns:

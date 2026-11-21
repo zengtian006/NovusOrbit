@@ -67,7 +67,7 @@ def get_lightrag_forwarding_config() -> dict:
         from ..config import get_global_log_level
 
         project_root = Path(__file__).resolve().parent.parent.parent.parent
-        config = load_config_with_main("solve_config.yaml", project_root)
+        config = load_config_with_main("main.yaml", project_root)
         logging_config = config.get("logging", {})
 
         # Use the unified global log level

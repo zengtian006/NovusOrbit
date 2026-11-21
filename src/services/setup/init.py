@@ -33,18 +33,12 @@ def init_user_directories(project_root: Path | None = None) -> None:
     """
     Initialize user data directories if they don't exist.
 
-    Creates the following directory structure:
+    Creates the following directory structure (feature modules create their
+    own subdirectories, e.g. jobs/, interview/, job_suggest/, on first use):
     data/user/
-    ├── solve/              # Problem solving outputs
-    ├── question/           # Question generation outputs
-    ├── research/           # Research outputs
-    │   ├── cache/          # Research cache
-    │   └── reports/        # Research reports
-    ├── guide/              # Guided learning outputs
-    ├── notebook/           # Notebook data
     ├── logs/               # User logs
-    ├── run_code_workspace/ # Code execution workspace
-    └── user_history.json   # User history file
+    ├── settings/           # interface.json (UI settings)
+    └── user_history.json   # Marker file checked by the Docker entrypoint
 
     Args:
         project_root: Project root directory (if None, will try to detect)
@@ -59,7 +53,7 @@ def init_user_directories(project_root: Path | None = None) -> None:
 
     # Get user data directory from config
     try:
-        config = load_config_with_main("solve_config.yaml", project_root)
+        config = load_config_with_main("main.yaml", project_root)
         user_data_dir = config.get("paths", {}).get("user_data_dir", "./data/user")
 
         # Convert relative path to absolute
@@ -71,21 +65,9 @@ def init_user_directories(project_root: Path | None = None) -> None:
         # Fallback to default
         user_data_dir = project_root / "data" / "user"
 
-    # Required subdirectories (based on actual usage in the codebase)
+    # Required subdirectories
     required_dirs = [
-        "solve",  # Problem solving outputs
-        "question",  # Question generation outputs
-        "research",  # Research outputs (will have cache/ and reports/ subdirs)
-        "guide",  # Guided learning outputs
-        "notebook",  # Notebook data
         "logs",  # User logs
-        "run_code_workspace",  # Code execution workspace
-    ]
-
-    # Additional subdirectories for specific modules
-    research_subdirs = [
-        "cache",  # Research cache
-        "reports",  # Research reports
     ]
 
     # Check if user directory exists and is empty
@@ -121,13 +103,6 @@ def init_user_directories(project_root: Path | None = None) -> None:
             dir_path.mkdir(parents=True, exist_ok=True)
             logger.success(f"Created: {dir_name}/")
 
-        # Create research subdirectories
-        research_dir = user_data_dir / "research"
-        for subdir_name in research_subdirs:
-            subdir_path = research_dir / subdir_name
-            subdir_path.mkdir(parents=True, exist_ok=True)
-            logger.success(f"Created: research/{subdir_name}/")
-
         # Create user_history.json if it doesn't exist
         user_history_file = user_data_dir / "user_history.json"
         if not user_history_file.exists():
@@ -160,12 +135,6 @@ def init_user_directories(project_root: Path | None = None) -> None:
         for dir_name in required_dirs:
             dir_path = user_data_dir / dir_name
             dir_path.mkdir(parents=True, exist_ok=True)
-
-        # Ensure research subdirectories exist
-        research_dir = user_data_dir / "research"
-        for subdir_name in research_subdirs:
-            subdir_path = research_dir / subdir_name
-            subdir_path.mkdir(parents=True, exist_ok=True)
 
         # Ensure user_history.json exists
         user_history_file = user_data_dir / "user_history.json"

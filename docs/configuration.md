@@ -41,19 +41,15 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 ## `config/main.yaml`
 
 - **`system.language`**: `en` or `zh`. Sets the prompt language.
-- **`paths.*`**: data directories (`data/user`, `data/portfolios`, per-feature output directories).
+- **`paths.*`**: `user_data_dir` (`data/user`), `portfolios_dir` (`data/portfolios`), `user_log_dir`.
 - **`tools.*`**: tool switches and defaults.
-  - `rag_tool`
-  - `run_code`: workspace and allowed roots
-  - `web_search.enabled`: global on/off switch
-  - `query_item`
+  - `rag_tool.kb_base_dir`: where portfolios live
+  - `web_search.enabled`: global on/off switch for web search
 - **`logging.*`**: level, file and console output, and which RAG library loggers to capture.
-- **`question.*`** and **`research.*`**: pipeline settings for those learning tools, including research presets (`quick`, `medium`, `deep`, `auto`).
-- **`solve.valid_tools`**: still read by a startup check in `src/api/main.py`. It's a leftover from a removed feature, so keep the key.
 
 ## `config/agents.yaml`
 
-Per-agent `temperature` and `max_tokens`, for `research`, `question`, `guide`, `ideagen`, `resume_writer` and `narrator`. Agents read these through `get_agent_params(<name>)`.
+Per-module `temperature` and `max_tokens` for `resume_writer` and `narrator`. Agents read these through `get_agent_params(<module>)`. Modules without an entry (`chat`, `interview`, `job_suggest`) use the defaults: temperature 0.5 and 4096 max tokens.
 
 ## `config/page_settings.yaml`
 
@@ -67,7 +63,7 @@ pages:
 
 The middleware re-reads this file every 30 seconds, so changes take effect without a rebuild. To protect a new route, also add it to `config.matcher` in `web/middleware.ts`, because the middleware only runs on listed paths.
 
-Current defaults: Interview Prep, Job Suggestions and Resume Writer require sign-in. All other pages are public.
+Currently Interview Prep and Job Suggestions require sign-in, and the other pages are public. `/resume-writer` is set to `requireSSO: true`, but it isn't in the middleware matcher, so the setting has no effect yet.
 
 ## Settings page
 

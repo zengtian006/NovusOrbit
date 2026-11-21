@@ -58,7 +58,6 @@ llama-index>=0.14.12
 # ============================================
 # Academic and research tools
 # ============================================
-arxiv>=2.0.0
 
 # ============================================
 # Scientific computing (for RAG and code execution)

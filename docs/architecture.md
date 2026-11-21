@@ -33,8 +33,7 @@ The browser calls the FastAPI backend directly for feature APIs; `NEXT_PUBLIC_AP
 | `/api/v1/job-suggest` | `job_suggest.py` | Suggestions, per-job detail, JD scraping, saved sessions |
 | `/api/v1/resume_writer` | `resume_writer.py` | Edit/automark, history, export, narration (TTS) |
 | `/api/v1/chat` (WS) | `chat.py` | Home chat assistant, sessions |
-| `/api/v1/question`, `/research`, `/guide`, `/ideagen`, `/notebook` | | Learning tools |
-| `/api/v1/settings`, `/config`, `/system`, `/agent-config`, `/dashboard` | | UI settings, provider config, health/status, activity |
+| `/api/v1/settings`, `/config`, `/system` | | UI settings and page sign-in settings, provider config, health/status |
 | `/api/feedback` | `feedback.py` | Sends feedback email over SMTP, or logs it if SMTP isn't set |
 | `/api/outputs/*` | static | Files generated under `data/user/` |
 
@@ -48,7 +47,6 @@ Every agent extends `BaseAgent`, which provides an LLM client, prompt loading an
 | `job_suggest` | Portfolio RAG → search queries → Indeed/LinkedIn scrape (`src/mcp/scrapers`) → LLM ranking and gap analysis |
 | `resume_writer` | `edit_agent` (rewrite/automark) and `narrator_agent` (script + TTS) |
 | `chat` | Multi-turn assistant with optional RAG and web search |
-| `research`, `question`, `guide`, `ideagen` | Learning tools (multi-agent pipelines) |
 
 ### Services (`src/services/`)
 
@@ -62,7 +60,7 @@ Every agent extends `BaseAgent`, which provides an LLM client, prompt loading an
 ## Frontend (`web/`)
 
 - Next.js 16 App Router, React 19 and Tailwind. Built with `output: "standalone"`.
-- **State:** `context/GlobalContext.tsx` holds cross-page state: the question/research/chat runs, UI settings, theme, and sidebar order.
+- **State:** `context/GlobalContext.tsx` holds cross-page state: the Home chat session, UI settings, theme, and sidebar order.
 - **Auth:** NextAuth v5 with Google and the Prisma adapter on MongoDB (`lib/auth.ts`, `prisma/schema.prisma`). See [authentication.md](authentication.md).
 - **Route protection:** `middleware.ts` reads `config/page_settings.yaml`, caches it for 30 seconds, and sends signed-out users to `/auth/signin` on pages marked `requireSSO: true`.
 - **i18n:** i18next with `locales/{en,zh}/*.json`. Run `npm run i18n:check` to check that keys match across languages.
@@ -74,7 +72,7 @@ Every agent extends `BaseAgent`, which provides an LLM client, prompt loading an
 |---|---|---|
 | Portfolios (raw files + vector indexes) | `data/portfolios/<name>/` and `data/portfolios/kb_config.json` | Mounted volume in Docker |
 | Job boards | `data/user/jobs/` | JSON files |
-| Chat/interview/job-suggest sessions, notebooks, outputs, logs | `data/user/…` | JSON and Markdown files |
+| Chat/interview/job-suggest sessions, resume writer history, settings, logs | `data/user/…` | JSON and Markdown files |
 | Users, OAuth accounts, sessions, analytics | MongoDB (`DATABASE_URL`) | Managed by Prisma |
 
 

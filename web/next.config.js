@@ -19,9 +19,6 @@ const nextConfig = {
   // Power DNS prefetching for better performance
   poweredByHeader: false,
 
-  // Transpile mermaid and related packages for proper ESM handling
-  transpilePackages: ["mermaid"],
-
   // Image optimization configuration
   images: {
     formats: ["image/avif", "image/webp"],
@@ -29,9 +26,14 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
-  // The old Knowledge Base page was renamed to My Portfolio
+  // Redirects for removed/renamed pages
   async redirects() {
-    return [{ source: "/knowledge", destination: "/portfolio", permanent: true }];
+    return [
+      // The old Knowledge Base page was renamed to My Portfolio
+      { source: "/knowledge", destination: "/portfolio", permanent: true },
+      // /chat was a duplicate of the Home chat
+      { source: "/chat", destination: "/", permanent: true },
+    ];
   },
 
   // Headers for security and SEO
@@ -59,27 +61,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-
-  // Turbopack configuration (Next.js 16+ uses Turbopack by default for dev)
-  turbopack: {
-    resolveAlias: {
-      // Fix for mermaid's cytoscape dependency - use CJS version
-      cytoscape: "cytoscape/dist/cytoscape.cjs.js",
-    },
-  },
-
-  // Webpack configuration (used for production builds - next build)
-  webpack: (config) => {
-    const path = require("path");
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      cytoscape: path.resolve(
-        __dirname,
-        "node_modules/cytoscape/dist/cytoscape.cjs.js",
-      ),
-    };
-    return config;
   },
 };
 

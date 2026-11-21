@@ -35,46 +35,46 @@ class TestPromptManager:
         pm2 = get_prompt_manager()
         assert pm1 is pm2
 
-    def test_load_prompts_research_module(self):
-        """Test loading prompts for research module."""
+    def test_load_prompts_interview_module(self):
+        """Test loading prompts for interview module."""
         pm = get_prompt_manager()
         prompts = pm.load_prompts(
-            module_name="research",
-            agent_name="research_agent",
+            module_name="interview",
+            agent_name="interview_agent",
             language="en",
         )
         assert isinstance(prompts, dict)
-        # research_agent should have system section
-        assert "system" in prompts or prompts == {}
+        assert "question_system" in prompts
 
-    def test_load_prompts_solve_module(self):
-        """Test loading prompts for solve module."""
+    def test_load_prompts_resume_writer_module(self):
+        """Test loading prompts for resume writer module."""
         pm = get_prompt_manager()
         prompts = pm.load_prompts(
-            module_name="solve",
-            agent_name="solve_agent",
+            module_name="resume_writer",
+            agent_name="edit_agent",
             language="en",
         )
         assert isinstance(prompts, dict)
+        assert prompts
 
-    def test_load_prompts_guide_module(self):
-        """Test loading prompts for guide module."""
+    def test_load_prompts_chat_module(self):
+        """Test loading prompts for chat module."""
         pm = get_prompt_manager()
         prompts = pm.load_prompts(
-            module_name="guide",
+            module_name="chat",
             agent_name="chat_agent",
             language="en",
         )
         assert isinstance(prompts, dict)
 
-    def test_load_prompts_with_subdirectory(self):
-        """Test loading prompts with subdirectory (e.g., solve_loop)."""
+    def test_load_prompts_with_missing_subdirectory(self):
+        """Test that a missing subdirectory returns a dict instead of raising."""
         pm = get_prompt_manager()
         prompts = pm.load_prompts(
-            module_name="solve",
-            agent_name="solve_agent",
+            module_name="resume_writer",
+            agent_name="edit_agent",
             language="en",
-            subdirectory="solve_loop",
+            subdirectory="does_not_exist",
         )
         assert isinstance(prompts, dict)
 
@@ -83,10 +83,10 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # First load
-        prompts1 = pm.load_prompts("research", "research_agent", "en")
+        prompts1 = pm.load_prompts("interview", "interview_agent", "en")
 
         # Second load should return cached version
-        prompts2 = pm.load_prompts("research", "research_agent", "en")
+        prompts2 = pm.load_prompts("interview", "interview_agent", "en")
 
         assert prompts1 is prompts2
 
@@ -95,8 +95,8 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # Load some prompts
-        pm.load_prompts("research", "research_agent", "en")
-        pm.load_prompts("guide", "chat_agent", "en")
+        pm.load_prompts("interview", "interview_agent", "en")
+        pm.load_prompts("chat", "chat_agent", "en")
 
         assert len(pm._cache) >= 2
 
@@ -108,17 +108,17 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # Load prompts for multiple modules
-        pm.load_prompts("research", "research_agent", "en")
-        pm.load_prompts("guide", "chat_agent", "en")
+        pm.load_prompts("interview", "interview_agent", "en")
+        pm.load_prompts("chat", "chat_agent", "en")
 
         initial_count = len(pm._cache)
 
-        # Clear only research cache
-        pm.clear_cache("research")
+        # Clear only interview cache
+        pm.clear_cache("interview")
 
-        # Guide prompts should still be cached
-        assert any("guide" in k for k in pm._cache)
-        assert not any("research" in k for k in pm._cache)
+        # Chat prompts should still be cached
+        assert any(k.startswith("chat") for k in pm._cache)
+        assert not any(k.startswith("interview") for k in pm._cache)
 
     def test_get_prompt_helper(self):
         """Test the get_prompt helper method."""
@@ -149,7 +149,7 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # Even with a potentially missing language, should fallback
-        prompts = pm.load_prompts("research", "research_agent", "zh")
+        prompts = pm.load_prompts("interview", "interview_agent", "zh")
         assert isinstance(prompts, dict)
 
     def test_reload_prompts(self):
@@ -157,15 +157,15 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # Load and cache
-        prompts1 = pm.load_prompts("research", "research_agent", "en")
+        prompts1 = pm.load_prompts("interview", "interview_agent", "en")
 
         # Force reload
-        prompts2 = pm.reload_prompts("research", "research_agent", "en")
+        prompts2 = pm.reload_prompts("interview", "interview_agent", "en")
 
         # They should be equal but not the same object
         assert prompts1 == prompts2
         # After reload, cache should have fresh entry
-        cache_key = "research_research_agent_en"
+        cache_key = "interview_interview_agent_en"
         assert cache_key in pm._cache
 
 
@@ -179,20 +179,20 @@ class TestPromptManagerLanguages:
     def test_english_prompts(self):
         """Test loading English prompts."""
         pm = get_prompt_manager()
-        prompts = pm.load_prompts("guide", "chat_agent", "en")
+        prompts = pm.load_prompts("chat", "chat_agent", "en")
         assert isinstance(prompts, dict)
 
     def test_chinese_prompts(self):
         """Test loading Chinese prompts."""
         pm = get_prompt_manager()
-        prompts = pm.load_prompts("guide", "chat_agent", "zh")
+        prompts = pm.load_prompts("chat", "chat_agent", "zh")
         assert isinstance(prompts, dict)
 
     def test_invalid_language_falls_back(self):
         """Test that invalid language code falls back gracefully."""
         pm = get_prompt_manager()
         # Should not raise, should fallback
-        prompts = pm.load_prompts("research", "research_agent", "invalid")
+        prompts = pm.load_prompts("interview", "interview_agent", "invalid")
         assert isinstance(prompts, dict)
 
 
