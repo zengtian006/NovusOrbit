@@ -11,13 +11,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PUBLIC_DIR="$SCRIPT_DIR/public"
 APP_DIR="$SCRIPT_DIR/app"
-SVG_FILE="$APP_DIR/icon.svg"
+SVG_FILE="$PUBLIC_DIR/icon.svg"
 
 echo "🎨 Generating icons from $SVG_FILE..."
 
 # Check if SVG exists
 if [ ! -f "$SVG_FILE" ]; then
-    echo "❌ Error: icon.svg not found in $APP_DIR"
+    echo "❌ Error: icon.svg not found in $PUBLIC_DIR"
     exit 1
 fi
 

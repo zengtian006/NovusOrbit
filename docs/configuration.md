@@ -20,7 +20,7 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 | `EMBEDDING_DIMENSION` | yes | Must match the model, for example `1536` for `text-embedding-3-small` |
 | `SEARCH_PROVIDER` / `SEARCH_API_KEY` | optional | Web search: `perplexity`, `tavily`, `serper`, `jina`, `exa` |
 | `TTS_BINDING` / `TTS_MODEL` / `TTS_API_KEY` / `TTS_URL` / `TTS_VOICE` | optional | Resume Writer narration |
-| `SMTP_SERVER` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `FEEDBACK_EMAIL_FROM` | optional | Feedback emails. If unset, feedback is only logged. |
+| `SMTP_SERVER` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `FEEDBACK_EMAIL_FROM` / `FEEDBACK_EMAIL_TO` | optional | Feedback emails (Gmail needs an App Password). Every submission is also saved to `data/user/feedback.jsonl`, so nothing is lost if SMTP is unset or fails. |
 | `RAG_PROVIDER` | optional | Default pipeline for CLI and back-end-initiated indexing. Production sets it to `llamaindex` (`templates/app.env.tftpl`). The code's built-in fallback is `raganything`, which isn't installed. The portfolio UI always sends a provider, defaulting to LlamaIndex. |
 | `BACKEND_PORT` / `FRONTEND_PORT` | optional | Default `8001` and `3782` |
 | `NEXT_PUBLIC_API_BASE` | optional | Backend URL that the browser calls. In production this is `https://www.<domain>`. |
