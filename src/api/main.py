@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 from pathlib import Path
 
 import asyncio
@@ -73,9 +74,15 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Production serves the frontend and API from one origin (Caddy), so CORS only
+# matters in local development, where the frontend (:3782) calls the backend
+# (:8001) with the session cookie. Browsers reject "*" for credentialed
+# requests, so allow localhost origins explicitly, plus any listed in
+# CORS_ALLOW_ORIGINS (comma-separated).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific frontend origin
+    allow_origins=[o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -16,8 +15,6 @@ import {
   BookmarkCheck,
   Settings,
   Compass,
-  Github,
-  Linkedin,
   ChevronsLeft,
   ChevronsRight,
   GripVertical,
@@ -32,6 +29,7 @@ import {
 } from "lucide-react";
 import { useGlobal } from "@/context/GlobalContext";
 import FeedbackModal from "@/components/FeedbackModal";
+import { Logo, LogoMark } from "@/components/Logo";
 
 const SIDEBAR_EXPANDED_WIDTH = 256;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
@@ -199,76 +197,15 @@ export default function Sidebar() {
 
   return (
     <div
-      className="relative flex-shrink-0 bg-slate-50/80 dark:bg-slate-800/80 h-full border-r border-slate-200 dark:border-slate-700 flex flex-col transition-all duration-300 ease-in-out overflow-hidden"
+      className="relative flex-shrink-0 bg-white dark:bg-slate-900 h-full border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out overflow-hidden"
       style={{ width: currentWidth }}
     >
       {/* Header */}
-      <div
-        className={`border-b border-slate-100 dark:border-slate-700 transition-all duration-300 ${sidebarCollapsed ? "px-2 py-3" : "px-4 py-3"
-          }`}
-      >
-        <div className="flex flex-col gap-2">
-          <div
-            className={`flex items-center ${sidebarCollapsed ? "justify-center" : "justify-between"}`}
-          >
-            <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                <Image
-                  src="/favicon-32.png"
-                  alt={t("NovusOrbit Logo")}
-                  width={32}
-                  height={32}
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <span
-                className={`font-bold text-slate-900 dark:text-slate-100 tracking-tight text-base whitespace-nowrap transition-all duration-300 ${sidebarCollapsed
-                  ? "opacity-0 w-0 overflow-hidden"
-                  : "opacity-100"
-                  }`}
-              >
-                NovusOrbit
-              </span>
-            </Link>
-            <div
-              className={`flex items-center gap-0.5 transition-all duration-300 ${sidebarCollapsed
-                ? "opacity-0 w-0 overflow-hidden"
-                : "opacity-100"
-                }`}
-            >
-              {/* Collapse button */}
-              <button
-                onClick={toggleSidebar}
-                className="text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
-                title={t("Collapse sidebar")}
-              >
-                <ChevronsLeft className="w-4 h-4" />
-              </button>
-              <a
-                href="https://www.linkedin.com/in/tim-zeng-8150a792/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
-                title={t("Visit NovusOrbit LinkedIn")}
-              >
-                <Linkedin className="w-4 h-4" />
-              </a>
-              {/* <a
-                href="https://github.com/NovusOrbit/NovusOrbit"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
-                title={t("View on GitHub")}
-              >
-                <Github className="w-4 h-4" />
-              </a> */}
-            </div>
-          </div>
-
-        </div>
+      <div className={`flex items-center h-14 border-b border-slate-200/70 dark:border-slate-700/70 ${sidebarCollapsed ? "justify-center px-2" : "px-4"}`}>
+        <Link href="/" className="flex items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" aria-label="NovusOrbit">
+          {sidebarCollapsed ? <LogoMark size={30} /> : <Logo size={28} />}
+        </Link>
       </div>
-
       {/* Navigation */}
       <nav
         className={`flex-1 overflow-y-auto py-2 space-y-4 transition-all duration-300 ${sidebarCollapsed ? "px-2" : "px-2"
@@ -309,7 +246,7 @@ export default function Sidebar() {
                       !sidebarCollapsed && handleDrop(e, item.href, group.id)
                     }
                     onDragEnd={handleDragEnd}
-                    className={`group relative ${isDragging ? "opacity-50" : ""} ${isDragOver ? "border-t-2 border-blue-500" : ""
+                    className={`group relative ${isDragging ? "opacity-50" : ""} ${isDragOver ? "border-t-2 border-indigo-500" : ""
                       }`}
                   >
                     <Link
@@ -318,8 +255,8 @@ export default function Sidebar() {
                         ? "justify-center p-2"
                         : "gap-2.5 pl-2 pr-1.5 py-2"
                         } ${isActive
-                          ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border-slate-100 dark:border-slate-600"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-sm border-transparent hover:border-slate-100 dark:hover:border-slate-600"
+                          ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-transparent"
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 border-transparent"
                         }`}
                       onClick={() => trackAnalytics(item.href, "navigate")}
                       onMouseEnter={() =>
@@ -329,8 +266,8 @@ export default function Sidebar() {
                     >
                       <item.icon
                         className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive
-                          ? "text-blue-500 dark:text-blue-400"
-                          : "text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400"
+                          ? "text-indigo-600 dark:text-indigo-400"
+                          : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"
                           }`}
                       />
                       <span
@@ -372,8 +309,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div
-        className={`border-t border-slate-100 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/30 transition-all duration-300 ${sidebarCollapsed ? "px-2 py-2" : "px-2 py-2"
-          }`}
+        className="border-t border-slate-200/70 dark:border-slate-800 p-2"
       >
         {/* Admin Button - Only visible to admins */}
         {status === "authenticated" && (session?.user as any)?.role === "ADMIN" && (
@@ -424,8 +360,8 @@ export default function Sidebar() {
                   ? "justify-center p-2"
                   : "gap-2.5 pl-2 pr-1.5 py-2"
                   } ${pathname === "/admin/analytics"
-                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-200 dark:border-blue-700"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-700"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400"
                   }`}
                 onClick={() => trackAnalytics("/admin/analytics", "navigate")}
                 onMouseEnter={() => sidebarCollapsed && setShowTooltip("/analytics")}
@@ -433,7 +369,7 @@ export default function Sidebar() {
               >
                 <BarChart3
                   className={`w-5 h-5 flex-shrink-0 transition-colors ${pathname === "/admin/analytics"
-                    ? "text-blue-600 dark:text-blue-400"
+                    ? "text-indigo-600 dark:text-indigo-400"
                     : "text-slate-400 dark:text-slate-500"
                     }`}
                 />
@@ -468,7 +404,7 @@ export default function Sidebar() {
                 ? "justify-center p-2"
                 : "gap-2.5 pl-2 pr-1.5 py-2"
                 } ${pathname === "/settings"
-                  ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-slate-600"
+                  ? "bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-100 dark:border-slate-600"
                   : "text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
                 }`}
               onClick={() => trackAnalytics("/settings", "navigate")}
@@ -477,7 +413,7 @@ export default function Sidebar() {
             >
               <Settings
                 className={`w-5 h-5 flex-shrink-0 transition-colors ${pathname === "/settings"
-                  ? "text-blue-500 dark:text-blue-400"
+                  ? "text-indigo-500 dark:text-indigo-400"
                   : "text-slate-400 dark:text-slate-500"
                   }`}
               />
@@ -500,164 +436,93 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* Public info pages (also gives crawlers a path to them from every screen) */}
-        {!sidebarCollapsed && (
-          <div className="flex items-center gap-3 px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <Link href="/features" className="hover:text-blue-600 dark:hover:text-blue-400">
-              {t("Features")}
-            </Link>
-            <Link href="/guides" className="hover:text-blue-600 dark:hover:text-blue-400">
-              {t("Guides")}
-            </Link>
-          </div>
-        )}
-
-        {/* Auth Button */}
+        {/* Account */}
         <div className="relative">
           {status === "authenticated" && session?.user ? (
-            <button
-              onClick={() => signOut()}
-              className={`w-full flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
-                ? "justify-center p-2"
-                : "gap-2.5 pl-2 pr-1.5 py-2"
-                } text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-red-600 dark:hover:text-red-400 border border-transparent hover:border-slate-100 dark:hover:border-slate-600`}
-              onMouseEnter={() =>
-                sidebarCollapsed && setShowTooltip("sign-out")
-              }
+            <div
+              className={`flex items-center rounded-lg ${sidebarCollapsed ? "justify-center p-1.5" : "gap-2.5 px-2 py-1.5"}`}
+              onMouseEnter={() => sidebarCollapsed && setShowTooltip("account")}
               onMouseLeave={() => setShowTooltip(null)}
             >
-              <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white text-xs font-bold">
+              <div className="w-7 h-7 flex items-center justify-center flex-shrink-0 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
                 {session.user.name?.charAt(0).toUpperCase() || "U"}
               </div>
-              <span
-                className={`whitespace-nowrap flex-1 transition-all duration-300 text-left ${sidebarCollapsed
-                  ? "opacity-0 w-0 overflow-hidden"
-                  : "opacity-100"
-                  }`}
-              >
-                {session.user.name || "User"}
-              </span>
-              <LogOut className="w-4 h-4 flex-shrink-0" />
-            </button>
+              {!sidebarCollapsed && (
+                <>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{session.user.name || t("Account")}</p>
+                    {session.user.email && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{session.user.email}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => signOut()}
+                    className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 dark:hover:text-slate-200 dark:hover:bg-slate-700"
+                    title={t("Sign out")}
+                    aria-label={t("Sign out")}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
           ) : (
             <button
               onClick={() => signIn("google")}
-              className={`w-full flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
-                ? "justify-center p-2"
-                : "gap-2.5 pl-2 pr-1.5 py-2"
-                } text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-slate-100 dark:hover:border-slate-600`}
-              onMouseEnter={() =>
-                sidebarCollapsed && setShowTooltip("sign-in")
-              }
+              className={`w-full flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-sm transition-colors ${sidebarCollapsed ? "p-2" : "gap-2 px-3 py-2"}`}
+              onMouseEnter={() => sidebarCollapsed && setShowTooltip("account")}
               onMouseLeave={() => setShowTooltip(null)}
+              aria-label={t("Sign In")}
             >
-              <LogIn className="w-5 h-5 flex-shrink-0" />
-              <span
-                className={`whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed
-                  ? "opacity-0 w-0 overflow-hidden"
-                  : "opacity-100"
-                  }`}
-              >
-                {t("Sign In")}
-              </span>
+              <LogIn className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span>{t("Sign In")}</span>}
             </button>
           )}
-          {/* Tooltip for collapsed state */}
-          {sidebarCollapsed &&
-            (showTooltip === "sign-in" || showTooltip === "sign-out") && (
-              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
-                {status === "authenticated" && session?.user
-                  ? `${session.user.name || "User"} (Sign out)`
-                  : t("Sign In")}
-                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
-              </div>
-            )}
+          {sidebarCollapsed && showTooltip === "account" && (
+            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+              {status === "authenticated" && session?.user ? session.user.name || t("Account") : t("Sign In")}
+            </div>
+          )}
         </div>
 
-
-        {/* Feedback Button */}
-        <button
-          onClick={() => window.open("https://www.linkedin.com/in/tim-zeng-8150a792/", "_blank")}
-          className={`w-full flex items-center rounded-md text-sm transition-all duration-200 ${sidebarCollapsed
-            ? "justify-center p-2"
-            : "gap-2.5 pl-2 pr-1.5 py-2"
-            } text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 border border-transparent hover:border-slate-100 dark:hover:border-slate-600`}
-          onMouseEnter={() =>
-            sidebarCollapsed && setShowTooltip("feedback")
-          }
-          onMouseLeave={() => setShowTooltip(null)}
-        >
-          <MessageCircle className="w-5 h-5 flex-shrink-0" />
-          <span
-            className={`whitespace-nowrap flex-1 transition-all duration-300 text-left ${sidebarCollapsed
-              ? "opacity-0 w-0 overflow-hidden"
-              : "opacity-100"
-              }`}
-          >
-            {t("Send Feedback")}
-          </span>
-        </button>
-        {/* Feedback Tooltip */}
-        {sidebarCollapsed && showTooltip === "feedback" && (
-          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
-            {t("Send Feedback")}
-            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
-          </div>
-        )}
-        {/* Theme Switcher */}
-        <div className={`flex items-center gap-0 ${sidebarCollapsed ? "justify-center" : ""}`}>
+        {/* Utility row: feedback, theme, collapse */}
+        <div className={`mt-2 flex items-center ${sidebarCollapsed ? "flex-col gap-1" : "gap-1"}`}>
           <button
-            onClick={() => updateTheme("light")}
-            className={`flex items-center justify-center rounded-md transition-all duration-200 ${sidebarCollapsed ? "p-2" : "px-2.5 py-1.5 flex-1"
-              } ${uiSettings.theme === "light"
-                ? "bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm border border-slate-100 dark:border-slate-600"
-                : "text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-              }`}
-            title={t("Light")}
+            onClick={() => setShowFeedbackModal(true)}
+            className="p-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={t("Send Feedback")}
+            aria-label={t("Send Feedback")}
           >
-            <Sun className="w-4 h-4" />
-            {!sidebarCollapsed && (
-              <span className="text-xs ml-1.5">{t("Light")}</span>
-            )}
+            <MessageCircle className="w-4 h-4" />
           </button>
           <button
-            onClick={() => updateTheme("dark")}
-            className={`flex items-center justify-center rounded-md transition-all duration-200 ${sidebarCollapsed ? "p-2" : "px-2.5 py-1.5 flex-1"
-              } ${uiSettings.theme === "dark"
-                ? "bg-white dark:bg-slate-700 text-blue-500 dark:text-blue-400 shadow-sm border border-slate-100 dark:border-slate-600"
-                : "text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-              }`}
-            title={t("Dark")}
+            onClick={() => updateTheme(uiSettings.theme === "dark" ? "light" : "dark")}
+            className="p-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={uiSettings.theme === "dark" ? t("Light") : t("Dark")}
+            aria-label={uiSettings.theme === "dark" ? t("Light") : t("Dark")}
           >
-            <Moon className="w-4 h-4" />
-            {!sidebarCollapsed && (
-              <span className="text-xs ml-1.5">{t("Dark")}</span>
-            )}
+            {uiSettings.theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+          {!sidebarCollapsed && (
+            <div className="flex-1 flex items-center justify-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+              {/* Public info pages (also gives crawlers a path to them from every screen) */}
+              <Link href="/features" className="hover:text-indigo-600 dark:hover:text-indigo-400">
+                {t("Features")}
+              </Link>
+              <Link href="/guides" className="hover:text-indigo-600 dark:hover:text-indigo-400">
+                {t("Guides")}
+              </Link>
+            </div>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={sidebarCollapsed ? t("Expand sidebar") : t("Collapse sidebar")}
+            aria-label={sidebarCollapsed ? t("Expand sidebar") : t("Collapse sidebar")}
+          >
+            {sidebarCollapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
           </button>
         </div>
-
-
-        {/* Expand/Collapse button at bottom */}
-        <button
-          onClick={toggleSidebar}
-          className={`w-full mt-2 flex items-center rounded-md text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-500 dark:hover:text-blue-400 hover:shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600 transition-all duration-200 ${sidebarCollapsed ? "justify-center p-2" : "gap-2.5 pl-2 pr-1.5 py-2"
-            }`}
-          title={sidebarCollapsed ? t("Expand sidebar") : t("Collapse sidebar")}
-        >
-          <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
-            {sidebarCollapsed ? (
-              <ChevronsRight className="w-4 h-4" />
-            ) : (
-              <ChevronsLeft className="w-4 h-4" />
-            )}
-          </div>
-          <span
-            className={`text-sm whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
-              }`}
-          >
-            {t("Collapse sidebar")}
-          </span>
-        </button>
       </div>
 
       {/* Feedback Modal */}

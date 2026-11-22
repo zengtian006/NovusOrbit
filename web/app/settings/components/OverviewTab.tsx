@@ -43,7 +43,7 @@ export default function OverviewTab({
       <div className="flex justify-end">
         <button
           onClick={onRefresh}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           {t("Refresh")}

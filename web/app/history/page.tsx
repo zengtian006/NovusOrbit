@@ -1,5 +1,6 @@
 "use client";
 
+import PageHeader from "@/components/PageHeader";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -234,19 +235,11 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col animate-fade-in p-6">
+    <div className="h-screen flex flex-col animate-fade-in p-4 sm:p-6">
       {/* Header - Fixed */}
       <div className="shrink-0 pb-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
-              <History className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              {t("History")}
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-2">
-              {t("All Activities")}
-            </p>
-          </div>
+          <PageHeader icon={History} title={t("History")} description={t("Your past chats, interview prep sessions and job searches.")} />
         </div>
 
         {/* Filters */}
@@ -259,7 +252,7 @@ export default function HistoryPage() {
               placeholder={`${t("Search")}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 dark:text-slate-100"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-100"
             />
             {searchQuery && (
               <button
@@ -272,7 +265,7 @@ export default function HistoryPage() {
           </div>
 
           {/* Type Filter */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 max-w-full overflow-x-auto">
             <Filter className="w-4 h-4 text-slate-400" />
             <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
               {[
@@ -288,7 +281,7 @@ export default function HistoryPage() {
                     trackEvent({ action: "filter_history", feature: "/history", metadata: { filterType: option.value } });
                     setFilterType(option.value);
                   }}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${filterType === option.value
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-all ${filterType === option.value
                     ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                     }`}
@@ -307,7 +300,7 @@ export default function HistoryPage() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
           {loading ? (
             <div className="p-12 text-center text-slate-400 dark:text-slate-500">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               {t("Loading")}...
             </div>
           ) : chatSessions.length === 0 &&
@@ -498,7 +491,7 @@ export default function HistoryPage() {
                               {t(session.level)}
                             </span>
                             {session.kb_name && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                              <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded font-medium flex items-center gap-0.5">
                                 <Award className="w-2.5 h-2.5" />
                                 {t("Resume")}
                               </span>
@@ -599,7 +592,7 @@ export default function HistoryPage() {
                                 </span>
                               )}
                               {session.kb_name && (
-                                <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                                <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded font-medium flex items-center gap-0.5">
                                   <Database className="w-2.5 h-2.5" />
                                   {session.kb_name}
                                 </span>
@@ -703,7 +696,7 @@ export default function HistoryPage() {
                               </span>
                             )}
                             {operation.kb_name && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                              <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded font-medium flex items-center gap-0.5">
                                 <Database className="w-2.5 h-2.5" />
                                 {operation.kb_name}
                               </span>
@@ -853,7 +846,7 @@ export default function HistoryPage() {
                       </span>
                     )}
                     {jobSuggestDetail.kb_name && (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-0.5">
+                      <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded font-medium flex items-center gap-0.5">
                         <Database className="w-2.5 h-2.5" />
                         {jobSuggestDetail.kb_name}
                       </span>
@@ -894,14 +887,14 @@ export default function HistoryPage() {
               {/* Detail analyses if any */}
               {jobSuggestDetail.details && Object.keys(jobSuggestDetail.details).length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-2">
                     <Search className="w-4 h-4" />
                     {t("Detailed Analyses")}
                   </h3>
                   {Object.entries(jobSuggestDetail.details).map(([jobTitle, detail]: [string, any]) => (
                     <div
                       key={jobTitle}
-                      className="bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 p-4"
+                      className="bg-indigo-50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/30 p-4"
                     >
                       <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
                         {jobTitle}
@@ -1030,7 +1023,7 @@ export default function HistoryPage() {
                     </span>
                   )}
                   {resumeOperationDetail.kb_name && (
-                    <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded font-medium flex items-center gap-1">
+                    <span className="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded font-medium flex items-center gap-1">
                       <Database className="w-3 h-3" />
                       {resumeOperationDetail.kb_name}
                     </span>

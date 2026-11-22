@@ -101,12 +101,12 @@ export default async function GuidePage({ params }: Props) {
       </article>
 
       {feature && (
-        <aside className="mt-10 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 p-6">
+        <aside className="mt-10 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 p-6">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">Try {feature.name} free</h2>
           <p className="text-slate-600 dark:text-slate-300 mb-4">{feature.metaDescription}</p>
           <div className="flex flex-wrap items-center gap-4">
             <CtaButton href={feature.appPath}>{feature.appLabel}</CtaButton>
-            <Link href={`/features/${feature.slug}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href={`/features/${feature.slug}`} className="text-indigo-600 dark:text-indigo-400 hover:underline">
               How it works
             </Link>
           </div>
@@ -118,7 +118,7 @@ export default async function GuidePage({ params }: Props) {
         <ul className="space-y-2">
           {more.map((g) => (
             <li key={g.slug}>
-              <Link href={`/guides/${g.slug}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+              <Link href={`/guides/${g.slug}`} className="text-indigo-600 dark:text-indigo-400 hover:underline">
                 {g.title}
               </Link>
             </li>

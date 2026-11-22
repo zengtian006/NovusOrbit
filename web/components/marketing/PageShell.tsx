@@ -27,7 +27,7 @@ export function PageShell({
               <li key={c.path} className="flex items-center gap-1">
                 {i > 0 && <ChevronRight className="w-3.5 h-3.5" aria-hidden />}
                 {i < all.length - 1 ? (
-                  <Link href={c.path} className="hover:text-blue-600 dark:hover:text-blue-400">
+                  <Link href={c.path} className="hover:text-indigo-600 dark:hover:text-indigo-400">
                     {c.name}
                   </Link>
                 ) : (
@@ -50,7 +50,7 @@ export function CtaButton({ href, children }: { href: string; children: React.Re
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-white font-medium shadow-sm transition-colors"
+      className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 text-white font-medium shadow-sm transition-colors"
     >
       {children}
       <ChevronRight className="w-4 h-4" aria-hidden />
@@ -64,14 +64,14 @@ function SiteFooter() {
     <footer className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-700 grid gap-8 sm:grid-cols-2 text-sm">
       <div>
         <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">
-          <Link href="/features" className="hover:text-blue-600 dark:hover:text-blue-400">Features</Link>
+          <Link href="/features" className="hover:text-indigo-600 dark:hover:text-indigo-400">Features</Link>
         </h2>
         <ul className="space-y-2">
           {FEATURES.map((f) => (
             <li key={f.slug}>
               <Link
                 href={`/features/${f.slug}`}
-                className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+                className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 {f.name}
               </Link>
@@ -81,14 +81,14 @@ function SiteFooter() {
       </div>
       <div>
         <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">
-          <Link href="/guides" className="hover:text-blue-600 dark:hover:text-blue-400">Career guides</Link>
+          <Link href="/guides" className="hover:text-indigo-600 dark:hover:text-indigo-400">Career guides</Link>
         </h2>
         <ul className="space-y-2">
           {GUIDES.map((g) => (
             <li key={g.slug}>
               <Link
                 href={`/guides/${g.slug}`}
-                className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+                className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 {g.title}
               </Link>
@@ -96,6 +96,11 @@ function SiteFooter() {
           ))}
         </ul>
       </div>
+      <p className="sm:col-span-2 text-xs text-slate-500 dark:text-slate-400">
+        <Link href="/privacy" className="hover:text-indigo-600 dark:hover:text-indigo-400">Privacy</Link>
+        {" · "}
+        <a href="https://github.com/zengtian006/NovusOrbit" className="hover:text-indigo-600 dark:hover:text-indigo-400">Open source on GitHub</a>
+      </p>
     </footer>
   );
 }
