@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import {
   Send,
@@ -289,6 +290,16 @@ export default function HomePage() {
             </div>
           </div>
 
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+            {t("New here?")}{" "}
+            <Link href="/features" className="text-blue-600 dark:text-blue-400 hover:underline">
+              {t("See what NovusOrbit can do")}
+            </Link>
+            {" · "}
+            <Link href="/guides" className="text-blue-600 dark:text-blue-400 hover:underline">
+              {t("Career guides")}
+            </Link>
+          </p>
         </div>
       )}
 

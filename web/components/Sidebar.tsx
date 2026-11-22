@@ -222,14 +222,14 @@ export default function Sidebar() {
                   priority
                 />
               </div>
-              <h1
+              <span
                 className={`font-bold text-slate-900 dark:text-slate-100 tracking-tight text-base whitespace-nowrap transition-all duration-300 ${sidebarCollapsed
                   ? "opacity-0 w-0 overflow-hidden"
                   : "opacity-100"
                   }`}
               >
                 NovusOrbit
-              </h1>
+              </span>
             </Link>
             <div
               className={`flex items-center gap-0.5 transition-all duration-300 ${sidebarCollapsed
@@ -497,6 +497,18 @@ export default function Sidebar() {
                 <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
               </div>
             )}
+          </div>
+        )}
+
+        {/* Public info pages (also gives crawlers a path to them from every screen) */}
+        {!sidebarCollapsed && (
+          <div className="flex items-center gap-3 px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <Link href="/features" className="hover:text-blue-600 dark:hover:text-blue-400">
+              {t("Features")}
+            </Link>
+            <Link href="/guides" className="hover:text-blue-600 dark:hover:text-blue-400">
+              {t("Guides")}
+            </Link>
           </div>
         )}
 
