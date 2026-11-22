@@ -5,6 +5,8 @@ import Sidebar from "@/components/Sidebar";
 import { GlobalProvider } from "@/context/GlobalContext";
 import ThemeScript from "@/components/ThemeScript";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import ApiLimitNotice from "@/components/ApiLimitNotice";
+import AcquisitionTracker from "@/components/AcquisitionTracker";
 import { I18nClientBridge } from "@/i18n/I18nClientBridge";
 import { Providers } from "@/app/providers";
 import {
@@ -104,6 +106,8 @@ export default function RootLayout({
                     {children}
                   </main>
                 </div>
+                <ApiLimitNotice />
+                <AcquisitionTracker />
               </LayoutWrapper>
             </I18nClientBridge>
           </GlobalProvider>

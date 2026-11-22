@@ -44,6 +44,25 @@ export async function GET(request: Request) {
             by: ["feature"],
             where: {
                 createdAt: { gte: startDate },
+                action: { not: "acquisition" },
+            },
+            _count: {
+                feature: true,
+            },
+            orderBy: {
+                _count: {
+                    feature: "desc",
+                },
+            },
+        });
+
+        // Sign-up sources: first-visit channel, recorded once per user on sign-in
+        // (see components/AcquisitionTracker.tsx)
+        const sourceStats = await prisma.userAnalytics.groupBy({
+            by: ["feature"],
+            where: {
+                action: "acquisition",
+                createdAt: { gte: startDate },
             },
             _count: {
                 feature: true,
@@ -143,6 +162,10 @@ export async function GET(request: Request) {
             },
             featureStats: featureStats.map((stat: any) => ({
                 feature: stat.feature,
+                count: stat._count.feature,
+            })),
+            sourceStats: sourceStats.map((stat: any) => ({
+                source: stat.feature,
                 count: stat._count.feature,
             })),
             actionStats: actionStats.map((stat: any) => ({

@@ -11,13 +11,14 @@ Generates personalized job recommendations by:
 from pathlib import Path
 import sys
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 project_root = Path(__file__).parent.parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from src.services.rate_limit import rate_limit
 from src.agents.job_suggest import JobSuggestAgent, get_job_suggest_session_manager
 from src.logging import get_logger
 from src.services.config import load_config_with_main
@@ -109,7 +110,7 @@ def _get_agent() -> JobSuggestAgent:
 # === API Endpoints ===
 
 
-@router.post("/suggest")
+@router.post("/suggest", dependencies=[Depends(rate_limit("job_suggest"))])
 async def suggest_jobs(request: SuggestJobsRequest):
     """
     Generate personalized job suggestions based on the user's portfolio.
@@ -175,7 +176,7 @@ async def suggest_jobs(request: SuggestJobsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/detail")
+@router.post("/detail", dependencies=[Depends(rate_limit("job_detail"))])
 async def get_job_detail(request: JobDetailRequest):
     """
     Get detailed analysis for a specific job listing against the portfolio.
@@ -222,7 +223,7 @@ async def get_job_detail(request: JobDetailRequest):
 # === Scrape Job Description ===
 
 
-@router.post("/scrape-jd")
+@router.post("/scrape-jd", dependencies=[Depends(rate_limit("job_detail"))])
 async def scrape_job_description(request: ScrapeJobDescriptionRequest):
     """
     Scrape the full job description from a job posting URL.

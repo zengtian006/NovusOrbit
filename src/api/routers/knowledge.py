@@ -16,6 +16,7 @@ import traceback
 from fastapi import (
     APIRouter,
     BackgroundTasks,
+    Depends,
     File,
     Form,
     HTTPException,
@@ -25,6 +26,7 @@ from fastapi import (
 )
 from pydantic import BaseModel
 
+from src.services.rate_limit import rate_limit
 from src.api.utils.progress_broadcaster import ProgressBroadcaster
 from src.api.utils.task_id_manager import TaskIDManager
 from src.knowledge.add_documents import DocumentAdder
@@ -465,7 +467,7 @@ async def delete_knowledge_base(kb_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{kb_name}/upload")
+@router.post("/{kb_name}/upload", dependencies=[Depends(rate_limit("upload"))])
 async def upload_files(
     kb_name: str,
     background_tasks: BackgroundTasks,
@@ -557,7 +559,7 @@ async def upload_files(
         raise HTTPException(status_code=500, detail=formatted_error) from e
 
 
-@router.post("/create")
+@router.post("/create", dependencies=[Depends(rate_limit("upload"))])
 async def create_knowledge_base(
     background_tasks: BackgroundTasks,
     name: str = Form(...),

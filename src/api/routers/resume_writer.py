@@ -3,7 +3,7 @@ import sys
 import traceback
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import Response
 from pydantic import BaseModel
 
@@ -14,6 +14,7 @@ if str(project_root) not in sys.path:
 
 import json
 
+from src.services.rate_limit import rate_limit
 from src.agents.resume_writer.edit_agent import (
     tool_calls_dir,
     EditAgent,
@@ -100,7 +101,7 @@ class AutoMarkResponse(BaseModel):
     marked_text: str
 
 
-@router.post("/edit", response_model=EditResponse)
+@router.post("/edit", response_model=EditResponse, dependencies=[Depends(rate_limit("resume"))])
 async def edit_text(request: EditRequest):
     try:
         # Get agent with refreshed LLM configuration from Settings
@@ -124,7 +125,7 @@ async def edit_text(request: EditRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/automark", response_model=AutoMarkResponse)
+@router.post("/automark", response_model=AutoMarkResponse, dependencies=[Depends(rate_limit("resume"))])
 async def auto_mark_text(request: AutoMarkRequest):
     """AI auto-mark text"""
     try:
@@ -232,7 +233,7 @@ class ScriptOnlyRequest(BaseModel):
     style: Literal["friendly", "academic", "concise"] = "friendly"
 
 
-@router.post("/narrate", response_model=NarrateResponse)
+@router.post("/narrate", response_model=NarrateResponse, dependencies=[Depends(rate_limit("tts"))])
 async def narrate_content(request: NarrateRequest):
     """
     Generate note narration script and optionally generate TTS audio
@@ -261,7 +262,7 @@ async def narrate_content(request: NarrateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/narrate/script")
+@router.post("/narrate/script", dependencies=[Depends(rate_limit("tts"))])
 async def generate_script_only(request: ScriptOnlyRequest):
     """
     Generate script only (no audio generation)
