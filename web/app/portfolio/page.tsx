@@ -878,7 +878,13 @@ export default function KnowledgePage() {
         } else {
           setUploadStatus("Upload failed");
           setUploading(false);
-          showToast("Failed to upload files", "error");
+          let detail = "";
+          try {
+            detail = JSON.parse(xhr.responseText).detail || "";
+          } catch {
+            // Non-JSON error body
+          }
+          showToast(detail || "Failed to upload files", "error");
         }
       });
 

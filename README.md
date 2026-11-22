@@ -11,9 +11,15 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)](LICENSE)
 
-[Live site](https://www.novusorbit.com) · [Architecture](docs/architecture.md) · [Development](docs/development.md) · [Configuration](docs/configuration.md) · [Deployment](docs/deployment.md) · [Authentication](docs/authentication.md)
+**[Try it free at novusorbit.com](https://www.novusorbit.com/?utm_source=github&utm_medium=referral&utm_campaign=readme)**
+
+[Features](https://www.novusorbit.com/features) · [Architecture](docs/architecture.md) · [Development](docs/development.md) · [Configuration](docs/configuration.md) · [Deployment](docs/deployment.md) · [Authentication](docs/authentication.md)
 
 </div>
+
+<p align="center">
+  <img src="assets/screenshots/home.png" alt="NovusOrbit home screen with the career assistant chat" width="800">
+</p>
 
 ---
 
@@ -103,6 +109,7 @@ src/
 web/              Next.js 16 app (App Router), NextAuth, Prisma schema, i18n locales
 config/           main.yaml, agents.yaml, page_settings.yaml
 scripts/          start_web.py (local runner), install helpers, migrations, prompt audits
+marketing/        Launch kit: posts for HN, Product Hunt, Reddit, LinkedIn, Chinese channels; directories; outreach
 terraform-ec2/    AWS infrastructure (EC2, Elastic IP, Route53, ECR, Secrets Manager) and deploy.sh
 tests/            pytest suites (prompts, RAG pipelines)
 data/             Runtime data (portfolios, user data). Not baked into the image.
@@ -116,6 +123,10 @@ cd terraform-ec2
 ```
 
 For first-time setup, secrets and operations, see [docs/deployment.md](docs/deployment.md).
+
+## Acknowledgements
+
+NovusOrbit started as a fork of [HKUDS/OpenTutor](https://github.com/HKUDS/OpenTutor), an open-source AI learning assistant by the HKU Data Intelligence Lab, and was reworked into a career assistant. Thanks to its authors and contributors.
 
 ## License
 

@@ -16,6 +16,7 @@ sys.path.insert(0, str(_project_root))
 
 from src.agents.chat import ChatAgent, SessionManager
 from src.logging import get_logger
+from src.services.rate_limit import RateLimitExceeded, check as check_rate_limit, client_ip_from_headers
 from src.services.config import load_config_with_main
 from src.services.llm.config import get_llm_config
 from src.services.settings.interface_settings import get_ui_language
@@ -129,6 +130,17 @@ async def websocket_chat(websocket: WebSocket):
 
             if not message:
                 await websocket.send_json({"type": "error", "message": "Message is required"})
+                continue
+
+            try:
+                check_rate_limit(
+                    "chat",
+                    client_ip_from_headers(
+                        websocket.headers, websocket.client.host if websocket.client else None
+                    ),
+                )
+            except RateLimitExceeded as e:
+                await websocket.send_json({"type": "error", "message": e.message})
                 continue
 
             logger.info(

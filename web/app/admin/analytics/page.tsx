@@ -27,6 +27,7 @@ interface DashboardData {
         avgEventsPerUser: string;
     };
     featureStats: Array<{ feature: string; count: number }>;
+    sourceStats?: Array<{ source: string; count: number }>;
     actionStats: Array<{ action: string; count: number }>;
     dailyData: Array<{ date: string; count: number }>;
     topUsers: Array<{ userId: string; userEmail: string | null; eventCount: number }>;
@@ -327,6 +328,32 @@ export default function AdminAnalyticsPage() {
                 </div>
 
                 {/* Feature Usage & Top Users Section */}
+                {/* Sign-up sources (first-visit channel of users who signed in) */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        Sign-up Sources
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                        Where users first came from (utm_source or referring site), recorded when they sign in
+                    </p>
+                    {data.sourceStats && data.sourceStats.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            {data.sourceStats.map((s) => (
+                                <span
+                                    key={s.source}
+                                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1 text-sm"
+                                >
+                                    <span className="text-slate-700 dark:text-slate-300">{s.source}</span>
+                                    <span className="font-bold text-slate-900 dark:text-white">{s.count}</span>
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">No sign-ups with a recorded source in this period yet.</p>
+                    )}
+                </div>
+
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     {/* Top Features */}
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
