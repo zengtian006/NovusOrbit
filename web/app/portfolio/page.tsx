@@ -103,10 +103,9 @@ export default function KnowledgePage() {
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
   const [newKbName, setNewKbName] = useState("");
   const [dragActive, setDragActive] = useState(false);
+  // New portfolios always use LlamaIndex (fast, cheap, right for CVs); uploads to
+  // an existing portfolio keep that portfolio's own provider.
   const [ragProvider, setRagProvider] = useState<string>("llamaindex");
-  const [ragProviders, setRagProviders] = useState<
-    Array<{ id: string; name: string; description: string }>
-  >([]);
   const [progressMap, setProgressMap] = useState<Record<string, ProgressInfo>>(
     {},
   );
@@ -585,22 +584,6 @@ export default function KnowledgePage() {
 
     return () => clearInterval(intervalId);
   }, [kbs, fetchKnowledgeBases]);
-
-  // Fetch RAG providers
-  useEffect(() => {
-    const fetchRagProviders = async () => {
-      try {
-        const res = await fetch(apiUrl("/api/v1/portfolio/rag-providers"));
-        if (res.ok) {
-          const data = await res.json();
-          setRagProviders(data.providers || []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch RAG providers:", err);
-      }
-    };
-    fetchRagProviders();
-  }, []);
 
   // Establish WebSocket connections for all KBs to receive progress updates (only when KB names change)
   useEffect(() => {
@@ -1489,65 +1472,9 @@ export default function KnowledgePage() {
                   required
                   value={newKbName}
                   onChange={(e) => setNewKbName(e.target.value)}
-                  placeholder={t("e.g., Math101")}
+                  placeholder={t("e.g., My CV 2026")}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  {t("RAG Provider")}
-                </label>
-                <select
-                  value={ragProvider}
-                  onChange={(e) => setRagProvider(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                >
-                  {ragProviders.length > 0 ? (
-                    ragProviders.map((provider) => (
-                      <option key={provider.id} value={provider.id}>
-                        {provider.name}
-                      </option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="llamaindex">{t("LlamaIndex")}</option>
-                      <option value="lightrag">{t("LightRAG")}</option>
-                      <option value="raganything">{t("RAG-Anything")}</option>
-                    </>
-                  )}
-                </select>
-                {/* Provider description */}
-                <div className="mt-2 p-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-600">
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
-                    {(() => {
-                      const selectedProvider = ragProviders.find(
-                        (p) => p.id === ragProvider,
-                      );
-                      if (selectedProvider?.description) {
-                        return selectedProvider.description;
-                      }
-                      // Fallback descriptions
-                      const fallbackDescriptions: Record<string, string> = {
-                        llamaindex: t(
-                          "Pure vector retrieval, fastest processing speed.",
-                        ),
-                        lightrag: t(
-                          "Lightweight knowledge graph retrieval, fast processing of text documents.",
-                        ),
-                        raganything: t(
-                          "Multimodal document processing with chart and formula extraction, builds knowledge graphs.",
-                        ),
-                      };
-                      return (
-                        fallbackDescriptions[ragProvider] ||
-                        t(
-                          "Select a RAG pipeline suitable for your document type",
-                        )
-                      );
-                    })()}
-                  </p>
-                </div>
               </div>
 
               <div>
@@ -1734,28 +1661,7 @@ export default function KnowledgePage() {
             </p>
 
             <form onSubmit={handleUpload} className="space-y-4">
-              {/* Provider is LOCKED for incremental uploads - display only, no selection */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  {t("RAG Provider")}
-                </label>
-                <div className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-600 text-slate-900 dark:text-slate-100">
-                  {ragProvider === "llamaindex" && t("LlamaIndex")}
-                  {ragProvider === "lightrag" && t("LightRAG")}
-                  {ragProvider === "raganything" && t("RAG-Anything")}
-                  {ragProvider === "raganything_docling" &&
-                    t("RAG-Anything (Docling)")}
-                  {![
-                    "llamaindex",
-                    "lightrag",
-                    "raganything",
-                    "raganything_docling",
-                  ].includes(ragProvider) && ragProvider}
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {t("Keep unchanged to use this KB's existing provider")}
-                </p>
-              </div>
+              {/* The portfolio keeps its own indexing provider (ragProvider is set when the dialog opens). */}
 
               <div
                 className={`border-2 border-dashed rounded-xl transition-colors ${dragActive
