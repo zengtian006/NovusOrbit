@@ -9,13 +9,14 @@ RAG-based answers using the user's resume/portfolio and web search fallback.
 from pathlib import Path
 import sys
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 project_root = Path(__file__).parent.parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from src.services.rate_limit import rate_limit
 from src.agents.interview import InterviewAgent, get_interview_session_manager
 from src.logging import get_logger
 from src.services.config import load_config_with_main
@@ -107,7 +108,7 @@ def _get_agent() -> InterviewAgent:
 # === API Endpoints ===
 
 
-@router.post("/generate-questions")
+@router.post("/generate-questions", dependencies=[Depends(rate_limit("interview"))])
 async def generate_questions(request: GenerateQuestionsRequest):
     """
     Generate interview questions from a job description.
@@ -142,7 +143,7 @@ async def generate_questions(request: GenerateQuestionsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/generate-answer")
+@router.post("/generate-answer", dependencies=[Depends(rate_limit("interview"))])
 async def generate_answer(request: GenerateAnswerRequest):
     """
     Generate a personalized answer for a single interview question,
@@ -176,7 +177,7 @@ async def generate_answer(request: GenerateAnswerRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/generate-answers-batch")
+@router.post("/generate-answers-batch", dependencies=[Depends(rate_limit("interview"))])
 async def generate_answers_batch(request: GenerateBatchAnswersRequest):
     """
     Generate personalized answers for multiple questions in batch.
