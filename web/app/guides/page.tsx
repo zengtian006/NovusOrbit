@@ -26,7 +26,7 @@ export default function GuidesPage() {
           <li key={g.slug}>
             <Link
               href={`/guides/${g.slug}`}
-              className="block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition"
+              className="block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition"
             >
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">{g.title}</h2>
               <p className="text-slate-600 dark:text-slate-400 mb-2">{g.metaDescription}</p>

@@ -172,7 +172,7 @@ export default function ChatSessionDetail({
                   session.settings.enable_web_search) && (
                   <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-700">
                     {session.settings.kb_name && (
-                      <span className="px-2.5 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                      <span className="px-2.5 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">
                         {t("KB")}: {session.settings.kb_name}
                       </span>
                     )}
@@ -182,7 +182,7 @@ export default function ChatSessionDetail({
                       </span>
                     )}
                     {session.settings.enable_web_search && (
-                      <span className="px-2.5 py-1 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
+                      <span className="px-2.5 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">
                         {t("Web Search Enabled")}
                       </span>
                     )}
@@ -203,7 +203,7 @@ export default function ChatSessionDetail({
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                       msg.role === "user"
-                        ? "bg-blue-500 text-white rounded-br-none"
+                        ? "bg-indigo-500 text-white rounded-br-none"
                         : "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-bl-none"
                     }`}
                   >
@@ -231,7 +231,7 @@ export default function ChatSessionDetail({
                             {msg.sources.rag?.map((src, i) => (
                               <span
                                 key={`rag-${i}`}
-                                className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded"
+                                className="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded"
                               >
                                 📚 {src.kb_name}
                               </span>
@@ -242,7 +242,7 @@ export default function ChatSessionDetail({
                                 href={src.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded hover:bg-purple-200 dark:hover:bg-purple-900/50 flex items-center gap-1"
+                                className="px-2 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded hover:bg-indigo-200 dark:hover:bg-indigo-900/50 flex items-center gap-1"
                               >
                                 🌐 {src.title || new URL(src.url).hostname}
                                 <ExternalLink className="w-2.5 h-2.5" />
@@ -257,7 +257,7 @@ export default function ChatSessionDetail({
                       <p
                         className={`text-xs mt-2 ${
                           msg.role === "user"
-                            ? "text-blue-200"
+                            ? "text-indigo-200"
                             : "text-slate-400 dark:text-slate-500"
                         }`}
                       >
@@ -269,7 +269,7 @@ export default function ChatSessionDetail({
                     )}
                   </div>
                   {msg.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center shrink-0">
                       <User className="w-4 h-4 text-white" />
                     </div>
                   )}

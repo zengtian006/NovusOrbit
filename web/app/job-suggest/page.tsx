@@ -1,5 +1,6 @@
 "use client";
 
+import PageHeader from "@/components/PageHeader";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -604,27 +605,11 @@ export default function JobSuggestPage() {
   };
 
   return (
-    <div className="h-screen animate-fade-in flex gap-4 p-4">
-      {/* LEFT PANEL — Configuration */}
-      <div className="flex-[1_1_33%] min-w-[320px] max-w-[420px] flex flex-col gap-4 h-full overflow-y-auto">
+    <div className="min-h-screen lg:h-screen animate-fade-in flex flex-col lg:flex-row gap-4 p-3 sm:p-4">
+      {/* LEFT PANEL — Configuration (stacks above results on small screens) */}
+      <div className="lg:flex-[1_1_33%] min-w-0 lg:min-w-[320px] lg:max-w-[420px] flex flex-col gap-4 lg:h-full lg:overflow-y-auto">
         {/* Header */}
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl text-white shadow-lg shadow-teal-500/20">
-              <Compass className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                {t("Job Suggestions")}
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {t(
-                  "Real jobs from Indeed & LinkedIn matched to your portfolio"
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
+        <PageHeader className="px-1 pt-1" icon={Compass} title={t("Job Suggestions")} description={t("Live Indeed and LinkedIn jobs, ranked against your CV.")} />
 
         {/* Portfolio Selection */}
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
@@ -640,7 +625,7 @@ export default function JobSuggestPage() {
             <select
               value={selectedKb}
               onChange={(e) => setSelectedKb(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-teal-500/20"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
             >
               <option value="">{t("Select a portfolio...")}</option>
               {kbs.map((kb) => (
@@ -680,7 +665,7 @@ export default function JobSuggestPage() {
               value={roleType}
               onChange={(e) => setRoleType(e.target.value)}
               placeholder={t("e.g. Software Engineer, Data Scientist...")}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-teal-500/20 placeholder:text-slate-400"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
             />
           </div>
 
@@ -695,7 +680,7 @@ export default function JobSuggestPage() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder={t("e.g. Remote, San Francisco, New York...")}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-teal-500/20 placeholder:text-slate-400"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
             />
           </div>
 
@@ -710,7 +695,7 @@ export default function JobSuggestPage() {
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
               placeholder={t("e.g. AI/ML, FinTech, Healthcare...")}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-teal-500/20 placeholder:text-slate-400"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
             />
           </div>
 
@@ -725,7 +710,7 @@ export default function JobSuggestPage() {
                   key={l.value}
                   onClick={() => setExperienceLevel(l.value)}
                   className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${experienceLevel === l.value
-                    ? "bg-white dark:bg-slate-600 text-teal-700 dark:text-teal-400 shadow-sm border border-slate-100 dark:border-slate-500"
+                    ? "bg-white dark:bg-slate-600 text-indigo-700 dark:text-indigo-400 shadow-sm border border-slate-100 dark:border-slate-500"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                     }`}
                 >
@@ -743,7 +728,7 @@ export default function JobSuggestPage() {
             <select
               value={suggestionCount}
               onChange={(e) => setSuggestionCount(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-teal-500/20"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
             >
               {SUGGESTION_COUNTS.map((n) => (
                 <option key={n} value={n}>
@@ -758,7 +743,7 @@ export default function JobSuggestPage() {
         <button
           onClick={handleGenerate}
           disabled={!selectedKb || generating}
-          className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 hover:from-emerald-700 hover:to-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
         >
           {generating ? (
             <>
@@ -795,7 +780,7 @@ export default function JobSuggestPage() {
       </div>
 
       {/* RIGHT PANEL — Suggestions & Details */}
-      <div className="flex-[2_1_67%] min-w-0 flex flex-col h-full overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+      <div className="lg:flex-[2_1_67%] min-w-0 min-h-[480px] lg:min-h-0 flex flex-col lg:h-full overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
         {/* Panel header */}
         <div className="p-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between shrink-0">
           <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
@@ -804,7 +789,7 @@ export default function JobSuggestPage() {
               ? t("Real Job Matches")
               : t("Suggested Jobs")}
             {suggestions.length > 0 && (
-              <span className="px-1.5 py-0.5 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-full text-[10px] font-bold">
+              <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-bold">
                 {suggestions.length}
               </span>
             )}
@@ -812,7 +797,7 @@ export default function JobSuggestPage() {
           {suggestions.length > 0 && (
             <div className="flex items-center gap-2">
               {usedPortfolio && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-medium">
                   <Database className="w-2.5 h-2.5" />
                   {t("Portfolio")}
                 </span>
@@ -871,7 +856,7 @@ export default function JobSuggestPage() {
                     }
                     className="w-full flex items-start gap-3 p-4 text-left hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   >
-                    <span className="w-7 h-7 rounded-lg bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                    <span className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                       {job.number}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -910,7 +895,7 @@ export default function JobSuggestPage() {
                       </div>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {addedToBoard[String(job.number)] && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded text-[10px] font-medium">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded text-[10px] font-medium">
                             <Heart className="w-2.5 h-2.5 fill-current" />
                             {addedToBoard[String(job.number)]}
                           </span>
@@ -934,7 +919,7 @@ export default function JobSuggestPage() {
                   {expandedJob === job.number && (
                     <div className="px-4 pb-4 border-t border-slate-200 dark:border-slate-600">
                       {/* Job analysis markdown */}
-                      <div className="mt-3 p-4 bg-teal-50 dark:bg-teal-900/10 rounded-xl border border-teal-100 dark:border-teal-900/30">
+                      <div className="mt-3 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
                         <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {job.rawMarkdown}
@@ -951,12 +936,12 @@ export default function JobSuggestPage() {
                       ) : job.detailAnalysis ? (
                         <div className="mt-4">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <Search className="w-4 h-4 text-blue-500" />
-                            <h4 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                            <Search className="w-4 h-4 text-indigo-500" />
+                            <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
                               {t("Detailed Analysis")}
                             </h4>
                             {job.usedPortfolio && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded text-[10px] font-medium">
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded text-[10px] font-medium">
                                 <Database className="w-2.5 h-2.5" />
                                 {t("Portfolio")}
                               </span>
@@ -968,7 +953,7 @@ export default function JobSuggestPage() {
                               </span>
                             )}
                           </div>
-                          <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                          <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
                             <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
                               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                 {job.detailAnalysis}
@@ -986,7 +971,7 @@ export default function JobSuggestPage() {
                       {/* Action buttons row — Get Detail + Add to Board */}
                       <div className="mt-4 flex items-center gap-3 flex-wrap">
                         {addedToBoard[String(job.number)] ? (
-                          <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-xl text-xs font-medium">
+                          <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 rounded-xl text-xs font-medium">
                             <Heart className="w-3.5 h-3.5 fill-current" />
                             {t("Saved to")} {addedToBoard[String(job.number)]}
                           </span>
@@ -996,7 +981,7 @@ export default function JobSuggestPage() {
                               e.stopPropagation();
                               openAddToBoardModal(job);
                             }}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-medium hover:bg-purple-700 transition-all shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-medium hover:bg-indigo-700 transition-all shadow-sm"
                           >
                             <Heart className="w-3.5 h-3.5" />
                             {t("Add to Job Board")}
@@ -1005,12 +990,12 @@ export default function JobSuggestPage() {
                         {!job.detailAnalysis && !job.detailLoading && !job.detailError && (
                           <button
                             onClick={() => handleGetDetail(idx)}
-                            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-medium hover:bg-teal-700 transition-colors shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-medium hover:bg-indigo-700 transition-colors shadow-sm"
                           >
                             <Search className="w-3.5 h-3.5" />
                             {t("Get Detailed Analysis")}
                             {selectedKb && (
-                              <span className="flex items-center gap-1 px-1.5 py-0.5 bg-teal-500/30 rounded text-[10px]">
+                              <span className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-500/30 rounded text-[10px]">
                                 <Database className="w-0.5 h-0.5" />
                                 {t("Portfolio")}
                               </span>
@@ -1032,8 +1017,8 @@ export default function JobSuggestPage() {
           ) : (
             /* Empty state */
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-16 h-16 mb-4 bg-teal-100 dark:bg-teal-900/30 rounded-2xl flex items-center justify-center">
-                <Compass className="w-8 h-8 text-teal-500 dark:text-teal-400" />
+              <div className="w-16 h-16 mb-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center">
+                <Compass className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
                 {t("Discover Your Next Opportunity")}
@@ -1071,7 +1056,7 @@ export default function JobSuggestPage() {
             {/* Header */}
             <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Heart className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <Heart className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 {t("Add to Job Board")}
               </h3>
               <button
@@ -1111,12 +1096,12 @@ export default function JobSuggestPage() {
               </div>
               {(addToBoardJob.realJobUrl || addToBoardJob.url) && (
                 <div className="mt-2 flex items-center gap-1.5">
-                  <ExternalLink className="w-3 h-3 text-blue-500 shrink-0" />
+                  <ExternalLink className="w-3 h-3 text-indigo-500 shrink-0" />
                   <a
                     href={addToBoardJob.realJobUrl || addToBoardJob.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline truncate"
+                    className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline truncate"
                   >
                     {addToBoardJob.realJobUrl || addToBoardJob.url}
                   </a>
@@ -1138,7 +1123,7 @@ export default function JobSuggestPage() {
                   </p>
                   <button
                     onClick={() => setShowCreateBoardInline(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     {t("Create Your First Board")}
@@ -1153,7 +1138,7 @@ export default function JobSuggestPage() {
                         key={board.id}
                         onClick={() => setSelectedBoardId(board.id)}
                         className={`w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-all ${selectedBoardId === board.id
-                          ? "bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700"
+                          ? "bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700"
                           : "hover:bg-slate-50 dark:hover:bg-slate-700/50 border border-transparent"
                           }`}
                       >
@@ -1175,7 +1160,7 @@ export default function JobSuggestPage() {
                           </p>
                         </div>
                         {selectedBoardId === board.id && (
-                          <Check className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                          <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                         )}
                       </button>
                     ))}
@@ -1185,7 +1170,7 @@ export default function JobSuggestPage() {
                   {!showCreateBoardInline ? (
                     <button
                       onClick={() => setShowCreateBoardInline(true)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors border border-dashed border-purple-300 dark:border-purple-700"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors border border-dashed border-indigo-300 dark:border-indigo-700"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       {t("Create New Board")}
@@ -1197,7 +1182,7 @@ export default function JobSuggestPage() {
                         value={newBoardName}
                         onChange={(e) => setNewBoardName(e.target.value)}
                         placeholder={t("Board name...")}
-                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                         autoFocus
                       />
                       <div className="flex gap-1.5 flex-wrap">
@@ -1217,7 +1202,7 @@ export default function JobSuggestPage() {
                         <button
                           onClick={handleCreateBoardAndAdd}
                           disabled={!newBoardName.trim() || creatingBoard}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
                         >
                           {creatingBoard ? (
                             <Loader2 className="w-3 h-3 animate-spin" />
@@ -1256,7 +1241,7 @@ export default function JobSuggestPage() {
               <button
                 onClick={handleAddToBoard}
                 disabled={!selectedBoardId || addingToBoard}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
               >
                 {addingToBoard ? (
                   <>

@@ -1,5 +1,6 @@
 "use client";
 
+import PageHeader from "@/components/PageHeader";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -39,28 +40,22 @@ export default function ResumeWriterPage() {
     <div className="h-screen animate-fade-in flex flex-col p-6">
       {/* Header */}
       <div className="mb-4 shrink-0">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-          <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          {t("Resume Writer")}
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          {t("AI-powered resume editor to enhance your professional documents and optimize for ATS systems.")}
-        </p>
+        <PageHeader icon={FileText} title={t("Resume Writer")} description={t("AI-powered resume editor to enhance your professional documents and optimize for ATS systems.")} />
       </div>
 
       {/* ATS Tips Panel */}
       {showAtsPanel && (
-        <div className="mb-4 shrink-0 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="mb-4 shrink-0 bg-gradient-to-br from-indigo-50 to-cyan-50 dark:from-indigo-900/20 dark:to-cyan-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h3 className="font-semibold text-blue-900 dark:text-blue-200">
+              <CheckCircle2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <h3 className="font-semibold text-indigo-900 dark:text-indigo-200">
                 {t("ATS Optimization Tips")}
               </h3>
             </div>
             <button
               onClick={() => setShowAtsPanel(false)}
-              className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
+              className="text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300"
             >
               <X className="w-4 h-4" />
             </button>
@@ -69,9 +64,9 @@ export default function ResumeWriterPage() {
             {ATS_OPTIMIZATION_TIPS.map((tip, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2 text-xs text-blue-800 dark:text-blue-200"
+                className="flex items-start gap-2 text-xs text-indigo-800 dark:text-indigo-200"
               >
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
                 <span>{tip}</span>
               </li>
             ))}

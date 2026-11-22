@@ -1,5 +1,6 @@
 "use client";
 
+import PageHeader from "@/components/PageHeader";
 import { useState, useEffect, useCallback, useRef } from "react";
 
 // Type declarations for FileSystem Entry API (drag & drop folder support)
@@ -362,13 +363,13 @@ export default function KnowledgePage() {
       case "pdf":
         return <FileText className="w-4 h-4 text-red-500" />;
       case "md":
-        return <FileText className="w-4 h-4 text-blue-500" />;
+        return <FileText className="w-4 h-4 text-indigo-500" />;
       case "txt":
         return <FileText className="w-4 h-4 text-slate-500" />;
       case "doc":
       case "docx":
       case "rtf":
-        return <FileText className="w-4 h-4 text-blue-600" />;
+        return <FileText className="w-4 h-4 text-indigo-600" />;
       case "html":
       case "htm":
       case "xml":
@@ -1058,17 +1059,12 @@ export default function KnowledgePage() {
   return (
     <div className="animate-fade-in h-screen overflow-y-auto p-6">
       {/* Header */}
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
-            <Briefcase className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            {t("My Portfolio")}
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">
-            {t("Manage and explore your educational content repositories.")}
-          </p>
-        </div>
-        <div className="flex gap-3">
+      <PageHeader
+        className="mb-8"
+        icon={Briefcase}
+        title={t("My Portfolio")}
+        description={t("Manage and explore your educational content repositories.")}
+        actions={<>
           <button
             onClick={async () => {
               setLoading(true);
@@ -1087,13 +1083,13 @@ export default function KnowledgePage() {
               setRagProvider("llamaindex");
               setCreateModalOpen(true);
             }}
-            className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors flex items-center gap-2 shadow-lg shadow-slate-900/20"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
           >
             <Plus className="w-4 h-4" />
             {t("New Knowledge Base")}
           </button>
-        </div>
-      </div>
+        </>}
+      />
 
       {/* Error State */}
       {error && (
@@ -1127,7 +1123,7 @@ export default function KnowledgePage() {
               <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-start">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 flex items-center justify-center shadow-sm">
-                    <Database className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                    <Database className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100">
@@ -1135,14 +1131,14 @@ export default function KnowledgePage() {
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1">
                       {kb.is_default && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wide border border-blue-100 dark:border-blue-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold uppercase tracking-wide border border-indigo-100 dark:border-indigo-800">
                           {t("Default")}
                         </span>
                       )}
                       {kb.statistics.rag_provider && (
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${kb.statistics.rag_provider === "raganything"
-                            ? "bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-800"
+                            ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800"
                             : kb.statistics.rag_provider === "lightrag"
                               ? "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800"
                               : "bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800"
@@ -1201,7 +1197,7 @@ export default function KnowledgePage() {
                       );
                       setUploadModalOpen(true);
                     }}
-                    className="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    className="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                     title={t("Upload Documents")}
                   >
                     <Upload className="w-4 h-4" />
@@ -1285,7 +1281,7 @@ export default function KnowledgePage() {
                         const percent =
                           progress?.percent ?? progress?.progress_percent ?? 0;
                         return (
-                          <span className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1">
+                          <span className="text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-1">
                             <Loader2 className="w-3 h-3 animate-spin" />
                             {stageLabel} {percent}%
                           </span>
@@ -1320,7 +1316,7 @@ export default function KnowledgePage() {
                       ) {
                         const percent =
                           progress?.percent ?? progress?.progress_percent ?? 0;
-                        let bgColor = "bg-blue-500";
+                        let bgColor = "bg-indigo-500";
                         if (
                           status === "ready" ||
                           progress?.stage === "completed"
@@ -1442,9 +1438,26 @@ export default function KnowledgePage() {
 
           {/* Empty State */}
           {kbs.length === 0 && (
-            <div className="col-span-full text-center py-12 text-slate-400 dark:text-slate-500">
-              <Database className="w-12 h-12 mx-auto mb-4 opacity-20" />
-              <p>{t("No knowledge bases found. Create one to get started.")}</p>
+            <div className="col-span-full rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-14 text-center">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <Upload className="w-6 h-6" />
+              </div>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">{t("Upload your CV to get started")}</h2>
+              <p className="mt-1 mb-5 text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                {t("Add your CV and any certificates or project write-ups. Every tool uses them to personalize its answers.")}
+              </p>
+              <button
+                onClick={() => {
+                  clearAllFiles();
+                  setNewKbName("");
+                  setRagProvider("llamaindex");
+                  setCreateModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                {t("New Knowledge Base")}
+              </button>
             </div>
           )}
         </div>
@@ -1477,7 +1490,7 @@ export default function KnowledgePage() {
                   value={newKbName}
                   onChange={(e) => setNewKbName(e.target.value)}
                   placeholder={t("e.g., Math101")}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 />
               </div>
 
@@ -1488,7 +1501,7 @@ export default function KnowledgePage() {
                 <select
                   value={ragProvider}
                   onChange={(e) => setRagProvider(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 >
                   {ragProviders.length > 0 ? (
                     ragProviders.map((provider) => (
@@ -1543,8 +1556,8 @@ export default function KnowledgePage() {
                 </label>
                 <div
                   className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${dragActive
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
-                    : "border-slate-200 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-700/50"
+                    ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30"
+                    : "border-slate-200 dark:border-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500 bg-slate-50 dark:bg-slate-700/50"
                     }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
@@ -1574,7 +1587,7 @@ export default function KnowledgePage() {
                     className={`cursor-pointer flex flex-col items-center gap-2 ${uploadFiles.length > 0 ? "p-4" : "p-8"}`}
                   >
                     <Upload
-                      className={`w-6 h-6 ${dragActive ? "text-blue-500 dark:text-blue-400" : "text-slate-400 dark:text-slate-500"}`}
+                      className={`w-6 h-6 ${dragActive ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"}`}
                     />
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                       {uploadFiles.length > 0
@@ -1665,7 +1678,7 @@ export default function KnowledgePage() {
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 dark:bg-blue-500 transition-all duration-300 ease-out"
+                      className="h-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-300 ease-out"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
@@ -1746,8 +1759,8 @@ export default function KnowledgePage() {
 
               <div
                 className={`border-2 border-dashed rounded-xl transition-colors ${dragActive
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
-                  : "border-slate-200 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-700/50"
+                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30"
+                  : "border-slate-200 dark:border-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500 bg-slate-50 dark:bg-slate-700/50"
                   }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -1777,7 +1790,7 @@ export default function KnowledgePage() {
                   className={`cursor-pointer flex flex-col items-center gap-2 ${uploadFiles.length > 0 ? "p-4" : "p-8"}`}
                 >
                   <Upload
-                    className={`w-6 h-6 ${dragActive ? "text-blue-500 dark:text-blue-400" : "text-slate-400 dark:text-slate-500"}`}
+                    className={`w-6 h-6 ${dragActive ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"}`}
                   />
                   <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                     {uploadFiles.length > 0
@@ -1860,7 +1873,7 @@ export default function KnowledgePage() {
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 dark:bg-blue-500 transition-all duration-300 ease-out"
+                      className="h-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-300 ease-out"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
@@ -1879,7 +1892,7 @@ export default function KnowledgePage() {
                 <button
                   type="submit"
                   disabled={uploadFiles.length === 0 || uploading}
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {uploading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/guides"), lastModified: SITE_UPDATED, changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/portfolio"), lastModified: SITE_UPDATED, changeFrequency: "monthly", priority: 0.6 },
     { url: absoluteUrl("/jobs"), lastModified: SITE_UPDATED, changeFrequency: "monthly", priority: 0.6 },
+    { url: absoluteUrl("/privacy"), lastModified: SITE_UPDATED, changeFrequency: "yearly", priority: 0.3 },
   ];
   for (const f of FEATURES) {
     pages.push({
