@@ -244,7 +244,11 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      if (storedCollapsed) {
+      // On phones the expanded sidebar would take most of the screen, so
+      // always start collapsed there (not persisted, so desktop keeps its choice).
+      if (window.matchMedia("(max-width: 767px)").matches) {
+        setSidebarCollapsedState(true);
+      } else if (storedCollapsed) {
         setSidebarCollapsedState(storedCollapsed === "true");
       }
     }

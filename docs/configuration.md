@@ -24,6 +24,7 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 | `RAG_PROVIDER` | optional | Default pipeline for CLI and back-end-initiated indexing. Production sets it to `llamaindex` (`templates/app.env.tftpl`). The code's built-in fallback is `raganything`, which isn't installed. The portfolio UI always sends a provider, defaulting to LlamaIndex. |
 | `BACKEND_PORT` / `FRONTEND_PORT` | optional | Default `8001` and `3782` |
 | `NEXT_PUBLIC_API_BASE` | optional | Backend URL that the browser calls. In production this is `https://www.<domain>`. |
+| `NEXT_PUBLIC_SITE_URL` | optional | Public site origin used for canonical URLs, `robots.txt`, the sitemap and social cards. Read at build time. Defaults to `https://www.novusorbit.com`, so set it when building for a different domain. |
 | `DISABLE_SSL_VERIFY` | optional | Development only |
 | `MIGRATE_LEGACY_DATA` | optional | `1` (the Docker image default) moves pre-per-user shared data into the first admin's account on startup, once. Leave it unset for local development so the repo's `data/` folder isn't touched. |
 | `NOVUS_USER_ID` | optional | For the portfolio CLI (`src.knowledge.start_kb`): which user's portfolios to manage (MongoDB user id). Default: `anonymous`. |

@@ -1,103 +1,110 @@
-"use client";
-
-import Script from "next/script";
-
-interface StructuredDataProps {
-    data: Record<string, any>;
-}
+import { SITE_NAME, SITE_URL, DEFAULT_DESCRIPTION, absoluteUrl } from "@/lib/site";
+import type { Faq } from "@/lib/seo-content";
 
 /**
- * Component to inject JSON-LD structured data for SEO
+ * JSON-LD structured data, rendered on the server as a plain <script> tag so
+ * it's in the initial HTML that crawlers fetch.
  * https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data
  */
-export default function StructuredData({ data }: StructuredDataProps) {
-    return (
-        <Script
-            id={`structured-data-${data["@type"]}`}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-                __html: JSON.stringify(data),
-            }}
-        />
-    );
+export function JsonLd({ data }: { data: Record<string, unknown> }) {
+  return (
+    <script
+      type="application/ld+json"
+      // Escape "<" so content can never close the script tag early.
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
+  );
 }
 
-/**
- * Organization structured data for NovusOrbit
- */
 export function OrganizationStructuredData() {
-    const organizationData = {
+  return (
+    <JsonLd
+      data={{
         "@context": "https://schema.org",
         "@type": "Organization",
-        name: "NovusOrbit",
-        description: "AI-Powered Career Consulting Platform",
-        url: process.env.NEXT_PUBLIC_API_BASE_EXTERNAL || "https://novusorbit.com",
-        logo: `${process.env.NEXT_PUBLIC_API_BASE_EXTERNAL || ""}/logo.png`,
-        sameAs: [
-            // Add your social media URLs here
-            // "https://twitter.com/novusorbit",
-            // "https://linkedin.com/company/novusorbit",
-            // "https://github.com/novusorbit",
-        ],
-        contactPoint: {
-            "@type": "ContactPoint",
-            contactType: "Customer Service",
-            email: "zengtian006@gmail.com",
-        },
-    };
-
-    return <StructuredData data={organizationData} />;
+        "@id": `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: `${SITE_URL}/logo.png`,
+        description: DEFAULT_DESCRIPTION,
+      }}
+    />
+  );
 }
 
-/**
- * WebApplication structured data
- */
+export function WebSiteStructuredData() {
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        inLanguage: ["en", "zh"],
+      }}
+    />
+  );
+}
+
 export function WebApplicationStructuredData() {
-    const webAppData = {
+  return (
+    <JsonLd
+      data={{
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        name: "NovusOrbit",
-        description:
-            "AI-powered career consulting platform offering personalized resume reviews, interview preparation, and career guidance.",
-        url: process.env.NEXT_PUBLIC_API_BASE_EXTERNAL || "https://novusorbit.com",
+        name: SITE_NAME,
+        url: SITE_URL,
+        description: DEFAULT_DESCRIPTION,
         applicationCategory: "BusinessApplication",
-        operatingSystem: "Web Browser",
-        offers: {
-            "@type": "Offer",
-            price: "0",
-            priceCurrency: "USD",
-        },
+        operatingSystem: "Web browser",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         featureList: [
-            "AI Career Consulting",
-            "Resume Review & Optimization",
-            "Interview Preparation",
-            "Job Search Assistance",
-            "Career Path Planning",
-            "Portfolio Management",
+          "AI interview preparation with personalized answers",
+          "AI resume writer with Markdown and PDF export",
+          "AI job matching from Indeed and LinkedIn listings",
+          "Job application tracker",
+          "AI career chat grounded in your CV",
         ],
-    };
-
-    return <StructuredData data={webAppData} />;
+      }}
+    />
+  );
 }
 
-/**
- * Breadcrumb structured data
- */
 export function BreadcrumbStructuredData({
-    items,
+  items,
 }: {
-    items: Array<{ name: string; url: string }>;
+  items: Array<{ name: string; path: string }>;
 }) {
-    const breadcrumbData = {
+  return (
+    <JsonLd
+      data={{
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         itemListElement: items.map((item, index) => ({
-            "@type": "ListItem",
-            position: index + 1,
-            name: item.name,
-            item: item.url,
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.name,
+          item: absoluteUrl(item.path),
         })),
-    };
+      }}
+    />
+  );
+}
 
-    return <StructuredData data={breadcrumbData} />;
+export function FaqStructuredData({ faqs }: { faqs: Faq[] }) {
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqs.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      }}
+    />
+  );
 }
