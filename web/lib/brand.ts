@@ -1,4 +1,4 @@
-/** The NovusOrbit mark as an SVG string (same artwork as app/icon.svg). */
+/** The NovusOrbit mark as an SVG string (same artwork as public/icon.svg). */
 export const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
     <linearGradient id="no-tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#4338CA"/></linearGradient>

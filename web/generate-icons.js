@@ -13,7 +13,7 @@ async function generateIcons() {
         // Try to import sharp
         const sharp = require('sharp');
 
-        const appDir = path.join(__dirname, 'app');
+        const appDir = path.join(__dirname, 'public');
         const publicDir = path.join(__dirname, 'public');
         const svgFile = path.join(appDir, 'icon.svg');
 

@@ -22,47 +22,47 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Send email to backend API
-        const backendUrl = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8001";
+        // Call the backend directly. Frontend and backend run in the same
+        // container, so use the internal address: NEXT_PUBLIC_API_BASE is the
+        // public site URL in production, and the proxy sends /api/feedback back
+        // to this route, so using it made the request call itself.
+        const backendUrl =
+            process.env.BACKEND_INTERNAL_URL ||
+            `http://127.0.0.1:${process.env.BACKEND_PORT || "8001"}`;
 
+        let response: Response;
         try {
-            const response = await fetch(`${backendUrl}/api/feedback`, {
+            response = await fetch(`${backendUrl}/api/feedback`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name,
                     email,
                     message,
                     timestamp: new Date().toISOString(),
                 }),
+                signal: AbortSignal.timeout(15000),
             });
-
-            if (!response.ok) {
-                console.error("Backend API error:", await response.text());
-                throw new Error("Backend API failed");
-            }
-
-            return NextResponse.json(
-                { success: true, message: "Feedback sent successfully" },
-                { status: 200 }
-            );
         } catch (backendError) {
-            console.error("Error calling backend API:", backendError);
-
-            // Fallback: Log to console (in production, you might want to store this in a database)
-            console.log("=== FEEDBACK RECEIVED ===");
-            console.log(`From: ${name} <${email}>`);
-            console.log(`Message: ${message}`);
-            console.log(`Time: ${new Date().toISOString()}`);
-            console.log("========================");
-
+            console.error("Feedback: backend unreachable:", backendError);
             return NextResponse.json(
-                { success: true, message: "Feedback received" },
-                { status: 200 }
+                { error: "Feedback service is unavailable. Please try again later." },
+                { status: 502 }
             );
         }
+
+        if (!response.ok) {
+            console.error("Feedback: backend error:", response.status, await response.text());
+            return NextResponse.json(
+                { error: "Could not send feedback. Please try again later." },
+                { status: 502 }
+            );
+        }
+
+        return NextResponse.json(
+            { success: true, message: "Feedback sent" },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error processing feedback:", error);
         return NextResponse.json(
