@@ -4,7 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { LogoMark } from "@/components/Logo";
 import {
+  Upload,
+  BookmarkCheck,
+  MessageSquare,
   Send,
   Loader2,
   Bot,
@@ -45,6 +49,7 @@ export default function HomePage() {
 
   const [inputMessage, setInputMessage] = useState("");
   const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
+  const [kbsLoaded, setKbsLoaded] = useState(false);
   const [showRagWarning, setShowRagWarning] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,19 +62,21 @@ export default function HomePage() {
         // Ensure data is an array before processing
         const kbList = Array.isArray(data) ? data : [];
         setKbs(kbList);
+        setKbsLoaded(true);
         if (kbList.length === 0) {
           // Clear selectedKb if no portfolios exist
           setChatState((prev) => ({ ...prev, selectedKb: "" }));
         } else if (!chatState.selectedKb) {
-          const defaultKb = kbList.find((kb: KnowledgeBase) => kb.is_default);
-          if (defaultKb) {
-            setChatState((prev) => ({ ...prev, selectedKb: defaultKb.name }));
-          } else {
-            setChatState((prev) => ({ ...prev, selectedKb: kbList[0].name }));
-          }
+          // First visit with a portfolio: select it and turn Portfolio on, so
+          // the user can start chatting without hunting for the toggle.
+          const defaultKb = kbList.find((kb: KnowledgeBase) => kb.is_default) ?? kbList[0];
+          setChatState((prev) => ({ ...prev, selectedKb: defaultKb.name, enableRag: true }));
         }
       })
-      .catch((err) => console.error("Failed to fetch KBs:", err));
+      .catch((err) => {
+        console.error("Failed to fetch KBs:", err);
+        setKbsLoaded(true);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -127,11 +134,12 @@ export default function HomePage() {
       {!hasMessages && (
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <div className="text-center max-w-2xl mx-auto mb-8">
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-3 tracking-tight">
-              {t("Welcome to NovusOrbit")}
+            <LogoMark size={48} className="mx-auto mb-5" />
+            <h1 className="text-3xl sm:text-4xl font-semibold text-slate-900 dark:text-white mb-3 tracking-tight">
+              {t("Your AI career assistant")}
             </h1>
-            <p className="text-lg text-slate-500 dark:text-slate-400">
-              {t("How can I help you today?")}
+            <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400">
+              {t("Prepare for interviews, improve your resume and find jobs, with answers grounded in your own CV.")}
             </p>
           </div>
 
@@ -168,7 +176,7 @@ export default function HomePage() {
                     }));
                   }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${chatState.enableRag
-                    ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
+                    ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
                     }`}
                 >
@@ -176,7 +184,7 @@ export default function HomePage() {
                   {t("Portfolio")}
                 </button>
                 {/* <span
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700"
                 >
                   <Database className="w-3.5 h-3.5" />
                   {t("Resume")}
@@ -188,7 +196,7 @@ export default function HomePage() {
                     <select
                       value={chatState.selectedKb || ""}
                       onChange={handlePortfolioChange}
-                      className="text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 outline-none focus:border-blue-400 dark:text-slate-200"
+                      className="text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 outline-none focus:border-indigo-400 dark:text-slate-200"
                     >
                       {kbs.length === 0 ? (
                         <option value="" disabled>
@@ -201,7 +209,7 @@ export default function HomePage() {
                           </option>
                         ))
                       )}
-                      <option value="add-portfolio" className="text-blue-600">
+                      <option value="add-portfolio" className="text-indigo-600">
                         + {t("Add Portfolio")}
                       </option>
 
@@ -213,13 +221,13 @@ export default function HomePage() {
 
             {/* Portfolio Required Banner */}
             {showRagWarning && (
-              <div className="mb-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                <Database className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="mb-4 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100 mb-1">
                     {t("Portfolio is required to start chatting")}
                   </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <p className="text-sm text-indigo-800 dark:text-indigo-200">
                     {t("Enable your Portfolio above to unlock personalized career advice tailored to your background")}
                   </p>
                 </div>
@@ -231,10 +239,12 @@ export default function HomePage() {
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full px-5 py-4 pr-14 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50"
+                className="w-full px-5 py-4 pr-14 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50"
                 placeholder={chatState.enableRag && chatState.selectedKb
                   ? t("Ask anything about") + " " + chatState.selectedKb + "..."
-                  : t("Enable Portfolio and select one to get started...")
+                  : kbsLoaded && kbs.length === 0
+                    ? t("Upload your CV to start chatting...")
+                    : t("Turn on Portfolio to start chatting...")
                 }
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
@@ -244,7 +254,7 @@ export default function HomePage() {
               <button
                 onClick={handleSend}
                 disabled={chatState.isLoading || !inputMessage.trim()}
-                className="absolute right-2 top-2 bottom-2 aspect-square bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all shadow-md shadow-blue-500/20"
+                className="absolute right-2 top-2 bottom-2 aspect-square bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all shadow-md shadow-indigo-500/20"
                 title={t("Send message")}
               >
                 {chatState.isLoading ? (
@@ -255,7 +265,37 @@ export default function HomePage() {
               </button>
             </div>
 
+            {/* Getting started (no portfolio yet) */}
+            {kbsLoaded && kbs.length === 0 && (
+              <ol className="mt-6 grid gap-3 sm:grid-cols-3 text-left">
+                {[
+                  { href: "/portfolio", title: t("Upload your CV"), body: t("Create a portfolio so every tool knows your experience."), icon: Upload },
+                  { href: "/jobs", title: t("Save jobs you like"), body: t("Keep listings and track each application."), icon: BookmarkCheck },
+                  { href: "/interview", title: t("Prepare and apply"), body: t("Get interview questions and answers for each job."), icon: MessageSquare },
+                ].map((step, i) => (
+                  <li key={step.href}>
+                    <Link
+                      href={step.href}
+                      className={`group block h-full rounded-xl border p-4 transition-colors ${i === 0
+                        ? "border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/60 dark:bg-indigo-500/10 hover:border-indigo-400"
+                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"}`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center ${i === 0 ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>
+                          {i + 1}
+                        </span>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{step.title}</span>
+                        <step.icon className="w-4 h-4 ml-auto text-slate-400 group-hover:text-indigo-500" />
+                      </div>
+                      <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{step.body}</p>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            )}
+
             {/* Sample Queries */}
+            {kbs.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3 justify-center">
               {[
                 t("Review my resume and suggest improvements"),
@@ -282,21 +322,22 @@ export default function HomePage() {
                       setShowRagWarning(false);
                     }, 0);
                   }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                  className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all"
                 >
                   {query}
                 </button>
               ))}
             </div>
+            )}
           </div>
 
           <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
             {t("New here?")}{" "}
-            <Link href="/features" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/features" className="text-indigo-600 dark:text-indigo-400 hover:underline">
               {t("See what NovusOrbit can do")}
             </Link>
             {" · "}
-            <Link href="/guides" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/guides" className="text-indigo-600 dark:text-indigo-400 hover:underline">
               {t("Career guides")}
             </Link>
           </p>
@@ -336,7 +377,7 @@ export default function HomePage() {
                   }));
                 }}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${chatState.enableRag
-                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+                  ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}
               >
@@ -344,7 +385,7 @@ export default function HomePage() {
                 {t("Portfolio")}
               </button>
               {/* <span
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
               >
                 <Database className="w-3 h-3" />
                 {t("Portfolio")}
@@ -369,7 +410,7 @@ export default function HomePage() {
                       </option>
                     ))
                   )}
-                  <option value="add-portfolio" className="text-blue-600">
+                  <option value="add-portfolio" className="text-indigo-600">
                     + {t("Add Portfolio")}
                   </option>
                 </select>
@@ -411,7 +452,7 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1 space-y-3">
@@ -427,7 +468,7 @@ export default function HomePage() {
 
                         {/* Loading indicator */}
                         {msg.isStreaming && (
-                          <div className="flex items-center gap-2 mt-3 text-blue-600 dark:text-blue-400 text-sm">
+                          <div className="flex items-center gap-2 mt-3 text-indigo-600 dark:text-indigo-400 text-sm">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span>{t("Generating response...")}</span>
                           </div>
@@ -443,7 +484,7 @@ export default function HomePage() {
                             {msg.sources.rag?.map((source, i) => (
                               <div
                                 key={`rag-${i}`}
-                                className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs"
+                                className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs"
                               >
                                 <BookOpen className="w-3 h-3" />
                                 <span>{source.kb_name}</span>
@@ -475,14 +516,14 @@ export default function HomePage() {
             {/* Status indicator */}
             {chatState.isLoading && chatState.currentStage && (
               <div className="flex gap-4 w-full max-w-4xl mx-auto">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shrink-0">
                   <Loader2 className="w-4 h-4 text-white animate-spin" />
                 </div>
                 <div className="flex-1 bg-slate-100 dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-tl-none">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                     </span>
                     {chatState.currentStage === "rag" &&
                       t("Searching knowledge base...")}
@@ -503,13 +544,13 @@ export default function HomePage() {
           <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-6 py-4">
             {/* Portfolio Required Banner */}
             {showRagWarning && (
-              <div className="mb-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                <Database className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="mb-4 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100 mb-1">
                     {t("Portfolio is required to start chatting")}
                   </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <p className="text-sm text-indigo-800 dark:text-indigo-200">
                     {t("Enable your Portfolio above to unlock personalized career advice tailored to your background")}
                   </p>
                 </div>
@@ -519,7 +560,7 @@ export default function HomePage() {
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full px-5 py-3.5 pr-14 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200"
+                className="w-full px-5 py-3.5 pr-14 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200"
                 placeholder={t("Type your message...")}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
@@ -529,7 +570,7 @@ export default function HomePage() {
               <button
                 onClick={handleSend}
                 disabled={chatState.isLoading || !inputMessage.trim()}
-                className="absolute right-2 top-2 bottom-2 aspect-square bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-all"
+                className="absolute right-2 top-2 bottom-2 aspect-square bg-indigo-600 text-white rounded-lg flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all"
                 title={t("Send message")}
               >
                 {chatState.isLoading ? (

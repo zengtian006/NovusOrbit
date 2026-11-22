@@ -64,9 +64,9 @@ export default function FeaturesPage() {
               <Link
                 key={f.slug}
                 href={`/features/${f.slug}`}
-                className="block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition"
+                className="block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition"
               >
-                <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400 mb-3" />
+                <Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mb-3" />
                 <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">{f.name}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400">{f.metaDescription}</p>
               </Link>
