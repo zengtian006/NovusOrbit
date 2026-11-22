@@ -4,6 +4,8 @@ Handles user feedback submissions and email notifications
 """
 
 import asyncio
+import html
+import json
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -14,9 +16,23 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 
 from src.logging import get_logger
+from src.services.user_context import USER_DATA_ROOT
 
 logger = get_logger("API.Feedback")
 router = APIRouter()
+
+# Every submission is appended here (on the persistent data volume) before the
+# email is attempted, so feedback is never lost if SMTP is down or unset.
+FEEDBACK_LOG = USER_DATA_ROOT / "feedback.jsonl"
+
+
+def _save_feedback(record: dict) -> None:
+    try:
+        FEEDBACK_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with FEEDBACK_LOG.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except Exception as e:  # pragma: no cover - disk errors
+        logger.error(f"Could not save feedback to {FEEDBACK_LOG}: {e}")
 
 
 class FeedbackRequest(BaseModel):
@@ -47,12 +63,23 @@ async def submit_feedback(feedback: FeedbackRequest):
         
         # Prepare email content
         timestamp = feedback.timestamp or datetime.now().isoformat()
-        
+        _save_feedback(
+            {"name": feedback.name, "email": feedback.email, "message": feedback.message, "timestamp": timestamp}
+        )
+
+        # Header-safe and HTML-safe versions of user input
+        safe_name_header = " ".join(feedback.name.split())[:100]
+        name_html = html.escape(feedback.name)
+        email_html = html.escape(feedback.email)
+        message_html = html.escape(feedback.message)
+        timestamp_html = html.escape(timestamp)
+
         # Create email message
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"NovusOrbit Feedback from {feedback.name}"
-        msg["From"] = os.getenv("FEEDBACK_EMAIL_FROM", "noreply@novusorbit.com")
-        msg["To"] = "zengtian006@gmail.com"
+        msg["Subject"] = f"NovusOrbit Feedback from {safe_name_header}"
+        msg["From"] = os.getenv("FEEDBACK_EMAIL_FROM") or os.getenv("SMTP_USER") or "noreply@novusorbit.com"
+        msg["To"] = os.getenv("FEEDBACK_EMAIL_TO", "zengtian006@gmail.com")
+        msg["Reply-To"] = feedback.email
         
         # Create plain text version
         text_content = f"""
@@ -93,18 +120,18 @@ This is an automated message from NovusOrbit feedback system.
         </div>
         <div class="content">
             <div class="info-row">
-                <span class="label">From:</span> {feedback.name}
+                <span class="label">From:</span> {name_html}
             </div>
             <div class="info-row">
-                <span class="label">Email:</span> <a href="mailto:{feedback.email}">{feedback.email}</a>
+                <span class="label">Email:</span> <a href="mailto:{email_html}">{email_html}</a>
             </div>
             <div class="info-row">
-                <span class="label">Time:</span> {timestamp}
+                <span class="label">Time:</span> {timestamp_html}
             </div>
             
             <div class="message-box">
                 <h3 style="margin-top: 0; color: #667eea;">Message:</h3>
-                <p style="white-space: pre-wrap; margin: 0;">{feedback.message}</p>
+                <p style="white-space: pre-wrap; margin: 0;">{message_html}</p>
             </div>
         </div>
         <div class="footer">

@@ -2,7 +2,7 @@ import { useId } from "react";
 
 /**
  * NovusOrbit mark: a planet rising out of its orbit, with an amber "satellite".
- * Same artwork as app/icon.svg; ids are per-instance so several marks can
+ * Same artwork as public/icon.svg; ids are per-instance so several marks can
  * share a page.
  */
 export function LogoMark({ size = 32, className }: { size?: number; className?: string }) {

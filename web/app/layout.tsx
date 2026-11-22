@@ -36,12 +36,12 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon.svg?v=2', type: 'image/svg+xml' },
+      { url: '/favicon-32.png?v=2', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16.png?v=2', sizes: '16x16', type: 'image/png' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' },
     ],
   },
   formatDetection: {
