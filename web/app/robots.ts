@@ -1,21 +1,18 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_EXTERNAL || process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3782'
-
-    return {
-        rules: [
-            {
-                userAgent: '*',
-                allow: '/',
-                disallow: [
-                    '/api/',
-                    '/admin/',
-                    '/_next/',
-                    '/private/',
-                ],
-            },
-        ],
-        sitemap: `${baseUrl}/sitemap.xml`,
-    }
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        // Note: /_next/ must stay crawlable, or Google can't load the JS/CSS
+        // it needs to render pages.
+        disallow: ["/api/", "/admin/", "/settings", "/auth/", "/history"],
+      },
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
+  };
 }

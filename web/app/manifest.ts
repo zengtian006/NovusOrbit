@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'NovusOrbit - AI-Powered Career Consulting',
+        name: 'NovusOrbit: AI Career Assistant',
         short_name: 'NovusOrbit',
-        description: 'Transform your career with personalized AI-powered consulting, resume reviews, and interview preparation.',
+        description: 'Free AI career assistant for interview prep, resume writing, job matching and application tracking.',
         start_url: '/',
         display: 'standalone',
         background_color: '#ffffff',
@@ -15,7 +15,7 @@ export default function manifest(): MetadataRoute.Manifest {
                 src: '/icon-192.png',
                 sizes: '192x192',
                 type: 'image/png',
-                purpose: 'maskable',
+                purpose: 'any',
             },
             {
                 src: '/icon-512.png',
