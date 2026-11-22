@@ -10,7 +10,9 @@ import { Providers } from "@/app/providers";
 import {
   OrganizationStructuredData,
   WebApplicationStructuredData,
+  WebSiteStructuredData,
 } from "@/components/StructuredData";
+import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/site";
 
 // Use Inter font with swap display for better loading
 const font = Inter({
@@ -20,16 +22,16 @@ const font = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_API_BASE_EXTERNAL || process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3782'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "NovusOrbit - AI-Powered Career Consulting Platform",
-    template: "%s | NovusOrbit"
+    default: "NovusOrbit: Free AI Career Assistant for Interviews, Resumes and Job Search",
+    template: "%s | NovusOrbit",
   },
-  description: "Transform your career with NovusOrbit's AI-powered career consulting. Get personalized resume reviews, interview preparation, career guidance, and job search strategies powered by advanced AI technology.",
-  keywords: ["career consulting", "AI career advisor", "resume review", "interview preparation", "job search", "career coach", "professional development", "career planning", "AI assistant", "career guidance"],
-  authors: [{ name: "NovusOrbit Team" }],
-  creator: "NovusOrbit",
-  publisher: "NovusOrbit",
+  description: DEFAULT_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: "NovusOrbit" }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
@@ -45,28 +47,20 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  // og:image / twitter:image come from app/opengraph-image.tsx and
+  // app/twitter-image.tsx, which Next.js wires up automatically.
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "/",
-    title: "NovusOrbit - AI-Powered Career Consulting Platform",
-    description: "Transform your career with personalized AI-powered consulting, resume reviews, and interview preparation.",
-    siteName: "NovusOrbit",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "NovusOrbit - AI Career Consulting",
-      },
-    ],
+    title: "NovusOrbit: Free AI Career Assistant",
+    description: DEFAULT_DESCRIPTION,
+    siteName: SITE_NAME,
   },
   twitter: {
     card: "summary_large_image",
-    title: "NovusOrbit - AI-Powered Career Consulting",
-    description: "Transform your career with personalized AI-powered consulting and guidance.",
-    images: ["/og-image.png"],
-    creator: "@NovusOrbit",
+    title: "NovusOrbit: Free AI Career Assistant",
+    description: DEFAULT_DESCRIPTION,
   },
   robots: {
     index: true,
@@ -79,12 +73,7 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    // Add your verification codes here when you have them
-    // google: 'your-google-verification-code',
-    // yandex: 'your-yandex-verification-code',
-    // bing: 'your-bing-verification-code',
-  },
+  // Every route sets its own canonical via pageMetadata(); this is the home page's.
   alternates: {
     canonical: "/",
   },
@@ -103,6 +92,7 @@ export default function RootLayout({
       </head>
       <body className={font.className} suppressHydrationWarning>
         <OrganizationStructuredData />
+        <WebSiteStructuredData />
         <WebApplicationStructuredData />
         <Providers>
           <GlobalProvider>

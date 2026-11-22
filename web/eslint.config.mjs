@@ -14,6 +14,20 @@ const config = [
     },
   },
   {
+    // Public SEO pages are server-rendered in English on purpose
+    // (react-i18next only runs on the client).
+    files: [
+      "app/features/**/*.tsx",
+      "app/guides/**/*.tsx",
+      "app/opengraph-image.tsx",
+      "app/twitter-image.tsx",
+      "components/marketing/**/*.tsx",
+    ],
+    rules: {
+      "i18n/no-literal-ui-text": "off",
+    },
+  },
+  {
     ignores: ["node_modules/**", ".next/**", "out/**"],
   },
 ];
