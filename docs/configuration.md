@@ -26,6 +26,7 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 | `NEXT_PUBLIC_API_BASE` | optional | Backend URL that the browser calls. In production this is `https://www.<domain>`. |
 | `NEXT_PUBLIC_SITE_URL` | optional | Public site origin used for canonical URLs, `robots.txt`, the sitemap and social cards. Read at build time. Defaults to `https://www.novusorbit.com`, so set it when building for a different domain. |
 | `DISABLE_SSL_VERIFY` | optional | Development only |
+| `RATE_LIMIT_ENABLED` / `RATE_LIMIT_MULTIPLIER` / `RATE_LIMIT_GLOBAL_DAILY` | optional | Usage limits on AI endpoints (`src/services/rate_limit.py`). On by default. The multiplier scales every per-user daily limit (for example `2` doubles them). The global value caps limited requests across all users per 24 hours, default `3000`; `0` turns the cap off. Counters are in memory and reset on restart. |
 | `MIGRATE_LEGACY_DATA` | optional | `1` (the Docker image default) moves pre-per-user shared data into the first admin's account on startup, once. Leave it unset for local development so the repo's `data/` folder isn't touched. |
 | `NOVUS_USER_ID` | optional | For the portfolio CLI (`src.knowledge.start_kb`): which user's portfolios to manage (MongoDB user id). Default: `anonymous`. |
 
