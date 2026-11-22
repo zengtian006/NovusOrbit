@@ -2,8 +2,6 @@
 
 LinkedIn favors native video and posts without outbound links in the body: put the link in the first comment. Post Tuesday to Thursday, 8 to 10am in your audience's time zone, and reply to every comment in the first hour.
 
-The older draft in `/linkedin_post_career_tools.md` links to `hkuds.github.io/NovusOrbit` (the upstream project's site) and lists your personal email; use the versions below instead.
-
 ## Launch post (with a 30 to 60 second screen recording)
 
 > Job hunting taught me one thing: I was pasting my CV into ChatGPT ten times a week.
