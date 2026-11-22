@@ -42,7 +42,7 @@ export default async function FeaturePage({ params }: Props) {
       <FaqStructuredData faqs={feature.faqs} />
 
       <header className="mb-10">
-        <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2">{feature.name}</p>
+        <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">{feature.name}</p>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-4">
           {feature.h1}
         </h1>
@@ -60,7 +60,7 @@ export default async function FeaturePage({ params }: Props) {
         <ol className="space-y-4">
           {feature.steps.map((s, i) => (
             <li key={s.title} className="flex gap-4">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-semibold flex items-center justify-center">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-semibold flex items-center justify-center">
                 {i + 1}
               </span>
               <div>
@@ -97,7 +97,7 @@ export default async function FeaturePage({ params }: Props) {
           <ul className="space-y-2">
             {guides.map((g) => (
               <li key={g.slug}>
-                <Link href={`/guides/${g.slug}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                <Link href={`/guides/${g.slug}`} className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   {g.title}
                 </Link>
               </li>
@@ -113,7 +113,7 @@ export default async function FeaturePage({ params }: Props) {
             <li key={f.slug}>
               <Link
                 href={`/features/${f.slug}`}
-                className="inline-block rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1 text-sm text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400"
+                className="inline-block rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1 text-sm text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 {f.name}
               </Link>

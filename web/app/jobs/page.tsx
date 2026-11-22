@@ -80,8 +80,8 @@ const COLORS = [
 ];
 
 const STATUS_OPTIONS = [
-  { value: "interested", label: "Interested", color: "text-purple-600 bg-purple-50 border-purple-200 dark:text-purple-400 dark:bg-purple-900/30 dark:border-purple-700" },
-  { value: "applied", label: "Applied", color: "text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-900/30 dark:border-blue-700" },
+  { value: "interested", label: "Interested", color: "text-indigo-600 bg-indigo-50 border-indigo-200 dark:text-indigo-400 dark:bg-indigo-900/30 dark:border-indigo-700" },
+  { value: "applied", label: "Applied", color: "text-indigo-600 bg-indigo-50 border-indigo-200 dark:text-indigo-400 dark:bg-indigo-900/30 dark:border-indigo-700" },
   { value: "interviewing", label: "Interviewing", color: "text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-900/30 dark:border-amber-700" },
   { value: "offered", label: "Offered", color: "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-900/30 dark:border-emerald-700" },
   { value: "rejected", label: "Rejected", color: "text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/30 dark:border-red-700" },
@@ -352,12 +352,12 @@ export default function JobsPage() {
 
   return (
     <div
-      className="h-screen flex gap-4 p-4 animate-fade-in"
+      className="h-screen flex gap-4 p-3 sm:p-4 animate-fade-in overflow-x-auto snap-x snap-mandatory lg:snap-none"
       style={{ justifyContent: "flex-start" }}
     >
       {/* Left Panel: Board List */}
       <div
-        className={`flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300 flex-shrink-0 ${leftCollapsed ? "overflow-hidden" : ""}`}
+        className={`snap-start flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300 flex-shrink-0 ${leftCollapsed ? "overflow-hidden" : ""}`}
         style={{
           width: leftCollapsed ? 0 : "288px",
           minWidth: leftCollapsed ? 0 : "288px",
@@ -366,16 +366,16 @@ export default function JobsPage() {
         }}
       >
         {/* Header */}
-        <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <Briefcase className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               {t("Job Boards")}
             </h1>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowCreateBoardModal(true)}
-                className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md shadow-purple-500/20"
+                className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -397,7 +397,7 @@ export default function JobsPage() {
               placeholder={t("Search job boards...")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
             />
           </div>
         </div>
@@ -417,6 +417,13 @@ export default function JobsPage() {
               <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">
                 {t("Create your first job board to get started")}
               </p>
+              <button
+                onClick={() => setShowCreateBoardModal(true)}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                {t("New board")}
+              </button>
             </div>
           ) : (
             <div className="space-y-2">
@@ -426,7 +433,7 @@ export default function JobsPage() {
                   onClick={() => fetchBoardDetail(b.id)}
                   className={`p-3 rounded-xl cursor-pointer transition-all group ${
                     selectedBoard?.id === b.id
-                      ? "bg-purple-50 dark:bg-purple-900/30 border-2 border-purple-200 dark:border-purple-700"
+                      ? "bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-700"
                       : "hover:bg-slate-50 dark:hover:bg-slate-700/50 border-2 border-transparent"
                   }`}
                 >
@@ -507,7 +514,7 @@ export default function JobsPage() {
 
       {/* Middle Panel: Jobs List */}
       <div
-        className={`flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300 flex-shrink-0 ${middleCollapsed ? "overflow-hidden" : ""}`}
+        className={`snap-start flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300 flex-shrink-0 ${middleCollapsed ? "overflow-hidden" : ""}`}
         style={{
           width: middleCollapsed ? 0 : "360px",
           minWidth: middleCollapsed ? 0 : "360px",
@@ -550,7 +557,7 @@ export default function JobsPage() {
                 </div>
                 <button
                   onClick={() => setShowAddJobModal(true)}
-                  className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all shadow-md shadow-purple-500/20 shrink-0"
+                  className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 shrink-0"
                   title={t("Add Job")}
                 >
                   <Plus className="w-4 h-4" />
@@ -721,7 +728,7 @@ export default function JobsPage() {
                     href={selectedJob.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/40 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 rounded-lg transition-colors"
                     title={t("Job URL")}
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -760,7 +767,7 @@ export default function JobsPage() {
                       onClick={() => handleStatusChange(selectedJob.id, opt.value)}
                       className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
                         selectedJob.status === opt.value
-                          ? opt.color + " ring-2 ring-offset-1 ring-purple-300 dark:ring-purple-600 dark:ring-offset-slate-800"
+                          ? opt.color + " ring-2 ring-offset-1 ring-indigo-300 dark:ring-indigo-600 dark:ring-offset-slate-800"
                           : "bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600"
                       }`}
                     >
@@ -782,16 +789,16 @@ export default function JobsPage() {
                   </div>
                 )}
                 {selectedJob.url && (
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                  <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
                     <div className="flex items-center gap-2 mb-1">
-                      <ExternalLink className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">{t("Job URL")}</span>
+                      <ExternalLink className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">{t("Job URL")}</span>
                     </div>
                     <a
                       href={selectedJob.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate block"
+                      className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline truncate block"
                     >
                       {selectedJob.url}
                     </a>
@@ -887,7 +894,7 @@ export default function JobsPage() {
                     setNewBoard((prev) => ({ ...prev, name: e.target.value }))
                   }
                   placeholder={t("My Job Board")}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
               <div>
@@ -904,7 +911,7 @@ export default function JobsPage() {
                   }
                   placeholder={t("Track interesting positions...")}
                   rows={3}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
                 />
               </div>
               <div>
@@ -937,7 +944,7 @@ export default function JobsPage() {
               <button
                 onClick={handleCreateBoard}
                 disabled={!newBoard.name.trim()}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 {t("Create")}
@@ -978,7 +985,7 @@ export default function JobsPage() {
                       prev ? { ...prev, name: e.target.value } : null
                     )
                   }
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
               <div>
@@ -993,7 +1000,7 @@ export default function JobsPage() {
                     )
                   }
                   rows={3}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
                 />
               </div>
               <div>
@@ -1033,7 +1040,7 @@ export default function JobsPage() {
               <button
                 onClick={handleUpdateBoard}
                 disabled={!editingBoard.name.trim()}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 <Check className="w-4 h-4" />
                 {t("Save Changes")}
@@ -1083,7 +1090,7 @@ export default function JobsPage() {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-[520px] max-h-[85vh] flex flex-col animate-in zoom-in-95">
             <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Plus className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <Plus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 {t("Add Job")}
               </h3>
               <button
@@ -1104,7 +1111,7 @@ export default function JobsPage() {
                     value={jobForm.title}
                     onChange={(e) => setJobForm((prev) => ({ ...prev, title: e.target.value }))}
                     placeholder="e.g. Software Engineer"
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
                 <div>
@@ -1116,7 +1123,7 @@ export default function JobsPage() {
                     value={jobForm.company}
                     onChange={(e) => setJobForm((prev) => ({ ...prev, company: e.target.value }))}
                     placeholder="e.g. Google"
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
               </div>
@@ -1130,7 +1137,7 @@ export default function JobsPage() {
                     value={jobForm.location}
                     onChange={(e) => setJobForm((prev) => ({ ...prev, location: e.target.value }))}
                     placeholder="e.g. San Francisco, CA"
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
                 <div>
@@ -1142,7 +1149,7 @@ export default function JobsPage() {
                     value={jobForm.salary_range}
                     onChange={(e) => setJobForm((prev) => ({ ...prev, salary_range: e.target.value }))}
                     placeholder="e.g. $120K - $180K"
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
               </div>
@@ -1155,7 +1162,7 @@ export default function JobsPage() {
                   value={jobForm.url}
                   onChange={(e) => setJobForm((prev) => ({ ...prev, url: e.target.value }))}
                   placeholder="https://..."
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
               <div>
@@ -1165,7 +1172,7 @@ export default function JobsPage() {
                 <select
                   value={jobForm.status}
                   onChange={(e) => setJobForm((prev) => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1183,7 +1190,7 @@ export default function JobsPage() {
                   onChange={(e) => setJobForm((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder={t("Paste job description here...")}
                   rows={8}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
                 />
               </div>
               <div>
@@ -1195,7 +1202,7 @@ export default function JobsPage() {
                   onChange={(e) => setJobForm((prev) => ({ ...prev, notes: e.target.value }))}
                   placeholder="Your personal notes about this position..."
                   rows={3}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
                 />
               </div>
             </div>
@@ -1209,7 +1216,7 @@ export default function JobsPage() {
               <button
                 onClick={handleAddJob}
                 disabled={!jobForm.title.trim() || !jobForm.company.trim()}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 {t("Add Job")}
@@ -1225,7 +1232,7 @@ export default function JobsPage() {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-[520px] max-h-[85vh] flex flex-col animate-in zoom-in-95">
             <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <Edit3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 {t("Edit Job")}
               </h3>
               <button
@@ -1248,7 +1255,7 @@ export default function JobsPage() {
                     type="text"
                     value={editingJob.title}
                     onChange={(e) => setEditingJob((prev) => prev ? { ...prev, title: e.target.value } : null)}
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
                 <div>
@@ -1259,7 +1266,7 @@ export default function JobsPage() {
                     type="text"
                     value={editingJob.company}
                     onChange={(e) => setEditingJob((prev) => prev ? { ...prev, company: e.target.value } : null)}
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
               </div>
@@ -1272,7 +1279,7 @@ export default function JobsPage() {
                     type="text"
                     value={editingJob.location}
                     onChange={(e) => setEditingJob((prev) => prev ? { ...prev, location: e.target.value } : null)}
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
                 <div>
@@ -1283,7 +1290,7 @@ export default function JobsPage() {
                     type="text"
                     value={editingJob.salary_range}
                     onChange={(e) => setEditingJob((prev) => prev ? { ...prev, salary_range: e.target.value } : null)}
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                   />
                 </div>
               </div>
@@ -1295,7 +1302,7 @@ export default function JobsPage() {
                   type="url"
                   value={editingJob.url}
                   onChange={(e) => setEditingJob((prev) => prev ? { ...prev, url: e.target.value } : null)}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
               <div>
@@ -1305,7 +1312,7 @@ export default function JobsPage() {
                 <select
                   value={editingJob.status}
                   onChange={(e) => setEditingJob((prev) => prev ? { ...prev, status: e.target.value } : null)}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 >
                   {STATUS_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1322,7 +1329,7 @@ export default function JobsPage() {
                   value={editingJob.description}
                   onChange={(e) => setEditingJob((prev) => prev ? { ...prev, description: e.target.value } : null)}
                   rows={8}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
                 />
               </div>
               <div>
@@ -1333,7 +1340,7 @@ export default function JobsPage() {
                   value={editingJob.notes}
                   onChange={(e) => setEditingJob((prev) => prev ? { ...prev, notes: e.target.value } : null)}
                   rows={3}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none resize-none"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-none"
                 />
               </div>
             </div>
@@ -1350,7 +1357,7 @@ export default function JobsPage() {
               <button
                 onClick={handleUpdateJob}
                 disabled={!editingJob.title.trim() || !editingJob.company.trim()}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 <Check className="w-4 h-4" />
                 {t("Save Changes")}

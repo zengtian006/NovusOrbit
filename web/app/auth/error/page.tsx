@@ -51,7 +51,7 @@ function ErrorContent() {
 
             <Link
               href="/auth/signin"
-              className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              className="inline-block px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
             >
               Back to Sign In
             </Link>

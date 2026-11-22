@@ -100,9 +100,9 @@ export default function RootLayout({
           <GlobalProvider>
             <I18nClientBridge>
               <LayoutWrapper>
-                <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden transition-colors duration-200">
+                <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-200">
                   <Sidebar />
-                  <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900">
+                  <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
                     {children}
                   </main>
                 </div>
