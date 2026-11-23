@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import os
+import re
 import time
 from typing import Any, Optional
 
@@ -28,6 +29,41 @@ from src.logging import get_logger
 logger = get_logger("JSearch")
 
 DATE_POSTED_VALUES = {"all", "today", "3days", "week", "month"}
+
+# Job sites a user can choose. "Named" sites can be targeted in the query
+# ("<role> via LinkedIn", which Google for Jobs honors); "company" and "other"
+# can only be filtered after a normal search.
+SOURCE_LABELS = {
+    "linkedin": "LinkedIn",
+    "indeed": "Indeed",
+    "glassdoor": "Glassdoor",
+    "ziprecruiter": "ZipRecruiter",
+    "company": "Company websites",
+    "other": "Other job sites",
+}
+TARGETABLE_SOURCES = ("linkedin", "indeed", "glassdoor", "ziprecruiter")
+
+
+def normalize_sources(values) -> list[str]:
+    """Valid, de-duplicated source keys in a stable order ([] means all sources)."""
+    if isinstance(values, str):
+        values = values.split(",")
+    wanted = {str(v).strip().lower() for v in (values or []) if str(v).strip()}
+    picked = [k for k in SOURCE_LABELS if k in wanted]
+    return [] if len(picked) == len(SOURCE_LABELS) else picked
+
+
+def classify_source(publisher: str, employer: str = "") -> str:
+    """Map a publisher name (e.g. "LinkedIn", "Acme Careers") to a source key."""
+    pub = (publisher or "").lower()
+    for key in TARGETABLE_SOURCES:
+        if key in pub:
+            return key
+    words = re.findall(r"[a-z0-9]+", (employer or "").lower())
+    first_word = words[0] if words else ""
+    if "career" in pub or (first_word and len(first_word) > 2 and first_word in pub):
+        return "company"
+    return "other"
 
 
 class JSearchError(Exception):
@@ -135,6 +171,7 @@ def normalize_job(job: dict) -> dict:
         "is_remote": bool(job.get("job_is_remote")),
         "employer_logo": job.get("employer_logo") or "",
         "source": job.get("job_publisher") or "JSearch",
+        "source_key": classify_source(job.get("job_publisher") or "", job.get("employer_name") or ""),
         "provider": "jsearch",
     }
 
@@ -145,6 +182,7 @@ async def search_jobs(
     country: str = "",
     date_posted: str = "all",
     remote_only: bool = False,
+    via: str = "",
     num_pages: int = 1,
     client: Optional[httpx.AsyncClient] = None,
 ) -> list[dict]:
@@ -155,6 +193,8 @@ async def search_jobs(
     host = os.getenv("JSEARCH_API_HOST", "jsearch.p.rapidapi.com").strip()
 
     full_query = f"{query} in {location}" if location and not remote_only else query
+    if via:
+        full_query = f"{full_query} via {via}"
     date_posted = date_posted if date_posted in DATE_POSTED_VALUES else "all"
     params: dict[str, Any] = {
         "query": full_query,
