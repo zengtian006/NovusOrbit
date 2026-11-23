@@ -14,7 +14,7 @@ export const SITE_URL = (
 export const SITE_NAME = "NovusOrbit";
 
 export const DEFAULT_DESCRIPTION =
-  "Free AI career assistant. Upload your CV once, then get interview questions with personalized answers, resume rewrites, ranked job matches from Indeed and LinkedIn, and a job application tracker.";
+  "Free AI career assistant. Upload your CV once, then get interview questions with personalized answers, resume rewrites, ranked job matches from LinkedIn, Indeed, Glassdoor and more, and a job application tracker.";
 
 /**
  * Social preview image (served by app/opengraph-image.tsx). Listed explicitly

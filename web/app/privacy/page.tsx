@@ -8,7 +8,7 @@ export const metadata = pageMetadata({
   path: "/privacy",
 });
 
-const UPDATED = "2026-11-22";
+const UPDATED = "2026-11-23";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -25,7 +25,7 @@ export default function PrivacyPage() {
       <header className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white mb-2">Privacy</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Last updated <time dateTime={UPDATED}>22 November 2026</time>
+          Last updated <time dateTime={UPDATED}>23 November 2026</time>
         </p>
       </header>
 
@@ -74,7 +74,9 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Web search provider</strong>: when you turn on web search or look for jobs, search queries are sent
-            to a search service. Job suggestions also read public job listings on Indeed and LinkedIn.
+            to a search service. For job suggestions, the job titles and location being searched (not your
+            documents) are sent to JSearch, a job listing service provided through RapidAPI, which returns
+            public listings from sites such as LinkedIn, Indeed and Glassdoor.
           </li>
           <li>
             <strong>Hosting</strong>: the app and your files run on Amazon Web Services in the United States; account

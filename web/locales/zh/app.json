@@ -290,5 +290,15 @@
   "Any time": "不限",
   "Work mode": "工作方式",
   "Remote only": "仅远程",
-  "Your CV": "你的简历"
+  "Your CV": "你的简历",
+  "Job sites": "招聘网站",
+  "All sites": "全部网站",
+  "Company websites": "公司官网",
+  "Other job sites": "其他招聘网站",
+  "Found on": "来源",
+  "via": "来自",
+  "Apply on": "前往申请：",
+  "Open job posting": "打开职位页面",
+  "Glassdoor": "Glassdoor",
+  "ZipRecruiter": "ZipRecruiter"
 }
