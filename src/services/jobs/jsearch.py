@@ -192,7 +192,14 @@ async def search_jobs(
     if resp.status_code == 429:
         raise JSearchError("rate limit or monthly quota exceeded (HTTP 429)")
     if resp.status_code in (401, 403):
-        raise JSearchError(f"not authorized (HTTP {resp.status_code}); check JSEARCH_API_KEY and subscription")
+        try:
+            reason = resp.json().get("message", "")
+        except ValueError:
+            reason = resp.text[:200]
+        raise JSearchError(
+            f"not authorized (HTTP {resp.status_code}): {reason or 'check JSEARCH_API_KEY'}"
+            " (the RapidAPI account must be subscribed to JSearch, even the free plan)"
+        )
     if resp.status_code >= 400:
         raise JSearchError(f"HTTP {resp.status_code}: {resp.text[:200]}")
 
