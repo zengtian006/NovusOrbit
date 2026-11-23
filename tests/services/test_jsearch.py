@@ -200,7 +200,7 @@ def test_find_jobs_falls_back_to_scrapers(monkeypatch):
     async def failing(**kwargs):
         raise jsearch.JSearchError("quota exceeded")
 
-    async def scrape(queries, location, max_per_query=5):
+    async def scrape(queries, location, max_per_query=5, sources=("indeed", "linkedin")):
         return [{"title": "Fallback job", "company": "X", "source": "Indeed"}], {"indeed": {"jobs": 1}}
 
     monkeypatch.setattr(jsearch, "search_jobs", failing)
@@ -286,3 +286,98 @@ def test_detail_prompt_includes_job_description(monkeypatch):
     asyncio.run(agent.get_job_detail("Data Engineer", company="Acme",
                                      job_description="Must know Kafka and dbt", portfolio_context="Python"))
     assert "Must know Kafka and dbt" in captured[0]
+
+
+
+# --- Job site selection -------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "publisher,employer,expected",
+    [
+        ("LinkedIn", "Acme", "linkedin"),
+        ("Indeed", "Acme", "indeed"),
+        ("Glassdoor", "Acme", "glassdoor"),
+        ("ZipRecruiter", "Acme", "ziprecruiter"),
+        ("General Motors Careers", "General Motors", "company"),
+        ("PlayStation Careers", "Sony Interactive Entertainment", "company"),
+        ("Stripe", "Stripe, Inc.", "company"),
+        ("Monster", "Acme", "other"),
+        ("Talent.com", "Acme", "other"),
+    ],
+)
+def test_classify_source(publisher, employer, expected):
+    assert jsearch.classify_source(publisher, employer) == expected
+
+
+def test_normalize_sources():
+    assert jsearch.normalize_sources(["Indeed", "linkedin", "bogus", "linkedin"]) == ["linkedin", "indeed"]
+    assert jsearch.normalize_sources("glassdoor,company") == ["glassdoor", "company"]
+    assert jsearch.normalize_sources(list(jsearch.SOURCE_LABELS)) == []  # all selected = no filter
+    assert jsearch.normalize_sources([]) == []
+
+
+def test_via_targets_site_in_query():
+    seen = {}
+
+    def handler(request):
+        seen.update(request.url.params)
+        return httpx.Response(200, json={"status": "OK", "data": {"jobs": []}})
+
+    async def run():
+        async with _client(handler) as c:
+            await jsearch.search_jobs("data engineer", location="Austin, TX", via="LinkedIn", client=c)
+
+    asyncio.run(run())
+    assert seen["query"] == "data engineer in Austin, TX via LinkedIn"
+
+
+def test_plan_source_requests_stays_within_budget():
+    from src.agents.job_suggest.job_suggest_agent import JobSuggestAgent, MAX_SOURCE_REQUESTS
+
+    plan = JobSuggestAgent._plan_source_requests
+    q = ["A", "B", "C"]
+    assert plan(q, []) == [("A", ""), ("B", ""), ("C", "")]
+    assert plan(q, ["linkedin"]) == [("A", "LinkedIn"), ("B", "LinkedIn"), ("C", "LinkedIn")]
+    two = plan(q, ["linkedin", "indeed"])
+    assert two == [("A", "LinkedIn"), ("B", "LinkedIn"), ("A", "Indeed"), ("B", "Indeed")]
+    mixed = plan(q, ["linkedin", "indeed", "glassdoor", "company"])
+    assert len(mixed) <= MAX_SOURCE_REQUESTS and ("A", "") in mixed
+    assert plan(q, ["company", "other"]) == [("A", "")]
+
+
+def test_find_jobs_filters_to_selected_sites(monkeypatch):
+    agent = _agent()
+    li = dict(jsearch.normalize_job(SAMPLE["data"][0]))
+    other = dict(li, title="Other job", job_id="2", source="Ladders", source_key="other")
+    vias = []
+
+    async def fake_search(**kwargs):
+        vias.append(kwargs["via"])
+        return [dict(li), dict(other)]
+
+    monkeypatch.setattr(jsearch, "search_jobs", fake_search)
+    jobs, status = asyncio.run(agent._find_jobs(["a"], {"sources": "linkedin"}))
+    assert vias == ["LinkedIn"]
+    assert [j["source_key"] for j in jobs] == ["linkedin"]  # stray non-LinkedIn listing dropped
+
+
+def test_scraper_fallback_respects_selected_sites(monkeypatch):
+    agent = _agent()
+    called = {}
+
+    async def failing(**kwargs):
+        raise jsearch.JSearchError("quota")
+
+    async def scrape(queries, location, max_per_query=5, sources=("indeed", "linkedin")):
+        called["sources"] = list(sources)
+        return [], {}
+
+    monkeypatch.setattr(jsearch, "search_jobs", failing)
+    monkeypatch.setattr(agent, "_scrape_jobs", scrape)
+    asyncio.run(agent._find_jobs(["a"], {"sources": "linkedin,glassdoor"}))
+    assert called["sources"] == ["linkedin"]
+
+    called.clear()
+    jobs, _ = asyncio.run(agent._find_jobs(["a"], {"sources": "glassdoor"}))
+    assert jobs == [] and "sources" not in called  # no scraper covers Glassdoor

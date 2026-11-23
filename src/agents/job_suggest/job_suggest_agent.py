@@ -5,7 +5,8 @@ JobSuggestAgent - AI-powered job recommendation engine.
 This agent:
 1. Analyzes a user's portfolio (resume/CV) via RAG
 2. Generates optimal search queries based on the profile
-3. Scrapes real job listings from Indeed & LinkedIn via MCP scrapers
+3. Finds live listings via JSearch (LinkedIn, Indeed, Glassdoor, company sites;
+   users can pick which), falling back to the Indeed/LinkedIn MCP scrapers
 4. Uses LLM to rank and analyze real jobs against the portfolio
 
 Features:
@@ -37,6 +38,8 @@ from src.tools import aweb_search, rag_search
 MAX_JOBS_FOR_RANKING = 15
 # Characters of each job's description included in the ranking prompt
 DESCRIPTION_CHARS_FOR_RANKING = 900
+# Max JSearch requests per suggestion run when the user picks specific job sites
+MAX_SOURCE_REQUESTS = 4
 
 _STOPWORDS = set(
     """a an and are as at be by for from has have in is it its of on or that the to with
@@ -403,9 +406,12 @@ class JobSuggestAgent(BaseAgent):
         date_posted = preferences.get("date_posted", "") or "all"
         remote_only = str(preferences.get("remote_only", "")).lower() in ("1", "true", "yes")
 
+        sources = jsearch.normalize_sources(preferences.get("sources", ""))
+
         status: dict[str, dict] = {}
         if jsearch.is_configured():
             country = await self._infer_country(location) if location and not remote_only else ""
+            plan = self._plan_source_requests(queries, sources)
             results = await asyncio.gather(
                 *[
                     jsearch.search_jobs(
@@ -414,14 +420,15 @@ class JobSuggestAgent(BaseAgent):
                         country=country,
                         date_posted=date_posted,
                         remote_only=remote_only,
+                        via=via,
                     )
-                    for q in queries
+                    for q, via in plan
                 ],
                 return_exceptions=True,
             )
             jobs: list[dict] = []
             seen: set[tuple[str, str]] = set()
-            st = {"jobs": 0, "errors": 0, "last_error": None}
+            st = {"jobs": 0, "errors": 0, "last_error": None, "requests": len(plan)}
             for result in results:
                 if isinstance(result, Exception):
                     st["errors"] += 1
@@ -429,6 +436,8 @@ class JobSuggestAgent(BaseAgent):
                     self.logger.warning(f"JSearch error: {result}")
                     continue
                 for job in result[: max_per_query * 2]:
+                    if sources and job.get("source_key") not in sources:
+                        continue  # the user didn't pick this job site
                     key = (job["title"].lower(), job["company"].lower())
                     if key in seen:
                         continue
@@ -440,9 +449,39 @@ class JobSuggestAgent(BaseAgent):
                 return jobs, status
             self.logger.warning("JSearch returned no listings; falling back to scrapers")
 
-        scraped, scraper_status = await self._scrape_jobs(queries, location, max_per_query=max_per_query)
+        scraper_sources = [s for s in ("indeed", "linkedin") if not sources or s in sources]
+        if not scraper_sources:
+            return [], status
+        scraped, scraper_status = await self._scrape_jobs(
+            queries, location, max_per_query=max_per_query, sources=scraper_sources
+        )
         status.update(scraper_status)
         return scraped, status
+
+    @staticmethod
+    def _plan_source_requests(queries: list[str], sources: list[str]) -> list[tuple[str, str]]:
+        """(query, via) pairs to send to JSearch.
+
+        No sites chosen: every query once, untargeted. Specific sites chosen:
+        target each named site ("via LinkedIn"), spreading at most
+        MAX_SOURCE_REQUESTS requests across them, plus one untargeted query
+        when "company websites" or "other job sites" are chosen.
+        """
+        if not queries:
+            return []
+        if not sources:
+            return [(q, "") for q in queries]
+        named = [s for s in sources if s in jsearch.TARGETABLE_SOURCES]
+        untargeted = any(s not in jsearch.TARGETABLE_SOURCES for s in sources)
+        budget = MAX_SOURCE_REQUESTS - (1 if untargeted else 0)
+        plan: list[tuple[str, str]] = []
+        if named:
+            per_source = max(1, min(len(queries), budget // len(named)))
+            for src in named:
+                plan.extend((q, jsearch.SOURCE_LABELS[src]) for q in queries[:per_source])
+        if untargeted:
+            plan.append((queries[0], ""))
+        return plan
 
     async def _infer_country(self, location: str) -> str:
         """ISO country code for a free-text location (JSearch searches one country at a time)."""
@@ -505,9 +544,10 @@ class JobSuggestAgent(BaseAgent):
         queries: list[str],
         location: str,
         max_per_query: int = 5,
+        sources: tuple[str, ...] | list[str] = ("indeed", "linkedin"),
     ) -> tuple[list[dict], dict[str, dict]]:
         """
-        Scrape jobs from Indeed + LinkedIn for all queries in parallel.
+        Scrape jobs from Indeed and/or LinkedIn for all queries in parallel.
         Deduplicates by title+company.
 
         Returns:
@@ -515,25 +555,28 @@ class JobSuggestAgent(BaseAgent):
             to {"jobs": int, "errors": int, "last_error": str | None} so callers
             can tell users which sources actually returned listings.
         """
+        wanted = set(sources)
         tasks = []
         sources = []
         for query in queries:
-            tasks.append(
-                self.indeed.search_jobs(
-                    query=query,
-                    location=location,
-                    max_results=max_per_query,
+            if "indeed" in wanted:
+                tasks.append(
+                    self.indeed.search_jobs(
+                        query=query,
+                        location=location,
+                        max_results=max_per_query,
+                    )
                 )
-            )
-            sources.append("indeed")
-            tasks.append(
-                self.linkedin.search_jobs(
-                    keywords=query,
-                    location=location,
-                    max_results=max_per_query,
+                sources.append("indeed")
+            if "linkedin" in wanted:
+                tasks.append(
+                    self.linkedin.search_jobs(
+                        keywords=query,
+                        location=location,
+                        max_results=max_per_query,
+                    )
                 )
-            )
-            sources.append("linkedin")
+                sources.append("linkedin")
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -733,6 +776,10 @@ class JobSuggestAgent(BaseAgent):
             "industry": "Preferred Industry",
             "experience_level": "Experience Level",
         }
+        picked = jsearch.normalize_sources(preferences.get("sources", ""))
+        if picked:
+            preferences = {**preferences, "sites": ", ".join(jsearch.SOURCE_LABELS[s] for s in picked)}
+            label_map["sites"] = "Preferred Job Sites"
         if str(preferences.get("remote_only", "")).lower() in ("1", "true", "yes"):
             preferences = {**preferences, "work_mode": "Remote only"}
             label_map["work_mode"] = "Work Mode"

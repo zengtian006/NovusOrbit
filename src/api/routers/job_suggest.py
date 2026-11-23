@@ -4,7 +4,7 @@ Job Suggestion API Router
 
 Generates personalized job recommendations by:
 1. Analyzing the user's portfolio (resume/CV) via RAG
-2. Scraping real job listings from Indeed & LinkedIn (MCP scrapers)
+2. Finding live job listings via JSearch (Indeed/LinkedIn scrapers as a fallback)
 3. Using LLM to rank and analyze real jobs against the portfolio
 """
 
@@ -18,6 +18,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from src.services.jobs import jsearch
 from src.services.rate_limit import rate_limit
 from src.agents.job_suggest import JobSuggestAgent, get_job_suggest_session_manager
 from src.logging import get_logger
@@ -47,6 +48,7 @@ class SuggestJobsRequest(BaseModel):
     experience_level: str = ""  # entry, mid, senior, lead
     date_posted: str = ""  # all, today, 3days, week, month
     remote_only: bool = False
+    sources: list[str] = []  # linkedin, indeed, glassdoor, ziprecruiter, company, other; empty = all
     language: str = ""
 
 
@@ -145,6 +147,9 @@ async def suggest_jobs(request: SuggestJobsRequest):
             preferences["date_posted"] = request.date_posted
         if request.remote_only:
             preferences["remote_only"] = "true"
+        sources = jsearch.normalize_sources(request.sources)
+        if sources:
+            preferences["sources"] = ",".join(sources)
 
         result = await agent.suggest_jobs(
             kb_name=request.kb_name,

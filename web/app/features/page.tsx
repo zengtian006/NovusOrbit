@@ -9,7 +9,7 @@ import { pageMetadata } from "@/lib/site";
 export const metadata = pageMetadata({
   title: "Features: AI Interview Prep, Resume Writer, Job Matching and Tracker",
   description:
-    "Everything NovusOrbit does: AI interview questions and answers from your CV, an AI resume writer, ranked job matches from Indeed and LinkedIn, and a free job application tracker.",
+    "Everything NovusOrbit does: AI interview questions and answers from your CV, an AI resume writer, ranked job matches from LinkedIn, Indeed, Glassdoor and more, and a free job application tracker.",
   path: "/features",
 });
 
@@ -79,7 +79,7 @@ export default function FeaturesPage() {
         <h2 id="how" className="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-4">How it works</h2>
         <ol className="space-y-3 list-decimal pl-5 text-slate-700 dark:text-slate-300">
           <li><strong>Build your portfolio.</strong> Upload your CV, cover letters and certificates.</li>
-          <li><strong>Find and save jobs.</strong> Get ranked matches from Indeed and LinkedIn, or add jobs you found yourself.</li>
+          <li><strong>Find and save jobs.</strong> Get ranked matches from LinkedIn, Indeed, Glassdoor and company career sites, or add jobs you found yourself.</li>
           <li><strong>Tailor and prepare.</strong> Rewrite your resume for the role and practice interview questions with answers drawn from your experience.</li>
           <li><strong>Track progress.</strong> Move each application from interested to offered.</li>
         </ol>
