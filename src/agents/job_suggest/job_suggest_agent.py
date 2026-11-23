@@ -30,15 +30,29 @@ if str(_project_root) not in sys.path:
 from src.agents.base_agent import BaseAgent
 from src.mcp.scrapers.indeed import IndeedScraper
 from src.mcp.scrapers.linkedin import LinkedInScraper
+from src.services.jobs import jsearch
 from src.tools import aweb_search, rag_search
+
+# Listings sent to the LLM for ranking (after the keyword pre-filter)
+MAX_JOBS_FOR_RANKING = 15
+# Characters of each job's description included in the ranking prompt
+DESCRIPTION_CHARS_FOR_RANKING = 900
+
+_STOPWORDS = set(
+    """a an and are as at be by for from has have in is it its of on or that the to with
+    will we you your our their this these those who what when where which while about into
+    over under than then them they he she his her i me my not no yes can may also more most
+    other some such only own same so very just using used use work working experience years
+    year team teams role roles job jobs position company skills skill including include""".split()
+)
 
 
 class JobSuggestAgent(BaseAgent):
     """
     AI-powered job suggestion agent with real job scraping.
 
-    Analyzes user portfolio via RAG, scrapes real job listings from
-    Indeed & LinkedIn, and ranks them by match quality.
+    Analyzes the user's portfolio via RAG, finds live listings (JSearch, with
+    the Indeed/LinkedIn scrapers as a fallback), and ranks them by match quality.
     """
 
     def __init__(
@@ -56,6 +70,7 @@ class JobSuggestAgent(BaseAgent):
         )
         self.indeed = IndeedScraper()
         self.linkedin = LinkedInScraper()
+        self._country_cache: dict[str, str] = {}
         self.logger.info(
             f"JobSuggestAgent initialized: model={self.model}, language={language}"
         )
@@ -148,29 +163,27 @@ class JobSuggestAgent(BaseAgent):
         )
         self.logger.info(f"Generated {len(search_queries)} search queries: {search_queries}")
 
-        # --- 3. Scrape real jobs from Indeed + LinkedIn ---
-        location = preferences.get("location", "")
-        real_jobs, source_status = await self._scrape_jobs(
-            search_queries, location, max_per_query=count
+        # --- 3. Find live listings (JSearch first, scrapers as a fallback) ---
+        real_jobs, source_status = await self._find_jobs(
+            search_queries, preferences, max_per_query=max(count, 10)
         )
-        self.logger.info(
-            f"Scraped {len(real_jobs)} real job listings from Indeed + LinkedIn"
-        )
+        self.logger.info(f"Found {len(real_jobs)} live job listings")
 
         if not real_jobs:
-            # Fallback: generate hypothetical suggestions if scrapers return nothing
+            # Fallback: generate hypothetical suggestions if no source returned listings
             self.logger.warning("No real jobs found, falling back to LLM suggestions")
             result = await self._fallback_suggest(portfolio_context, preferences, count)
             result["search_queries"] = search_queries
             result["source_status"] = source_status
             result["fallback_reason"] = (
-                "Indeed and LinkedIn returned no listings for these searches "
-                "(the sites may be blocking requests or have changed). "
-                "These are AI-generated role ideas, not live job postings."
+                "No live job listings were found for these searches. "
+                "These are AI-generated role ideas, not live job postings. "
+                "Try a broader role, a different location, or a longer date range."
             )
             return result
 
-        # --- 4. LLM ranks and analyzes real jobs against portfolio ---
+        # --- 4. Keep the most relevant listings, then the LLM ranks them on full descriptions ---
+        real_jobs = self._prefilter_jobs(portfolio_context, real_jobs, MAX_JOBS_FOR_RANKING)
         analysis = await self._rank_and_analyze_jobs(
             portfolio_context, real_jobs, preferences, count
         )
@@ -262,27 +275,22 @@ class JobSuggestAgent(BaseAgent):
         )
 
         web_section = self._format_web_section(web_context)
-        job_info = f"**Title**: {job_title}"
-        if company:
-            job_info += f"\n**Company**: {company}"
-        if company_type:
-            job_info += f"\n**Company Type**: {company_type}"
-        if full_description:
-            job_info += f"\n\n**Job Description**:\n{full_description[:2000]}"
-        if job_url:
-            job_info += f"\n\n**Listing URL**: {job_url}"
-
         template = self.get_prompt("detail_template")
         if template:
             user_prompt = template.format(
                 job_title=job_title,
                 company_type=company or company_type or "Not specified",
+                job_description_section=self._format_job_description_section(full_description),
                 portfolio_context=portfolio_context or "No portfolio data available.",
                 web_section=web_section,
             )
         else:
             user_prompt = self._build_detail_prompt_inline(
-                job_title, company or company_type, portfolio_context, web_section
+                job_title,
+                company or company_type,
+                portfolio_context,
+                web_section,
+                self._format_job_description_section(full_description),
             )
 
         messages = [
@@ -383,6 +391,114 @@ class JobSuggestAgent(BaseAgent):
     # ------------------------------------------------------------------
     # Internal: Job scraping
     # ------------------------------------------------------------------
+
+    async def _find_jobs(
+        self,
+        queries: list[str],
+        preferences: dict[str, str],
+        max_per_query: int = 10,
+    ) -> tuple[list[dict], dict[str, dict]]:
+        """Live listings for the queries: JSearch when configured, else (or on failure) the scrapers."""
+        location = preferences.get("location", "")
+        date_posted = preferences.get("date_posted", "") or "all"
+        remote_only = str(preferences.get("remote_only", "")).lower() in ("1", "true", "yes")
+
+        status: dict[str, dict] = {}
+        if jsearch.is_configured():
+            country = await self._infer_country(location) if location and not remote_only else ""
+            results = await asyncio.gather(
+                *[
+                    jsearch.search_jobs(
+                        query=q,
+                        location=location,
+                        country=country,
+                        date_posted=date_posted,
+                        remote_only=remote_only,
+                    )
+                    for q in queries
+                ],
+                return_exceptions=True,
+            )
+            jobs: list[dict] = []
+            seen: set[tuple[str, str]] = set()
+            st = {"jobs": 0, "errors": 0, "last_error": None}
+            for result in results:
+                if isinstance(result, Exception):
+                    st["errors"] += 1
+                    st["last_error"] = str(result)[:200]
+                    self.logger.warning(f"JSearch error: {result}")
+                    continue
+                for job in result[: max_per_query * 2]:
+                    key = (job["title"].lower(), job["company"].lower())
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    jobs.append(job)
+            st["jobs"] = len(jobs)
+            status["jsearch"] = st
+            if jobs:
+                return jobs, status
+            self.logger.warning("JSearch returned no listings; falling back to scrapers")
+
+        scraped, scraper_status = await self._scrape_jobs(queries, location, max_per_query=max_per_query)
+        status.update(scraper_status)
+        return scraped, status
+
+    async def _infer_country(self, location: str) -> str:
+        """ISO country code for a free-text location (JSearch searches one country at a time)."""
+        key = location.strip().lower()
+        if not key or key in ("remote", "anywhere", "worldwide"):
+            return ""
+        if key in self._country_cache:
+            return self._country_cache[key]
+        code = ""
+        try:
+            response = await self.call_llm(
+                "",
+                "",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Reply with only the ISO 3166-1 alpha-2 country code, lowercase. "
+                        "If the location is not a real place or is ambiguous, reply 'us'.",
+                    },
+                    {"role": "user", "content": f"Location: {location}"},
+                ],
+                max_tokens=5,
+                temperature=0,
+                verbose=False,
+            )
+            candidate = response.strip().strip(".").lower()
+            if len(candidate) == 2 and candidate.isalpha():
+                code = candidate
+        except Exception as e:
+            self.logger.warning(f"Country lookup failed for {location!r}: {e}")
+        self._country_cache[key] = code
+        return code
+
+    @staticmethod
+    def _tokens(text: str) -> set[str]:
+        return {
+            w
+            for w in re.findall(r"[a-z][a-z0-9+#.\-]{1,}", text.lower())
+            if w not in _STOPWORDS and len(w) > 2
+        }
+
+    def _prefilter_jobs(self, portfolio_context: str, jobs: list[dict], limit: int) -> list[dict]:
+        """Cheap keyword-overlap score so only the most relevant listings go to the LLM."""
+        if len(jobs) <= limit:
+            return jobs
+        profile = self._tokens(portfolio_context)
+        if not profile:
+            return jobs[:limit]
+
+        def score(job: dict) -> float:
+            title = self._tokens(job.get("title", ""))
+            body = self._tokens(" ".join([job.get("highlights", ""), job.get("description", "") or job.get("snippet", "")]))
+            return 3 * len(title & profile) + len(body & profile) / max(1.0, len(body) ** 0.5)
+
+        ranked = sorted(enumerate(jobs), key=lambda p: (-score(p[1]), p[0]))
+        return [job for _, job in ranked[:limit]]
 
     async def _scrape_jobs(
         self,
@@ -512,7 +628,7 @@ class JobSuggestAgent(BaseAgent):
         """Format scraped job listings into a text block for the LLM prompt."""
         lines = []
         for i, job in enumerate(jobs, 1):
-            parts = [f"**Job #{i}**"]
+            parts = [f"**Listing #{i}**"]
             if job.get("title"):
                 parts.append(f"  - Title: {job['title']}")
             if job.get("company"):
@@ -521,8 +637,15 @@ class JobSuggestAgent(BaseAgent):
                 parts.append(f"  - Location: {job['location']}")
             if job.get("salary") and job["salary"] != "Not listed":
                 parts.append(f"  - Salary: {job['salary']}")
-            if job.get("snippet"):
-                parts.append(f"  - Description: {job['snippet']}")
+            if job.get("employment_type"):
+                parts.append(f"  - Type: {job['employment_type']}")
+            details = job.get("highlights") or ""
+            body = job.get("description") or job.get("snippet") or ""
+            if body:
+                details = f"{details}\n{body}" if details else body
+            if details:
+                excerpt = " ".join(details.split())[:DESCRIPTION_CHARS_FOR_RANKING]
+                parts.append(f"  - Description: {excerpt}")
             if job.get("date_posted"):
                 parts.append(f"  - Posted: {job['date_posted']}")
             if job.get("url") and job["url"] != "N/A":
@@ -610,6 +733,9 @@ class JobSuggestAgent(BaseAgent):
             "industry": "Preferred Industry",
             "experience_level": "Experience Level",
         }
+        if str(preferences.get("remote_only", "")).lower() in ("1", "true", "yes"):
+            preferences = {**preferences, "work_mode": "Remote only"}
+            label_map["work_mode"] = "Work Mode"
         for key, label in label_map.items():
             val = preferences.get(key, "").strip()
             if val:
@@ -638,6 +764,12 @@ class JobSuggestAgent(BaseAgent):
             f"<market_research>\n{market_context}\n</market_research>"
         )
 
+    @staticmethod
+    def _format_job_description_section(description: str) -> str:
+        if not description:
+            return ""
+        return f"## Job Description\n<job_description>\n{description[:4000]}\n</job_description>"
+
     def _format_web_section(self, web_context: str) -> str:
         if not web_context:
             return ""
@@ -664,8 +796,9 @@ class JobSuggestAgent(BaseAgent):
             f"2. Rank them from best match (#1) to good match (#{count}).\n"
             f"3. For each, use this format:\n\n"
             f"### {{number}}. {{Job Title}} at {{Company}}\n"
+            f"**Listing:** #{{listing number from the list above}}\n"
             f"**Location:** {{location}}\n"
-            f"**Source:** {{Indeed/LinkedIn}}\n"
+            f"**Source:** {{source}}\n"
             f"**URL:** {{url}}\n"
             f"**Why It Fits:** 2-3 sentences on why this is a strong match\n"
             f"**Key Skills Match:** list the candidate's matching skills\n"
@@ -690,11 +823,12 @@ class JobSuggestAgent(BaseAgent):
 
     @staticmethod
     def _build_detail_prompt_inline(
-        job_title, company_type, portfolio_context, web_section
+        job_title, company_type, portfolio_context, web_section, job_description_section=""
     ) -> str:
         return (
             f"Provide a detailed analysis of how this candidate matches the following role.\n\n"
             f"## Job Role\n**Title**: {job_title}\n**Company Type**: {company_type}\n\n"
+            f"{job_description_section}\n\n"
             f"## Candidate Profile\n<candidate_profile>\n{portfolio_context}\n</candidate_profile>\n\n"
             f"{web_section}\n\n"
             f"## Instructions\n"

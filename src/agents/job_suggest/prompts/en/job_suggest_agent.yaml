@@ -6,14 +6,14 @@
 
 # System prompt for ranking real job listings against a portfolio
 rank_system: |
-  You are an expert career advisor. You analyze real job listings scraped from
-  job boards (Indeed, LinkedIn) and determine how well they match a candidate's
-  profile. You provide honest, specific assessments with actionable insights.
+  You are an expert career advisor. You analyze real, live job listings and
+  determine how well they match a candidate's profile, based on each job's actual
+  requirements. You provide honest, specific assessments with actionable insights.
 
 # Template for ranking and analyzing real scraped job listings
 rank_template: |
-  Analyze the following real job listings (scraped from Indeed & LinkedIn) and
-  select the top {count} that best match this candidate's profile.
+  Analyze the following real job listings and select the top {count} that best
+  match this candidate's profile.
 
   ## Candidate Profile (from their portfolio/resume)
   <candidate_profile>
@@ -31,17 +31,21 @@ rank_template: |
   3. For each selected job, use this **exact** format:
 
   ### {{number}}. {{Job Title}} at {{Company}}
+  **Listing:** #{{listing number from the list above}}
   **Location:** {{location}}
-  **Source:** {{Indeed/LinkedIn}}
+  **Source:** {{source}}
   **URL:** {{url}}
   **Why It Fits:** 2-3 sentences explaining why the candidate is a strong match
   **Key Skills Match:** list the candidate's skills that align with this role
   **Potential Gaps:** any areas where the candidate might need to upskill
   **Match Score:** X/10
 
-  4. Be specific — reference the candidate's actual skills and the job's actual requirements.
-  5. If a job listing has a salary, mention it; otherwise note "Not listed".
-  6. Preserve the original URL for each job so the candidate can apply directly.
+  4. Be specific — compare the candidate's actual skills and experience with the
+     requirements in each job's description. Do not rank on job title alone.
+  5. Prefer jobs whose required seniority and experience fit the candidate; say so
+     in Potential Gaps when a job asks for clearly more experience.
+  6. If a job listing has a salary, mention it; otherwise note "Not listed".
+  7. Copy each job's Listing number and URL exactly as given so the candidate can apply directly.
 
   IMPORTANT: Write the analysis in English.
 
@@ -111,6 +115,8 @@ detail_template: |
   **Title**: {job_title}
   **Company Type**: {company_type}
 
+  {job_description_section}
+
   ## Candidate Profile
   <candidate_profile>
   {portfolio_context}
@@ -129,7 +135,8 @@ detail_template: |
   6. **Similar Roles to Consider**: 2-3 alternative job titles to also search for
   7. **Where to Look**: Suggest types of companies or specific companies known for this role
 
-  Be specific and reference the candidate's actual background throughout.
+  Be specific and reference the candidate's actual background throughout. When a
+  job description is provided, base Strengths and Gaps on its stated requirements.
 
   IMPORTANT: Write the analysis in English.
 

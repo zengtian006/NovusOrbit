@@ -45,6 +45,8 @@ class SuggestJobsRequest(BaseModel):
     location: str = ""  # Preferred location
     industry: str = ""  # Preferred industry
     experience_level: str = ""  # entry, mid, senior, lead
+    date_posted: str = ""  # all, today, 3days, week, month
+    remote_only: bool = False
     language: str = ""
 
 
@@ -118,8 +120,8 @@ async def suggest_jobs(request: SuggestJobsRequest):
     Flow:
     1. RAG extracts portfolio skills/experience
     2. LLM generates optimal search queries
-    3. Indeed + LinkedIn scrapers fetch real job listings
-    4. LLM ranks and analyzes real jobs against the portfolio
+    3. JSearch fetches live listings (Indeed/LinkedIn scrapers as a fallback)
+    4. Keyword pre-filter, then the LLM ranks listings on their full descriptions
 
     Returns:
         Ranked job suggestions with real listings, match analysis, and apply URLs.
@@ -139,6 +141,10 @@ async def suggest_jobs(request: SuggestJobsRequest):
             preferences["industry"] = request.industry
         if request.experience_level:
             preferences["experience_level"] = request.experience_level
+        if request.date_posted:
+            preferences["date_posted"] = request.date_posted
+        if request.remote_only:
+            preferences["remote_only"] = "true"
 
         result = await agent.suggest_jobs(
             kb_name=request.kb_name,
