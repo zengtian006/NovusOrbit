@@ -277,5 +277,18 @@
   "Practice questions for a saved job, with answers from your CV.": "针对已保存的职位练习面试题，答案基于你的简历。",
   "Live Indeed and LinkedIn jobs, ranked against your CV.": "来自 Indeed 和 LinkedIn 的实时职位，按与你简历的匹配度排序。",
   "New board": "新建看板",
-  "e.g., My CV 2026": "例如：我的简历 2026"
+  "e.g., My CV 2026": "例如：我的简历 2026",
+  "Live jobs from LinkedIn, Indeed, Glassdoor and company sites, ranked against your CV.": "来自 LinkedIn、Indeed、Glassdoor 和公司官网的实时职位，按与你简历的匹配度排序。",
+  "Live jobs": "实时职位",
+  "No live listings matched this search. These are AI-generated role ideas based on your portfolio, not real job postings. Try a broader role, another location or a longer date range.": "没有找到符合条件的实时职位。以下是 AI 根据你的作品集生成的职位建议，并非真实招聘信息。可以尝试更宽泛的职位、其他地点或更长的发布时间范围。",
+  "Select your portfolio, set your preferences, and we'll search live job listings and rank them against your skills.": "选择作品集并设置偏好，我们会搜索实时职位并按你的技能进行排序。",
+  "Posted within": "发布时间",
+  "Last 24 hours": "最近 24 小时",
+  "Last 3 days": "最近 3 天",
+  "Last week": "最近一周",
+  "Last month": "最近一个月",
+  "Any time": "不限",
+  "Work mode": "工作方式",
+  "Remote only": "仅远程",
+  "Your CV": "你的简历"
 }

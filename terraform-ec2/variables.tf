@@ -155,6 +155,13 @@ variable "search_api_key" {
   default   = ""
 }
 
+variable "jsearch_api_key" {
+  description = "RapidAPI key with a JSearch subscription (live job listings for Job Suggestions). Empty = use the built-in scrapers."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "tts_api_key" {
   type      = string
   sensitive = true
