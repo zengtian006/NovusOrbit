@@ -63,7 +63,7 @@ export function WebApplicationStructuredData() {
         featureList: [
           "AI interview preparation with personalized answers",
           "AI resume writer with Markdown and PDF export",
-          "AI job matching from Indeed and LinkedIn listings",
+          "AI job matching from LinkedIn, Indeed, Glassdoor and company career sites",
           "Job application tracker",
           "AI career chat grounded in your CV",
         ],

@@ -179,10 +179,10 @@ export const FEATURES: Feature[] = [
     name: "AI Job Matching",
     metaTitle: "AI Job Matching: Find Jobs That Fit Your Resume",
     metaDescription:
-      "NovusOrbit analyzes your CV, searches real listings on Indeed and LinkedIn, then ranks the matches and explains why each one fits. Free AI job search.",
+      "NovusOrbit analyzes your CV, searches live listings on LinkedIn, Indeed, Glassdoor, ZipRecruiter and company career sites, then ranks the matches and explains why each one fits. Free AI job search.",
     h1: "Find jobs that match your resume, ranked and explained",
     intro:
-      "Instead of scrolling job boards with keyword filters, let the AI read your portfolio, work out which roles you're a strong fit for, search live listings on Indeed and LinkedIn, and rank what it finds with a short explanation for each match.",
+      "Instead of scrolling job boards with keyword filters, let the AI read your portfolio, work out which roles you're a strong fit for, search live listings on the job sites you choose, and rank what it finds against each job's actual requirements, with a short explanation for each match.",
     appPath: "/job-suggest",
     appLabel: "Get job suggestions",
     requiresSignIn: true,
@@ -193,11 +193,11 @@ export const FEATURES: Feature[] = [
       },
       {
         title: "Set your preferences",
-        body: "Tell it where you want to work and what kind of role you're after.",
+        body: "Tell it the role, location and how recent the postings should be, whether you want remote only, and which job sites to search: LinkedIn, Indeed, Glassdoor, ZipRecruiter, company career pages or all of them.",
       },
       {
         title: "Review ranked matches",
-        body: "Real listings from Indeed and LinkedIn, sorted by fit, each with the reasons it matches and the gaps to address.",
+        body: "Real listings sorted by fit, each showing which site it came from, why it matches and the gaps to address, with a direct link to apply.",
       },
       {
         title: "Save the ones you like",
@@ -221,7 +221,7 @@ export const FEATURES: Feature[] = [
     faqs: [
       {
         q: "Where do the job listings come from?",
-        a: "NovusOrbit searches public listings on Indeed and LinkedIn at the time you run a search.",
+        a: "NovusOrbit searches live listings from LinkedIn, Indeed, Glassdoor, ZipRecruiter, company career pages and other job sites at the time you run a search. You can limit a search to the sites you prefer.",
       },
       {
         q: "How is the match ranked?",
