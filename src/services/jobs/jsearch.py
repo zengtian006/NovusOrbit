@@ -9,6 +9,7 @@ LinkedIn scrapers in src/mcp/scrapers are only a fallback.
 Environment:
     JSEARCH_API_KEY      RapidAPI key with a JSearch subscription (required to enable)
     JSEARCH_API_HOST     default "jsearch.p.rapidapi.com"
+    JSEARCH_ENDPOINT     default "/search-v2" (JSearch removed the legacy "/search" in late 2026)
     JSEARCH_CACHE_TTL    seconds to cache identical searches, default 3600
     JSEARCH_TIMEOUT      request timeout in seconds, default 20
 """
@@ -53,6 +54,8 @@ def clear_cache() -> None:
 
 
 def _format_salary(job: dict) -> str:
+    if job.get("job_salary_string"):
+        return str(job["job_salary_string"])
     lo, hi = job.get("job_min_salary"), job.get("job_max_salary")
     if not lo and not hi:
         return "Not listed"
@@ -155,7 +158,6 @@ async def search_jobs(
     date_posted = date_posted if date_posted in DATE_POSTED_VALUES else "all"
     params: dict[str, Any] = {
         "query": full_query,
-        "page": 1,
         "num_pages": max(1, min(num_pages, 3)),
         "date_posted": date_posted,
     }
@@ -177,12 +179,15 @@ async def search_jobs(
     except ValueError:
         timeout = 20.0
     headers = {"X-RapidAPI-Key": key, "X-RapidAPI-Host": host}
-    url = f"https://{host}/search"
+    endpoint = "/" + os.getenv("JSEARCH_ENDPOINT", "/search-v2").strip().lstrip("/")
 
     owns_client = client is None
     client = client or httpx.AsyncClient(timeout=timeout)
     try:
-        resp = await client.get(url, params=params, headers=headers)
+        resp = await client.get(f"https://{host}{endpoint}", params=params, headers=headers)
+        if resp.status_code == 404 and endpoint != "/search":
+            # Older JSearch plans/versions only have the legacy path
+            resp = await client.get(f"https://{host}/search", params=params, headers=headers)
     except httpx.HTTPError as e:
         raise JSearchError(f"request failed: {e}") from e
     finally:
@@ -210,7 +215,9 @@ async def search_jobs(
     if str(payload.get("status", "OK")).upper() == "ERROR":
         raise JSearchError(f"API error: {str(payload.get('error'))[:200]}")
 
-    jobs = [normalize_job(j) for j in (payload.get("data") or []) if j.get("job_title")]
+    data = payload.get("data") or []
+    raw_jobs = data.get("jobs") or [] if isinstance(data, dict) else data  # v2: {"jobs": [...], "cursor": ...}
+    jobs = [normalize_job(j) for j in raw_jobs if j.get("job_title")]
     logger.info(f"JSearch: {len(jobs)} jobs for {full_query!r} (date_posted={date_posted}, remote={remote_only})")
 
     ttl = _cache_ttl()

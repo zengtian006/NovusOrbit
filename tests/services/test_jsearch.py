@@ -66,6 +66,40 @@ def test_normalize_job_maps_fields():
     assert "Qualifications: 5+ years Python; Spark" in job["highlights"]
 
 
+def test_v2_response_shape_and_salary_string():
+    v2 = {"status": "OK", "data": {"jobs": [dict(SAMPLE["data"][0], job_salary_string="120K–170K a year")], "cursor": "x"}}
+    paths = []
+
+    def handler(request):
+        paths.append(request.url.path)
+        return httpx.Response(200, json=v2)
+
+    async def run():
+        async with _client(handler) as c:
+            return await jsearch.search_jobs("data engineer", client=c)
+
+    jobs = asyncio.run(run())
+    assert paths == ["/search-v2"]
+    assert jobs[0]["salary"] == "120K–170K a year"
+
+
+def test_falls_back_to_legacy_path_on_404():
+    paths = []
+
+    def handler(request):
+        paths.append(request.url.path)
+        if request.url.path == "/search-v2":
+            return httpx.Response(404, json={"message": "Endpoint '/search-v2' does not exist"})
+        return httpx.Response(200, json=SAMPLE)
+
+    async def run():
+        async with _client(handler) as c:
+            return await jsearch.search_jobs("x", client=c)
+
+    assert len(asyncio.run(run())) == 1
+    assert paths == ["/search-v2", "/search"]
+
+
 def test_search_sends_params_skips_untitled_and_caches():
     calls = []
 
