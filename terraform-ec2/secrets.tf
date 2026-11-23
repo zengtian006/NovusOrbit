@@ -22,6 +22,7 @@ resource "aws_secretsmanager_secret_version" "app_secrets" {
     GOOGLE_CLIENT_ID     = var.google_client_id
     GOOGLE_CLIENT_SECRET = var.google_client_secret
     SEARCH_API_KEY       = var.search_api_key
+    JSEARCH_API_KEY      = var.jsearch_api_key
     TTS_API_KEY          = var.tts_api_key
     SMTP_USER            = var.smtp_user
     SMTP_PASSWORD        = var.smtp_password
@@ -44,6 +45,7 @@ resource "aws_secretsmanager_secret_version" "app_secrets" {
       embedding_api_key    = var.embedding_api_key
       search_provider      = var.search_provider
       search_api_key       = var.search_api_key
+      jsearch_api_key      = var.jsearch_api_key
       tts_model            = var.tts_model
       tts_api_key          = var.tts_api_key
       database_url         = var.database_url

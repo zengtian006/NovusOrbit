@@ -50,8 +50,12 @@ interface RealJob {
   snippet?: string;
   date_posted?: string;
   url: string;
-  source: string; // "Indeed" | "LinkedIn"
+  source: string; // where the listing was published, e.g. "LinkedIn", "Indeed", "Glassdoor"
   job_id?: string;
+  description?: string; // full description (JSearch); empty for scraped listings
+  employment_type?: string;
+  is_remote?: boolean;
+  apply_options?: { publisher: string; url: string }[];
 }
 
 interface JobSuggestion {
@@ -74,6 +78,7 @@ interface JobSuggestion {
   realJobId?: string;
   salary?: string;
   snippet?: string;
+  description?: string;
 }
 
 interface JobBoardSummary {
@@ -154,8 +159,14 @@ function parseSuggestions(raw: string, realJobs: RealJob[] = []): JobSuggestion[
     );
     const matchScore = scoreMatch ? scoreMatch[1].trim() : "";
 
-    // Cross-reference with realJobs to get reliable URL and extra data
-    const matched = findMatchingRealJob(title, company, source, realJobs);
+    // Cross-reference with realJobs to get reliable URL and extra data.
+    // Prefer the listing number the AI cites; fall back to title/company matching.
+    const listingMatch = trimmed.match(/\*\*Listing:\*\*\s*#?(\d+)/);
+    const listingIdx = listingMatch ? parseInt(listingMatch[1]) - 1 : -1;
+    const matched =
+      listingIdx >= 0 && listingIdx < realJobs.length
+        ? realJobs[listingIdx]
+        : findMatchingRealJob(title, company, source, realJobs);
 
     suggestions.push({
       number,
@@ -172,6 +183,7 @@ function parseSuggestions(raw: string, realJobs: RealJob[] = []): JobSuggestion[
       realJobId: matched?.job_id || "",
       salary: matched?.salary || "",
       snippet: matched?.snippet || "",
+      description: matched?.description || "",
     });
   }
 
@@ -275,6 +287,8 @@ export default function JobSuggestPage() {
   const [location, setLocation] = useState("");
   const [industry, setIndustry] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
+  const [datePosted, setDatePosted] = useState("month");
+  const [remoteOnly, setRemoteOnly] = useState(false);
   const [suggestionCount, setSuggestionCount] = useState(5);
 
   // State
@@ -352,12 +366,13 @@ export default function JobSuggestPage() {
     setAddingToBoard(true);
     try {
       // Step 1: Scrape full job description from the URL
-      let scrapedDescription = "";
-      let scrapedSalary = "";
+      // JSearch listings already include the full description; only scrape when missing.
+      let scrapedDescription = addToBoardJob.description || "";
+      let scrapedSalary = addToBoardJob.salary && addToBoardJob.salary !== "Not listed" ? addToBoardJob.salary : "";
       const jobUrl = addToBoardJob.realJobUrl || addToBoardJob.url;
       const jobSource = addToBoardJob.realJobSource || addToBoardJob.source;
 
-      if (jobUrl) {
+      if (jobUrl && !scrapedDescription) {
         try {
           const scrapeRes = await fetch(apiUrl("/api/v1/job-suggest/scrape-jd"), {
             method: "POST",
@@ -464,6 +479,8 @@ export default function JobSuggestPage() {
             location,
             industry,
             experience_level: experienceLevel,
+            date_posted: datePosted,
+            remote_only: remoteOnly ? "true" : "",
           },
           suggestions: suggestionsText,
           real_jobs: realJobs,
@@ -505,6 +522,8 @@ export default function JobSuggestPage() {
           location,
           industry,
           experience_level: experienceLevel,
+          date_posted: datePosted,
+          remote_only: remoteOnly,
         }),
       });
 
@@ -565,7 +584,7 @@ export default function JobSuggestPage() {
           company: job.company,
           company_type: "",
           job_url: job.url,
-          job_description: "",
+          job_description: job.description || "",
           kb_name: selectedKb,
           session_id: sessionId || "",
         }),
@@ -609,7 +628,7 @@ export default function JobSuggestPage() {
       {/* LEFT PANEL — Configuration (stacks above results on small screens) */}
       <div className="lg:flex-[1_1_33%] min-w-0 lg:min-w-[320px] lg:max-w-[420px] flex flex-col gap-4 lg:h-full lg:overflow-y-auto">
         {/* Header */}
-        <PageHeader className="px-1 pt-1" icon={Compass} title={t("Job Suggestions")} description={t("Live Indeed and LinkedIn jobs, ranked against your CV.")} />
+        <PageHeader className="px-1 pt-1" icon={Compass} title={t("Job Suggestions")} description={t("Live jobs from LinkedIn, Indeed, Glassdoor and company sites, ranked against your CV.")} />
 
         {/* Portfolio Selection */}
         <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
@@ -620,7 +639,7 @@ export default function JobSuggestPage() {
 
           <div>
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-              {t("Portfolio / Resume KB")}
+              {t("Portfolio")}
             </label>
             <select
               value={selectedKb}
@@ -720,6 +739,43 @@ export default function JobSuggestPage() {
             </div>
           </div>
 
+          {/* Date posted + remote */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
+                {t("Posted within")}
+              </label>
+              <select
+                value={datePosted}
+                onChange={(e) => setDatePosted(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
+              >
+                <option value="today">{t("Last 24 hours")}</option>
+                <option value="3days">{t("Last 3 days")}</option>
+                <option value="week">{t("Last week")}</option>
+                <option value="month">{t("Last month")}</option>
+                <option value="all">{t("Any time")}</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
+                {t("Work mode")}
+              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={remoteOnly}
+                onClick={() => setRemoteOnly((v) => !v)}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100"
+              >
+                <span className="whitespace-nowrap">{t("Remote only")}</span>
+                <span className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors ${remoteOnly ? "bg-indigo-600" : "bg-slate-300 dark:bg-slate-500"}`}>
+                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${remoteOnly ? "translate-x-4" : "translate-x-0.5"}`} />
+                </span>
+              </button>
+            </div>
+          </div>
+
           {/* Suggestion Count */}
           <div>
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
@@ -805,7 +861,7 @@ export default function JobSuggestPage() {
               {usedJobSearch && (
                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-medium">
                   <Search className="w-2.5 h-2.5" />
-                  {t("Indeed + LinkedIn")}
+                  {t("Live jobs")}
                   {jobCount > 0 && (
                     <span className="ml-0.5 text-[9px] opacity-75">
                       ({jobCount} {t("found")})
@@ -835,7 +891,7 @@ export default function JobSuggestPage() {
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>
                 {t(
-                  "Live listings from Indeed and LinkedIn are unavailable right now. These are AI-generated role ideas based on your portfolio, not real job postings.",
+                  "No live listings matched this search. These are AI-generated role ideas based on your portfolio, not real job postings. Try a broader role, another location or a longer date range.",
                 )}
               </span>
             </div>
@@ -1025,18 +1081,18 @@ export default function JobSuggestPage() {
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-4">
                 {t(
-                  "Select your portfolio, set your preferences, and we'll search Indeed & LinkedIn for real jobs that match your skills."
+                  "Select your portfolio, set your preferences, and we'll search live job listings and rank them against your skills."
                 )}
               </p>
               <div className="flex items-center gap-4 text-xs text-slate-400 dark:text-slate-500">
                 <span className="flex items-center gap-1.5">
                   <Database className="w-3.5 h-3.5" />
-                  {t("Portfolio RAG")}
+                  {t("Your CV")}
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">→</span>
                 <span className="flex items-center gap-1.5">
                   <Search className="w-3.5 h-3.5" />
-                  {t("Indeed + LinkedIn")}
+                  {t("Live jobs")}
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">→</span>
                 <span className="flex items-center gap-1.5">

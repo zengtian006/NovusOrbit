@@ -19,6 +19,7 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 | `EMBEDDING_BINDING` / `_MODEL` / `_API_KEY` / `_HOST` | yes | Embedding provider for portfolio indexing (`openai`, `azure_openai`, `jina`, `cohere`, `ollama`, …) |
 | `EMBEDDING_DIMENSION` | yes | Must match the model, for example `1536` for `text-embedding-3-small` |
 | `SEARCH_PROVIDER` / `SEARCH_API_KEY` | optional | Web search: `perplexity`, `tavily`, `serper`, `jina`, `exa` |
+| `JSEARCH_API_KEY` | recommended | RapidAPI key for [JSearch](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch), the live job source for Job Suggestions (full descriptions, apply links). Without it, Job Suggestions falls back to scraping Indeed and LinkedIn. Identical searches are cached for `JSEARCH_CACHE_TTL` seconds (default 3600). In production set `jsearch_api_key` in `terraform.tfvars`. |
 | `TTS_BINDING` / `TTS_MODEL` / `TTS_API_KEY` / `TTS_URL` / `TTS_VOICE` | optional | Resume Writer narration |
 | `SMTP_SERVER` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `FEEDBACK_EMAIL_FROM` / `FEEDBACK_EMAIL_TO` | optional | Feedback emails (Gmail needs an App Password). Every submission is also saved to `data/user/feedback.jsonl`, so nothing is lost if SMTP is unset or fails. |
 | `RAG_PROVIDER` | optional | Default pipeline for CLI and back-end-initiated indexing. Production sets it to `llamaindex` (`templates/app.env.tftpl`). The code's built-in fallback is `raganything`, which isn't installed. The portfolio UI always sends a provider, defaulting to LlamaIndex. |
