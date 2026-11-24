@@ -26,10 +26,12 @@ import {
   Sun,
   Moon,
   BarChart3,
+  CircleHelp,
 } from "lucide-react";
 import { useGlobal } from "@/context/GlobalContext";
 import FeedbackModal from "@/components/FeedbackModal";
 import { Logo, LogoMark } from "@/components/Logo";
+import { OPEN_GUIDE_EVENT } from "@/components/WelcomeGuide";
 
 const SIDEBAR_EXPANDED_WIDTH = 256;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
@@ -494,6 +496,14 @@ export default function Sidebar() {
             aria-label={t("Send Feedback")}
           >
             <MessageCircle className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new Event(OPEN_GUIDE_EVENT))}
+            className="p-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={t("Show the welcome guide")}
+            aria-label={t("Show the welcome guide")}
+          >
+            <CircleHelp className="w-4 h-4" />
           </button>
           <button
             onClick={() => updateTheme(uiSettings.theme === "dark" ? "light" : "dark")}
