@@ -7,6 +7,7 @@ import ThemeScript from "@/components/ThemeScript";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import ApiLimitNotice from "@/components/ApiLimitNotice";
 import AcquisitionTracker from "@/components/AcquisitionTracker";
+import WelcomeGuide from "@/components/WelcomeGuide";
 import { I18nClientBridge } from "@/i18n/I18nClientBridge";
 import { Providers } from "@/app/providers";
 import {
@@ -108,6 +109,7 @@ export default function RootLayout({
                 </div>
                 <ApiLimitNotice />
                 <AcquisitionTracker />
+                <WelcomeGuide />
               </LayoutWrapper>
             </I18nClientBridge>
           </GlobalProvider>
