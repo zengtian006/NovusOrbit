@@ -435,3 +435,38 @@ span.rough-bracket::after {
     animation: none;
   }
 }
+
+/* Welcome guide */
+@keyframes guide-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes guide-panel-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes guide-slide-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes guide-slide-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes guide-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes guide-progress-fill {
+  from { width: 8%; }
+  to { width: 100%; }
+}
+.guide-backdrop { animation: guide-backdrop-in 0.2s ease-out both; }
+.guide-panel { animation: guide-panel-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.guide-in-right { animation: guide-slide-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.guide-in-left { animation: guide-slide-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.guide-fade { animation: guide-fade-in 0.3s ease-out both; }
+.guide-progress { animation: guide-progress-fill 1.4s ease-out 0.2s both; }
+@media (prefers-reduced-motion: reduce) {
+  .guide-backdrop, .guide-panel, .guide-in-right, .guide-in-left, .guide-fade, .guide-progress { animation: none; }
+}
