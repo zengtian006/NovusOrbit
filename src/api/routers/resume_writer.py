@@ -80,12 +80,32 @@ def get_narrator_agent() -> NarratorAgent:
     return _narrator_agent
 
 
+class JobContext(BaseModel):
+    """Target job a resume edit is tailored to (an entry from the user's job boards)."""
+
+    title: str = ""
+    company: str = ""
+    description: str = ""
+
+
 class EditRequest(BaseModel):
     text: str
     instruction: str
     action: Literal["rewrite", "shorten", "expand"] = "rewrite"
     source: Literal["rag", "web"] | None = None
     portfolio: str | None = None
+    job: JobContext | None = None
+
+
+class TailorRequest(BaseModel):
+    resume: str
+    job: JobContext
+    instruction: str | None = None
+
+
+class TailorResponse(BaseModel):
+    tailored_resume: str
+    operation_id: str
 
 
 class EditResponse(BaseModel):
@@ -113,6 +133,7 @@ async def edit_text(request: EditRequest):
             action=request.action,
             source=request.source,
             kb_name=request.portfolio,
+            job=request.job.model_dump() if request.job else None,
         )
 
         # Print token stats
@@ -120,6 +141,29 @@ async def edit_text(request: EditRequest):
 
         return result
 
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/tailor", response_model=TailorResponse, dependencies=[Depends(rate_limit("resume"))])
+async def tailor_resume(request: TailorRequest):
+    """Refine the whole resume for the attached job's description."""
+    if not request.resume.strip():
+        raise HTTPException(status_code=400, detail="Resume is empty")
+    if not request.job.description.strip():
+        raise HTTPException(
+            status_code=400, detail="The selected job has no description to tailor against"
+        )
+    try:
+        agent = get_edit_agent()
+        result = await agent.tailor(
+            resume=request.resume,
+            job=request.job.model_dump(),
+            instruction=request.instruction,
+        )
+        print_stats()
+        return result
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
