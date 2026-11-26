@@ -131,7 +131,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const { sidebarCollapsed, toggleSidebar, uiSettings, updateTheme, pageSettings } = useGlobal();
-  const { progress } = useJourney();
+  const { progress, loaded: progressLoaded } = useJourney();
   const { t } = useTranslation();
 
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
@@ -195,7 +195,7 @@ export default function Sidebar() {
           >
             <span className="truncate">{t("Your job search")}</span>
             <span className="normal-case font-semibold text-slate-400 dark:text-slate-500">
-              {doneCount}/{JOURNEY_STEPS.length}
+              {progressLoaded ? `${doneCount}/${JOURNEY_STEPS.length}` : ""}
             </span>
           </div>
           <ol className="relative space-y-0.5">
@@ -386,6 +386,12 @@ export default function Sidebar() {
                   </button>
                 </>
               )}
+            </div>
+          ) : status === "loading" ? (
+            // Checking the session: hold the space instead of flashing "Sign In".
+            <div aria-hidden className={`flex items-center ${sidebarCollapsed ? "justify-center p-1.5" : "gap-2.5 px-2 py-1.5"}`}>
+              <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+              {!sidebarCollapsed && <div className="h-3 w-24 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" />}
             </div>
           ) : (
             <button
