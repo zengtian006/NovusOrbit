@@ -105,7 +105,7 @@ export default function RootLayout({
             <I18nClientBridge>
               <LayoutWrapper>
                 <JourneyProvider>
-                  <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-200">
+                  <div className="flex h-screen h-dvh bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-200">
                     <Sidebar />
                     <main className="flex-1 min-w-0 flex flex-col bg-slate-50 dark:bg-slate-950">
                       <JourneyBar />

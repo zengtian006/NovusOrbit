@@ -860,11 +860,12 @@ export default function JobSuggestPage() {
           </div>
         </div>
 
-        {/* Generate Button */}
+        {/* Generate Button — sticky so it stays visible without scrolling past all preferences */}
+        <div className="sticky bottom-0 z-10 -my-3 lg:-mb-2 pt-3 pb-3 lg:pb-2 bg-gradient-to-t from-slate-50 from-70% to-transparent dark:from-slate-950">
         <button
           onClick={handleGenerate}
           disabled={!selectedKb || generating}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
         >
           {generating ? (
             <>
@@ -878,6 +879,7 @@ export default function JobSuggestPage() {
             </>
           )}
         </button>
+        </div>
 
         {/* Search Queries Info */}
         {searchQueries.length > 0 && (
