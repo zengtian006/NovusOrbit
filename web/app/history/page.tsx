@@ -196,7 +196,7 @@ export default function HistoryPage() {
     setLoadingSessionId(sessionId);
     try {
       await loadChatSession(sessionId);
-      router.push("/");
+      router.push("/ask");
     } catch (err) {
       console.error("Failed to load session:", err);
     } finally {

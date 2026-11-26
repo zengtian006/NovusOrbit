@@ -22,6 +22,7 @@ import {
   CircleHelp,
   Check,
   Lock,
+  Home,
 } from "lucide-react";
 import { useGlobal } from "@/context/GlobalContext";
 import FeedbackModal from "@/components/FeedbackModal";
@@ -186,6 +187,8 @@ export default function Sidebar() {
       </div>
       {/* Navigation: the job-search journey, in order */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-5">
+        <NavLink href="/" label={t("Home")} icon={Home} {...navProps} />
+
         <div>
           <div
             className={`flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-1 transition-all duration-300 ${sidebarCollapsed ? "opacity-0 h-0 overflow-hidden" : "opacity-100"}`}
