@@ -30,6 +30,10 @@ import {
   X,
   Check,
   FolderOpen,
+  ChevronDown,
+  FileText,
+  RotateCcw,
+  SlidersHorizontal,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -277,6 +281,131 @@ function sourceColor(source: string) {
   if (s.includes("career"))
     return "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300";
   return "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300";
+}
+
+/* ---------- Search-panel form primitives ---------- */
+
+const CONTROL_CLS =
+  "w-full h-10 px-3 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition-colors hover:border-slate-300 dark:hover:border-slate-500 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15";
+
+function SectionTitle({
+  icon: Icon,
+  title,
+  hint,
+  badge,
+  action,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  hint?: string;
+  badge?: number;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+        <Icon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+        {title}
+        {badge !== undefined && (
+          <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 tabular-nums">
+            {badge}
+          </span>
+        )}
+        {hint && <span className="text-xs font-normal text-slate-400 dark:text-slate-500">{hint}</span>}
+      </h2>
+      {action}
+    </div>
+  );
+}
+
+function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+  return (
+    <label htmlFor={htmlFor} className="block mb-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+      {children}
+    </label>
+  );
+}
+
+function IconInput({
+  id,
+  icon: Icon,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  icon: React.ComponentType<{ className?: string }>;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div className="relative">
+      <Icon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+      <input
+        id={id}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`${CONTROL_CLS} pl-9`}
+      />
+    </div>
+  );
+}
+
+function SelectBox({
+  id,
+  value,
+  onChange,
+  children,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`${CONTROL_CLS} appearance-none pr-9 cursor-pointer`}
+      >
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+    </div>
+  );
+}
+
+function Chip({
+  selected,
+  onClick,
+  role,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  role?: "radio";
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role={role}
+      aria-checked={role ? selected : undefined}
+      aria-pressed={role ? undefined : selected}
+      onClick={onClick}
+      className={`inline-flex items-center gap-1 h-8 px-3 rounded-lg border text-xs font-medium transition-colors ${selected
+        ? "bg-indigo-50 dark:bg-indigo-500/15 border-indigo-500 dark:border-indigo-400 text-indigo-700 dark:text-indigo-300"
+        : "bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-100"}`}
+    >
+      {selected && role === undefined && <Check className="w-3 h-3" />}
+      {children}
+    </button>
+  );
 }
 
 export default function JobSuggestPage() {
@@ -647,260 +776,227 @@ export default function JobSuggestPage() {
     }
   };
 
+  const activeFilterCount =
+    (experienceLevel ? 1 : 0) +
+    (datePosted !== "month" ? 1 : 0) +
+    (remoteOnly ? 1 : 0) +
+    (jobSites.length > 0 ? 1 : 0) +
+    (suggestionCount !== 5 ? 1 : 0);
+
+  const resetFilters = () => {
+    setExperienceLevel("");
+    setDatePosted("month");
+    setRemoteOnly(false);
+    setJobSites([]);
+    setSuggestionCount(5);
+  };
+
   return (
     <div className="min-h-full lg:h-full animate-fade-in flex flex-col lg:flex-row gap-4 p-3 sm:p-4">
-      {/* LEFT PANEL — Configuration (stacks above results on small screens) */}
-      <div className="lg:flex-[1_1_33%] min-w-0 lg:min-w-[320px] lg:max-w-[420px] flex flex-col gap-4 lg:h-full lg:overflow-y-auto">
-        {/* Header */}
+      {/* LEFT PANEL — Search setup (stacks above results on small screens) */}
+      <aside className="lg:flex-[1_1_33%] min-w-0 lg:min-w-[320px] lg:max-w-[420px] flex flex-col gap-4 lg:h-full lg:min-h-0">
         <PageHeader className="px-1 pt-1" icon={Compass} title={t("Job Suggestions")} description={t("Live jobs from LinkedIn, Indeed, Glassdoor and company sites, ranked against your CV.")} />
 
-        {/* Portfolio Selection */}
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
-          <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm">
-            <Database className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            {t("Your Portfolio")}
-          </h2>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-              {t("Portfolio")}
-            </label>
-            <select
-              value={selectedKb}
-              onChange={(e) => setSelectedKb(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
-            >
-              <option value="">{t("Select a portfolio...")}</option>
-              {kbs.map((kb) => (
-                <option key={kb.name} value={kb.name}>
-                  {kb.name}
-                </option>
-              ))}
-            </select>
-            {kbs.length === 0 && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                {t(
-                  "No portfolios found. Upload your resume in My Portfolio first."
+        <div className="lg:flex-1 lg:min-h-0 flex flex-col bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 lg:overflow-hidden">
+          <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/70">
+            {/* Résumé */}
+            <section className="p-5 space-y-3">
+              <SectionTitle icon={FileText} title={t("Résumé")} />
+              <div>
+                <FieldLabel htmlFor="js-portfolio">{t("Portfolio")}</FieldLabel>
+                <SelectBox id="js-portfolio" value={selectedKb} onChange={setSelectedKb}>
+                  <option value="">{t("Select a portfolio...")}</option>
+                  {kbs.map((kb) => (
+                    <option key={kb.name} value={kb.name}>
+                      {kb.name}
+                    </option>
+                  ))}
+                </SelectBox>
+                {kbs.length === 0 && (
+                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
+                    {t("No portfolios found.")}{" "}
+                    <a href="/portfolio" className="font-medium underline underline-offset-2 hover:text-amber-800 dark:hover:text-amber-300">
+                      {t("Upload your resume in My Portfolio")}
+                    </a>
+                  </p>
                 )}
+              </div>
+            </section>
+
+            {/* Target role */}
+            <section className="p-5 space-y-4">
+              <SectionTitle icon={Target} title={t("What you're looking for")} hint={t("All optional")} />
+              <div>
+                <FieldLabel htmlFor="js-role">{t("Desired role")}</FieldLabel>
+                <IconInput id="js-role" icon={Briefcase} value={roleType} onChange={setRoleType} placeholder={t("e.g. Software Engineer, Data Scientist...")} />
+              </div>
+              <div>
+                <FieldLabel htmlFor="js-location">{t("Location")}</FieldLabel>
+                <IconInput id="js-location" icon={MapPin} value={location} onChange={setLocation} placeholder={t("e.g. Remote, San Francisco, New York...")} />
+              </div>
+              <div>
+                <FieldLabel htmlFor="js-industry">{t("Industry")}</FieldLabel>
+                <IconInput id="js-industry" icon={Building2} value={industry} onChange={setIndustry} placeholder={t("e.g. AI/ML, FinTech, Healthcare...")} />
+              </div>
+            </section>
+
+            {/* Filters */}
+            <section className="p-5 space-y-4">
+              <SectionTitle
+                icon={SlidersHorizontal}
+                title={t("Filters")}
+                badge={activeFilterCount > 0 ? activeFilterCount : undefined}
+                action={
+                  activeFilterCount > 0 ? (
+                    <button
+                      type="button"
+                      onClick={resetFilters}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      {t("Reset")}
+                    </button>
+                  ) : undefined
+                }
+              />
+
+              <div>
+                <FieldLabel>{t("Experience level")}</FieldLabel>
+                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("Experience level")}>
+                  {EXPERIENCE_LEVELS.map((l) => (
+                    <Chip
+                      key={l.value}
+                      role="radio"
+                      selected={experienceLevel === l.value}
+                      onClick={() => setExperienceLevel(l.value)}
+                    >
+                      {t(l.label)}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <FieldLabel htmlFor="js-posted">{t("Posted within")}</FieldLabel>
+                  <SelectBox id="js-posted" value={datePosted} onChange={setDatePosted}>
+                    <option value="today">{t("Last 24 hours")}</option>
+                    <option value="3days">{t("Last 3 days")}</option>
+                    <option value="week">{t("Last week")}</option>
+                    <option value="month">{t("Last month")}</option>
+                    <option value="all">{t("Any time")}</option>
+                  </SelectBox>
+                </div>
+                <div>
+                  <FieldLabel>{t("Work mode")}</FieldLabel>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={remoteOnly}
+                    onClick={() => setRemoteOnly((v) => !v)}
+                    className={`${CONTROL_CLS} flex items-center justify-between gap-2 text-left`}
+                  >
+                    <span className="whitespace-nowrap">{t("Remote only")}</span>
+                    <span className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors ${remoteOnly ? "bg-indigo-600" : "bg-slate-200 dark:bg-slate-600"}`}>
+                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${remoteOnly ? "translate-x-4" : "translate-x-0.5"}`} />
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Job sites (multi-select; none selected = all) */}
+              <div>
+                <FieldLabel>{t("Job sites")}</FieldLabel>
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("Job sites")}>
+                  <Chip selected={jobSites.length === 0} onClick={() => setJobSites([])}>
+                    {t("All sites")}
+                  </Chip>
+                  {JOB_SITES.map((site) => {
+                    const on = jobSites.includes(site.value);
+                    return (
+                      <Chip
+                        key={site.value}
+                        selected={on}
+                        onClick={() =>
+                          setJobSites((prev) => {
+                            const next = on ? prev.filter((v) => v !== site.value) : [...prev, site.value];
+                            return next.length === JOB_SITES.length ? [] : next;
+                          })
+                        }
+                      >
+                        {t(site.label)}
+                      </Chip>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <FieldLabel>{t("Number of results")}</FieldLabel>
+                <div className="grid grid-cols-4 p-1 bg-slate-100 dark:bg-slate-900/50 rounded-lg" role="radiogroup" aria-label={t("Number of results")}>
+                  {SUGGESTION_COUNTS.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={suggestionCount === n}
+                      onClick={() => setSuggestionCount(n)}
+                      className={`h-8 rounded-md text-xs font-semibold tabular-nums transition-all ${suggestionCount === n
+                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"}`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Search queries used */}
+            {searchQueries.length > 0 && (
+              <section className="p-5 space-y-2.5">
+                <SectionTitle icon={Tag} title={t("Search queries used")} />
+                <div className="flex flex-wrap gap-1.5">
+                  {searchQueries.map((q, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md text-[11px] font-medium"
+                    >
+                      {q}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* Footer — always visible: pinned to the card on desktop, to the viewport on mobile */}
+          <div className="sticky bottom-0 lg:static z-10 shrink-0 p-4 border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 backdrop-blur rounded-b-2xl">
+            <button
+              onClick={handleGenerate}
+              disabled={!selectedKb || generating}
+              className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-semibold shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t("Searching Jobs & Analyzing...")}
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4" />
+                  {t("Find Matching Jobs")}
+                </>
+              )}
+            </button>
+            {!selectedKb && (
+              <p className="mt-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
+                {t("Select a portfolio to start")}
               </p>
             )}
           </div>
         </div>
-
-        {/* Preferences */}
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
-          <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm">
-            <Target className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            {t("Preferences")}
-            <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">
-              ({t("optional")})
-            </span>
-          </h2>
-
-          {/* Desired Role */}
-          <div>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Briefcase className="w-3 h-3" />
-              {t("Desired Role")}
-            </label>
-            <input
-              type="text"
-              value={roleType}
-              onChange={(e) => setRoleType(e.target.value)}
-              placeholder={t("e.g. Software Engineer, Data Scientist...")}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
-            />
-          </div>
-
-          {/* Location */}
-          <div>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {t("Preferred Location")}
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder={t("e.g. Remote, San Francisco, New York...")}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
-            />
-          </div>
-
-          {/* Industry */}
-          <div>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Building2 className="w-3 h-3" />
-              {t("Preferred Industry")}
-            </label>
-            <input
-              type="text"
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-              placeholder={t("e.g. AI/ML, FinTech, Healthcare...")}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400"
-            />
-          </div>
-
-          {/* Experience Level */}
-          <div>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-              {t("Experience Level")}
-            </label>
-            <div className="flex bg-slate-50 dark:bg-slate-700 p-1 rounded-lg border border-slate-200 dark:border-slate-600">
-              {EXPERIENCE_LEVELS.map((l) => (
-                <button
-                  key={l.value}
-                  onClick={() => setExperienceLevel(l.value)}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${experienceLevel === l.value
-                    ? "bg-white dark:bg-slate-600 text-indigo-700 dark:text-indigo-400 shadow-sm border border-slate-100 dark:border-slate-500"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                    }`}
-                >
-                  {t(l.label)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Date posted + remote */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-                {t("Posted within")}
-              </label>
-              <select
-                value={datePosted}
-                onChange={(e) => setDatePosted(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
-              >
-                <option value="today">{t("Last 24 hours")}</option>
-                <option value="3days">{t("Last 3 days")}</option>
-                <option value="week">{t("Last week")}</option>
-                <option value="month">{t("Last month")}</option>
-                <option value="all">{t("Any time")}</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-                {t("Work mode")}
-              </label>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={remoteOnly}
-                onClick={() => setRemoteOnly((v) => !v)}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100"
-              >
-                <span className="whitespace-nowrap">{t("Remote only")}</span>
-                <span className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors ${remoteOnly ? "bg-indigo-600" : "bg-slate-300 dark:bg-slate-500"}`}>
-                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${remoteOnly ? "translate-x-4" : "translate-x-0.5"}`} />
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Job sites (multi-select; none selected = all) */}
-          <div>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-              {t("Job sites")}
-            </label>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("Job sites")}>
-              <button
-                type="button"
-                aria-pressed={jobSites.length === 0}
-                onClick={() => setJobSites([])}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${jobSites.length === 0
-                  ? "bg-indigo-600 border-indigo-600 text-white"
-                  : "bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-indigo-400"}`}
-              >
-                {t("All sites")}
-              </button>
-              {JOB_SITES.map((site) => {
-                const on = jobSites.includes(site.value);
-                return (
-                  <button
-                    key={site.value}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() =>
-                      setJobSites((prev) => {
-                        const next = on ? prev.filter((v) => v !== site.value) : [...prev, site.value];
-                        return next.length === JOB_SITES.length ? [] : next;
-                      })
-                    }
-                    className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${on
-                      ? "bg-indigo-50 dark:bg-indigo-500/15 border-indigo-400 text-indigo-700 dark:text-indigo-300"
-                      : "bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-indigo-400"}`}
-                  >
-                    {on && <Check className="inline w-3 h-3 mr-0.5 -mt-0.5" />}
-                    {t(site.label)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Suggestion Count */}
-          <div>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 block">
-              {t("Number of Suggestions")}
-            </label>
-            <select
-              value={suggestionCount}
-              onChange={(e) => setSuggestionCount(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20"
-            >
-              {SUGGESTION_COUNTS.map((n) => (
-                <option key={n} value={n}>
-                  {n} {t("suggestions")}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Generate Button — sticky so it stays visible without scrolling past all preferences */}
-        <div className="sticky bottom-0 z-10 -my-3 lg:-mb-2 pt-3 pb-3 lg:pb-2 bg-gradient-to-t from-slate-50 from-70% to-transparent dark:from-slate-950">
-        <button
-          onClick={handleGenerate}
-          disabled={!selectedKb || generating}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
-        >
-          {generating ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              {t("Searching Jobs & Analyzing...")}
-            </>
-          ) : (
-            <>
-              <Search className="w-4 h-4" />
-              {t("Find Matching Jobs")}
-            </>
-          )}
-        </button>
-        </div>
-
-        {/* Search Queries Info */}
-        {searchQueries.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <Tag className="w-3 h-3" />
-              {t("Search Queries Used")}
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {searchQueries.map((q, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-[11px] font-medium"
-                >
-                  {q}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      </aside>
 
       {/* RIGHT PANEL — Suggestions & Details */}
       <div className="lg:flex-[2_1_67%] min-w-0 min-h-[480px] lg:min-h-0 flex flex-col lg:h-full overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
