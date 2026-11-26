@@ -861,7 +861,7 @@ export default function JobSuggestPage() {
         </div>
 
         {/* Generate Button — sticky so it stays visible without scrolling past all preferences */}
-        <div className="sticky bottom-0 z-10 pt-3 pb-3 lg:pb-0 bg-gradient-to-t from-slate-50 from-70% to-transparent dark:from-slate-950">
+        <div className="sticky bottom-0 z-10 -my-3 lg:-mb-2 pt-3 pb-3 lg:pb-2 bg-gradient-to-t from-slate-50 from-70% to-transparent dark:from-slate-950">
         <button
           onClick={handleGenerate}
           disabled={!selectedKb || generating}
