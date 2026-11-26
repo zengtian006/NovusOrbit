@@ -6,9 +6,13 @@ MongoDB by Prisma). The browser sends the NextAuth session cookie to this
 backend too (same host), so we look the token up in the ``Session`` collection
 and expose the user id through ``src.services.user_context``.
 
-This middleware never rejects a request: signed-out or unknown sessions are
-treated as the shared ``anonymous`` user. It only decides whose data a request
-reads and writes.
+Signed-out visitors who use a guest tool (portfolio, chat) get a private
+guest id kept in the ``novusorbit_guest`` cookie, so guests never share data.
+When a guest signs in, their guest data moves into the account and the cookie
+is cleared (see ``src/services/guest_data.py``).
+
+This middleware never rejects a request; access rules live in
+``src/api/auth_deps.py``. It only decides whose data a request reads and writes.
 """
 
 from __future__ import annotations
@@ -17,11 +21,13 @@ import asyncio
 from datetime import datetime, timezone
 from http.cookies import CookieError, SimpleCookie
 import os
+import re
+import secrets
 import time
 from typing import Any, Optional
 
 from src.logging import get_logger
-from src.services.user_context import reset_current_user_id, set_current_user_id
+from src.services.user_context import GUEST_PREFIX, reset_current_user_id, set_current_user_id
 
 logger = get_logger("UserContext")
 
@@ -32,6 +38,12 @@ SESSION_COOKIE_NAMES = (
     "__Secure-next-auth.session-token",
     "next-auth.session-token",
 )
+
+GUEST_COOKIE = "novusorbit_guest"
+GUEST_COOKIE_MAX_AGE = 30 * 24 * 3600
+_GUEST_VALUE_RE = re.compile(r"^[A-Za-z0-9_-]{16,40}$")
+# Only these tools are open to guests, so only they hand out a guest id.
+GUEST_PATH_PREFIXES = ("/api/v1/portfolio", "/api/v1/chat")
 
 CACHE_TTL_SECONDS = 60
 _cache: dict[str, tuple[Optional[str], float]] = {}  # token -> (user_id | None, expires_at)
@@ -98,19 +110,42 @@ async def resolve_user_id(token: str) -> Optional[str]:
     return user_id
 
 
-def _session_token_from_scope(scope) -> Optional[str]:
+def _cookies_from_scope(scope) -> dict[str, str]:
+    cookies: dict[str, str] = {}
     for name, value in scope.get("headers") or []:
         if name != b"cookie":
             continue
         try:
-            cookie = SimpleCookie()
-            cookie.load(value.decode("latin-1"))
+            jar = SimpleCookie()
+            jar.load(value.decode("latin-1"))
         except CookieError:
             continue
-        for cookie_name in SESSION_COOKIE_NAMES:
-            if cookie_name in cookie and cookie[cookie_name].value:
-                return cookie[cookie_name].value
+        cookies.update({k: m.value for k, m in jar.items()})
+    return cookies
+
+
+def _session_token_from_scope(scope) -> Optional[str]:
+    cookies = _cookies_from_scope(scope)
+    for cookie_name in SESSION_COOKIE_NAMES:
+        if cookies.get(cookie_name):
+            return cookies[cookie_name]
     return None
+
+
+def _is_https(scope) -> bool:
+    if scope.get("scheme") in ("https", "wss"):
+        return True
+    for name, value in scope.get("headers") or []:
+        if name == b"x-forwarded-proto":
+            return value.decode("latin-1").split(",")[0].strip() == "https"
+    return False
+
+
+def _guest_cookie_header(scope, value: str, max_age: int) -> tuple[bytes, bytes]:
+    parts = [f"{GUEST_COOKIE}={value}", "Path=/", f"Max-Age={max_age}", "HttpOnly", "SameSite=Lax"]
+    if _is_https(scope):
+        parts.append("Secure")
+    return (b"set-cookie", "; ".join(parts).encode("latin-1"))
 
 
 class UserContextMiddleware:
@@ -123,13 +158,81 @@ class UserContextMiddleware:
         if scope["type"] not in ("http", "websocket"):
             await self.app(scope, receive, send)
             return
-        token = _session_token_from_scope(scope)
+        cookies = _cookies_from_scope(scope)
+        token = next((cookies[n] for n in SESSION_COOKIE_NAMES if cookies.get(n)), None)
         user_id = await resolve_user_id(token) if token else None
+
+        guest_value = cookies.get(GUEST_COOKIE, "")
+        if not _GUEST_VALUE_RE.match(guest_value):
+            guest_value = ""
+        set_cookie: Optional[tuple[bytes, bytes]] = None
+
+        if user_id:
+            if guest_value and scope["type"] == "http":
+                # Just signed in after trying the app as a guest: keep their CV and chats.
+                from src.services.guest_data import move_guest_data_to_user
+
+                await asyncio.to_thread(move_guest_data_to_user, GUEST_PREFIX + guest_value, user_id)
+                set_cookie = _guest_cookie_header(scope, "", 0)
+        elif auth_available():
+            if guest_value:
+                user_id = GUEST_PREFIX + guest_value
+            elif scope["type"] == "http" and scope.get("path", "").startswith(GUEST_PATH_PREFIXES):
+                guest_value = secrets.token_urlsafe(16)
+                user_id = GUEST_PREFIX + guest_value
+                set_cookie = _guest_cookie_header(scope, guest_value, GUEST_COOKIE_MAX_AGE)
+
         ctx = set_current_user_id(user_id)
+
+        async def send_with_cookie(message):
+            if set_cookie and message["type"] == "http.response.start":
+                message = {**message, "headers": [*message.get("headers", []), set_cookie]}
+            await send(message)
+
         try:
-            await self.app(scope, receive, send)
+            await self.app(scope, receive, send_with_cookie if set_cookie else send)
         finally:
             reset_current_user_id(ctx)
+
+
+def auth_available() -> bool:
+    """True when sign-in works (NextAuth MongoDB reachable). Local installs without it run open."""
+    return _get_db() is not None
+
+
+_admin_cache: dict[str, tuple[bool, float]] = {}
+
+
+def _lookup_is_admin(user_id: str) -> bool:
+    db = _get_db()
+    if db is None:
+        return False
+    from bson import ObjectId
+    from bson.errors import InvalidId
+
+    try:
+        oid = ObjectId(user_id)
+    except (InvalidId, TypeError):
+        return False
+    doc = db["User"].find_one({"_id": oid}, {"role": 1})
+    return bool(doc and doc.get("role") == "ADMIN")
+
+
+async def is_admin_user(user_id: str) -> bool:
+    """Whether a user has the ADMIN role, with a short in-memory cache."""
+    now = time.monotonic()
+    cached = _admin_cache.get(user_id)
+    if cached and cached[1] > now:
+        return cached[0]
+    try:
+        result = await asyncio.wait_for(asyncio.to_thread(_lookup_is_admin, user_id), timeout=5)
+    except Exception as e:
+        logger.warning(f"Admin lookup failed, treating user as non-admin: {e}")
+        return False
+    if len(_admin_cache) > 10_000:
+        _admin_cache.clear()
+    _admin_cache[user_id] = (result, now + CACHE_TTL_SECONDS)
+    return result
 
 
 def find_first_admin_id() -> Optional[str]:

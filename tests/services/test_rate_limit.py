@@ -8,6 +8,7 @@ import pytest
 from src.services import rate_limit as rl
 from src.services.rate_limit import (
     DAY,
+    Bucket,
     RateLimitExceeded,
     SlidingWindowLimiter,
     check,
@@ -25,6 +26,12 @@ def _fresh(monkeypatch):
     monkeypatch.delenv("RATE_LIMIT_GLOBAL_DAILY", raising=False)
     yield
     rl._limiter.reset()
+
+
+@pytest.fixture
+def anon_trial_bucket(monkeypatch):
+    """Production gives signed-out visitors no AI use; test the per-IP mechanism on a stand-in bucket."""
+    monkeypatch.setitem(rl.BUCKETS, "chat", Bucket(limit=100, window=DAY, anon_limit=20, label="chat messages"))
 
 
 @pytest.fixture
@@ -61,7 +68,28 @@ def test_signed_in_users_are_counted_separately():
             reset_current_user_id(token)
 
 
-def test_anonymous_keyed_by_ip_and_told_to_sign_in():
+def test_signed_out_visitors_can_only_chat_and_upload():
+    tryable = {name for name, b in rl.BUCKETS.items() if b.anon_limit > 0}
+    assert tryable == {"chat", "upload"}
+    for name in rl.BUCKETS.keys() - tryable:
+        with pytest.raises(RateLimitExceeded) as e:
+            check(name, "1.1.1.1")
+        assert e.value.status_code == 401
+
+
+def test_guests_use_the_signed_out_per_ip_limit():
+    token = set_current_user_id("guest_abcdefghijklmnop")
+    try:
+        for _ in range(rl.BUCKETS["chat"].anon_limit):
+            check("chat", "3.3.3.3")
+        with pytest.raises(RateLimitExceeded) as e:
+            check("chat", "3.3.3.3")
+        assert "Sign in" in e.value.message
+    finally:
+        reset_current_user_id(token)
+
+
+def test_anonymous_keyed_by_ip_and_told_to_sign_in(anon_trial_bucket):
     limit = rl.BUCKETS["chat"].anon_limit
     for _ in range(limit):
         check("chat", "1.1.1.1")
@@ -113,7 +141,7 @@ def test_client_ip_uses_last_forwarded_entry():
     assert client_ip_from_headers({}, "127.0.0.1") == "127.0.0.1"
 
 
-def test_dependency_raises_429_with_retry_after(monkeypatch):
+def test_dependency_raises_429_with_retry_after(monkeypatch, anon_trial_bucket):
     monkeypatch.setenv("RATE_LIMIT_MULTIPLIER", "0.1")  # chat anon 20 -> 2
     dep = rate_limit("chat")
     request = Request({"type": "http", "headers": [], "client": ("5.5.5.5", 1234)})

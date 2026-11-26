@@ -10,6 +10,7 @@ import AcquisitionTracker from "@/components/AcquisitionTracker";
 import WelcomeGuide from "@/components/WelcomeGuide";
 import JourneyBar from "@/components/JourneyBar";
 import { JourneyProvider } from "@/components/JourneyProvider";
+import GuestBanner from "@/components/GuestBanner";
 import { I18nClientBridge } from "@/i18n/I18nClientBridge";
 import { Providers } from "@/app/providers";
 import {
@@ -108,6 +109,7 @@ export default function RootLayout({
                     <Sidebar />
                     <main className="flex-1 min-w-0 flex flex-col bg-slate-50 dark:bg-slate-950">
                       <JourneyBar />
+                      <GuestBanner />
                       <div className="flex-1 min-h-0 overflow-y-auto">{children}</div>
                     </main>
                   </div>

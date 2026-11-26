@@ -1,15 +1,20 @@
 # Global Page Settings - Applied to all users
-# Controls page-level features like SSO requirements
+# Controls page-level features like SSO requirements.
+# Signed-out visitors can browse Home, Features and Guides, and try Upload CV
+# (one CV) and Ask as a guest. Every other tool needs sign-in.
 
 pages:
   "/":
+    requireSSO: false
+
+  "/ask":
     requireSSO: false
 
   "/portfolio":
     requireSSO: false
     
   "/history":
-    requireSSO: false
+    requireSSO: true
 
   "/interview":
     requireSSO: true
@@ -21,4 +26,4 @@ pages:
     requireSSO: true
 
   "/jobs":
-    requireSSO: false
+    requireSSO: true

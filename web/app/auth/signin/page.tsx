@@ -5,12 +5,22 @@ import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { Check } from "lucide-react";
 import { LogoMark } from "@/components/Logo";
+import { JOURNEY_STEPS } from "@/lib/journey";
+
+const BENEFITS = [
+  "Free, no credit card",
+  "Your CV, saved jobs and history stay private to your account",
+  "Pick up where you left off on any device",
+];
 
 function SignInContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const error = searchParams.get("error");
+  // The tool the visitor was opening, if any (e.g. /portfolio -> "Upload CV").
+  const target = JOURNEY_STEPS.find((s) => s.href === callbackUrl.split("?")[0]);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
 
@@ -32,10 +42,10 @@ function SignInContent() {
           <div className="text-center mb-8">
             <LogoMark size={44} className="mx-auto mb-4" />
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white mb-1.5">
-              {t("Sign in to NovusOrbit")}
+              {target ? `${t("Sign in to use")} ${t(target.label)}` : t("Sign in to NovusOrbit")}
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {t("Save your portfolio, jobs and interview prep to your account.")}
+              {target ? t(target.hint) : t("Save your portfolio, jobs and interview prep to your account.")}
             </p>
           </div>
 
@@ -68,6 +78,15 @@ function SignInContent() {
             </svg>
             {isLoading ? t("Signing in...") : t("Sign in with Google")}
           </button>
+
+          <ul className="mt-6 space-y-2">
+            {BENEFITS.map((b) => (
+              <li key={b} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
+                <Check className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500" aria-hidden />
+                {t(b)}
+              </li>
+            ))}
+          </ul>
 
           {/* Footer */}
           <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">

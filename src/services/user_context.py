@@ -9,8 +9,10 @@ stored under per-user roots inside the mounted data volumes:
     data/user/accounts/<user_id>/        sessions, job boards, resume writer
     data/portfolios/users/<user_id>/     portfolios (raw files + indexes)
 
-Signed-out visitors share the ``anonymous`` namespace. Requests are never
-rejected here; this module only decides *where* data lives.
+Signed-out visitors who try the app get a private guest id
+(``guest_<random>``, from a cookie; see ``src/api/user_middleware.py``).
+Requests with neither are ``anonymous``. Requests are never rejected here;
+this module only decides *where* data lives.
 
 Context variables propagate into ``asyncio.create_task`` and
 ``asyncio.to_thread`` automatically. Code that uses
@@ -26,6 +28,7 @@ import re
 from src.config.constants import PROJECT_ROOT
 
 ANONYMOUS_USER_ID = "anonymous"
+GUEST_PREFIX = "guest_"
 
 _current_user_id: ContextVar[str] = ContextVar("current_user_id", default=ANONYMOUS_USER_ID)
 
@@ -41,6 +44,17 @@ def _safe_id(user_id: str | None) -> str:
     if user_id and _SAFE_ID_RE.match(user_id):
         return user_id
     return ANONYMOUS_USER_ID
+
+
+def is_guest(user_id: str | None) -> bool:
+    """A signed-out visitor with their own guest space."""
+    return bool(user_id) and user_id.startswith(GUEST_PREFIX)
+
+
+def is_signed_in(user_id: str | None = None) -> bool:
+    """A real account (not anonymous, not a guest)."""
+    uid = get_current_user_id() if user_id is None else user_id
+    return uid != ANONYMOUS_USER_ID and not is_guest(uid)
 
 
 def get_current_user_id() -> str:
@@ -75,6 +89,9 @@ def portfolios_dir(user_id: str | None = None) -> Path:
 
 __all__ = [
     "ANONYMOUS_USER_ID",
+    "GUEST_PREFIX",
+    "is_guest",
+    "is_signed_in",
     "PORTFOLIOS_ROOT",
     "USER_DATA_ROOT",
     "get_current_user_id",

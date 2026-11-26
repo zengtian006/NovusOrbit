@@ -4,7 +4,7 @@ from pathlib import Path
 
 import asyncio
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -20,6 +20,7 @@ from src.api.routers import (
     settings,
     system,
 )
+from src.api.auth_deps import require_admin, require_admin_for_writes, require_user, require_visitor
 from src.api.user_middleware import UserContextMiddleware
 from src.logging import get_logger
 from src.services.user_context import user_data_dir
@@ -57,8 +58,23 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Failed to initialize LLM client at startup: {e}")
 
+    # Delete guest data (signed-out visitors' CVs and chats) nobody has used
+    # for a week, now and every 6 hours.
+    async def clean_guest_data_periodically():
+        from src.services.guest_data import cleanup_stale_guest_data
+
+        while True:
+            try:
+                await asyncio.to_thread(cleanup_stale_guest_data)
+            except Exception:
+                logger.exception("Guest data cleanup failed")
+            await asyncio.sleep(6 * 3600)
+
+    guest_cleanup = asyncio.create_task(clean_guest_data_periodically())
+
     yield
     # Execute on shutdown
+    guest_cleanup.cancel()
     logger.info("Application shutdown")
 
 
@@ -102,11 +118,11 @@ except Exception:
         user_dir.mkdir(parents=True)
 
 # Identify the signed-in user (NextAuth session cookie) for per-user data.
-# Never rejects requests; signed-out visitors use the shared anonymous space.
+# The middleware never rejects requests; access rules are router dependencies.
 app.add_middleware(UserContextMiddleware)
 
 
-@app.get("/api/outputs/{file_path:path}", include_in_schema=False)
+@app.get("/api/outputs/{file_path:path}", include_in_schema=False, dependencies=[Depends(require_user)])
 async def get_output_file(file_path: str):
     """
     Serve generated files (e.g. narration audio) from the current user's data
@@ -119,15 +135,24 @@ async def get_output_file(file_path: str):
     return FileResponse(target)
 
 # Include routers
-app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
-app.include_router(knowledge.router, prefix="/api/v1/portfolio", tags=["portfolio"])
-app.include_router(resume_writer.router, prefix="/api/v1/resume_writer", tags=["resume_writer"])
-app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
-app.include_router(interview.router, prefix="/api/v1/interview", tags=["interview"])
-app.include_router(job_suggest.router, prefix="/api/v1/job-suggest", tags=["job-suggest"])
-app.include_router(settings.router, prefix="/api/v1/settings", tags=["settings"])
-app.include_router(system.router, prefix="/api/v1/system", tags=["system"])
-app.include_router(config.router, prefix="/api/v1/config", tags=["config"])
+# Access rules (src/api/auth_deps.py): guests may upload one CV and chat;
+# every other tool needs an account; site-wide settings and model
+# configuration can only be changed by an admin.
+signed_in = [Depends(require_user)]
+guests_welcome = [Depends(require_visitor)]
+app.include_router(chat.router, prefix="/api/v1", tags=["chat"], dependencies=guests_welcome)
+app.include_router(knowledge.router, prefix="/api/v1/portfolio", tags=["portfolio"], dependencies=guests_welcome)
+app.include_router(resume_writer.router, prefix="/api/v1/resume_writer", tags=["resume_writer"], dependencies=signed_in)
+app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"], dependencies=signed_in)
+app.include_router(interview.router, prefix="/api/v1/interview", tags=["interview"], dependencies=signed_in)
+app.include_router(job_suggest.router, prefix="/api/v1/job-suggest", tags=["job-suggest"], dependencies=signed_in)
+app.include_router(
+    settings.router, prefix="/api/v1/settings", tags=["settings"], dependencies=[Depends(require_admin_for_writes)]
+)
+app.include_router(
+    system.router, prefix="/api/v1/system", tags=["system"], dependencies=[Depends(require_admin_for_writes)]
+)
+app.include_router(config.router, prefix="/api/v1/config", tags=["config"], dependencies=[Depends(require_admin)])
 app.include_router(feedback.router, prefix="/api", tags=["feedback"])
 
 
