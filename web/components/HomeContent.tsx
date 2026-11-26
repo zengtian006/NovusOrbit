@@ -113,13 +113,6 @@ function statusMeta(status: string) {
   return STATUSES.find((s) => s.value === status) ?? STATUSES[0];
 }
 
-function greetingFor(date: Date): string {
-  const h = date.getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
-}
-
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
@@ -196,9 +189,8 @@ export function HomeLanding() {
 
 export function HomeDashboard({ firstName }: { firstName: string }) {
   const { t } = useTranslation();
-  const { progress } = useJourney();
+  const { progress, loaded } = useJourney();
   const [data, setData] = useState<DashboardData | null>(null);
-  const [now] = useState(() => new Date());
 
   useEffect(() => {
     let cancelled = false;
@@ -210,6 +202,8 @@ export function HomeDashboard({ firstName }: { firstName: string }) {
     };
   }, []);
 
+  // Until progress and saved jobs load, show placeholders, not a new user's state.
+  const ready = loaded && data !== null;
   const doneCount = JOURNEY_STEPS.filter((s) => progress[s.id]).length;
   const nextStep = JOURNEY_STEPS.find((s) => !progress[s.id]) ?? null;
   const latestJob = data?.jobs.find((j) => j.status !== "rejected") ?? data?.jobs[0];
@@ -222,7 +216,7 @@ export function HomeDashboard({ firstName }: { firstName: string }) {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
-              {t(greetingFor(now))}
+              {t("Welcome back")}
               {firstName ? `, ${firstName}` : ""}
             </h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -233,13 +227,13 @@ export function HomeDashboard({ firstName }: { firstName: string }) {
             <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
               <span>{t("Your progress")}</span>
               <span className="font-semibold text-slate-700 dark:text-slate-200">
-                {doneCount}/{JOURNEY_STEPS.length}
+                {ready ? `${doneCount}/${JOURNEY_STEPS.length}` : "–"}
               </span>
             </div>
             <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-500"
-                style={{ width: `${(doneCount / JOURNEY_STEPS.length) * 100}%` }}
+                style={{ width: ready ? `${(doneCount / JOURNEY_STEPS.length) * 100}%` : "0%" }}
               />
             </div>
           </div>
@@ -248,7 +242,7 @@ export function HomeDashboard({ firstName }: { firstName: string }) {
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
           {/* Main column */}
           <div className="lg:col-span-2 space-y-6 min-w-0">
-            <NextStepCard step={nextStep} latestJob={latestJob} />
+            {ready ? <NextStepCard step={nextStep} latestJob={latestJob} /> : <CardSkeleton className="h-[132px]" />}
             <QuickAsk hasCv={hasCv} loading={!data} />
             <Applications jobs={data?.jobs ?? null} />
           </div>
@@ -256,7 +250,7 @@ export function HomeDashboard({ firstName }: { firstName: string }) {
           {/* Side column */}
           <div className="space-y-6 min-w-0">
             <CvCard portfolios={data?.portfolios ?? null} />
-            <JourneyChecklist />
+            {ready ? <JourneyChecklist /> : <CardSkeleton className="h-[300px]" />}
             <RecentActivity interviews={data?.interviews ?? []} chats={data?.chats ?? []} />
           </div>
         </div>
@@ -275,6 +269,10 @@ function CardHeader({ title, action }: { title: string; action?: React.ReactNode
       {action}
     </div>
   );
+}
+
+function CardSkeleton({ className }: { className: string }) {
+  return <div aria-hidden className={`${card} ${className} animate-pulse bg-slate-100/70 dark:bg-slate-800/60`} />;
 }
 
 function NextStepCard({ step, latestJob }: { step: JourneyStep | null; latestJob?: SavedJob }) {
