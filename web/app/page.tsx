@@ -1,596 +1,640 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
-import { LogoMark } from "@/components/Logo";
-import {
-  Send,
-  Loader2,
-  Bot,
-  User,
-  Database,
-  Globe,
-  Trash2,
-  ExternalLink,
-  BookOpen,
-  Check,
-} from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
-import { useGlobal } from "@/context/GlobalContext";
-import { apiUrl } from "@/lib/api";
-import { processLatexContent } from "@/lib/latex";
+import { useRouter } from "next/navigation";
+import { useSession, signIn } from "next-auth/react";
 import { useTranslation } from "react-i18next";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import {
+  ArrowRight,
+  Building2,
+  Check,
+  FileText,
+  Loader2,
+  LogIn,
+  MessageSquare,
+  Mic,
+  Plus,
+  Send,
+  Sparkles,
+  Upload,
+} from "lucide-react";
+import { LogoMark } from "@/components/Logo";
 import { useJourney } from "@/components/JourneyProvider";
-import { JOURNEY_STEPS } from "@/lib/journey";
+import { JOURNEY_STEPS, JourneyStep, withJob } from "@/lib/journey";
+import { apiUrl } from "@/lib/api";
+import { formatDate } from "@/lib/datetime";
 
-interface KnowledgeBase {
+/* ------------------------------------------------------------------ */
+/* Data                                                                */
+/* ------------------------------------------------------------------ */
+
+interface Portfolio {
   name: string;
   is_default?: boolean;
+  statistics?: { raw_documents?: number };
 }
 
+interface SavedJob {
+  id: string;
+  board_id: string;
+  title: string;
+  company: string;
+  location?: string;
+  status: string;
+  updated_at: number;
+}
+
+interface InterviewSession {
+  session_id: string;
+  job_title: string;
+  company: string;
+  question_count: number;
+  updated_at: number;
+}
+
+interface ChatSession {
+  session_id: string;
+  title?: string;
+  updated_at: number;
+}
+
+interface DashboardData {
+  portfolios: Portfolio[];
+  jobs: SavedJob[];
+  interviews: InterviewSession[];
+  chats: ChatSession[];
+}
+
+async function getJson(path: string): Promise<any> {
+  try {
+    const res = await fetch(apiUrl(path));
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
+
+async function loadDashboard(): Promise<DashboardData> {
+  const [portfolios, boardList, interviews, chats] = await Promise.all([
+    getJson("/api/v1/portfolio/list"),
+    getJson("/api/v1/jobs/list"),
+    getJson("/api/v1/interview/sessions?limit=3"),
+    getJson("/api/v1/chat/sessions?limit=3"),
+  ]);
+  const boards: { id: string }[] = boardList?.boards ?? [];
+  const boardDetails = await Promise.all(boards.map((b) => getJson(`/api/v1/jobs/${b.id}`)));
+  const jobs: SavedJob[] = boardDetails.flatMap((board) =>
+    (board?.jobs ?? []).map((j: any) => ({ ...j, board_id: board.id })),
+  );
+  jobs.sort((a, b) => b.updated_at - a.updated_at);
+  return {
+    portfolios: Array.isArray(portfolios) ? portfolios : [],
+    jobs,
+    interviews: Array.isArray(interviews) ? interviews : [],
+    chats: Array.isArray(chats) ? chats : [],
+  };
+}
+
+/** Timestamps from the API are seconds; tolerate milliseconds too. */
+function toDate(ts: number): Date {
+  return new Date(ts > 1e12 ? ts : ts * 1000);
+}
+
+const STATUSES: { value: string; label: string; className: string }[] = [
+  { value: "interested", label: "Interested", className: "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300" },
+  { value: "applied", label: "Applied", className: "bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300" },
+  { value: "interviewing", label: "Interviewing", className: "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" },
+  { value: "offered", label: "Offered", className: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" },
+  { value: "rejected", label: "Rejected", className: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" },
+];
+
+function statusMeta(status: string) {
+  return STATUSES.find((s) => s.value === status) ?? STATUSES[0];
+}
+
+function greetingFor(date: Date): string {
+  const h = date.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
 export default function HomePage() {
-  const router = useRouter();
-  const {
-    chatState,
-    setChatState,
-    sendChatMessage,
-    clearChatHistory,
-    newChatSession,
-  } = useGlobal();
+  const { data: session, status } = useSession();
+
+  if (status === "loading") {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+      </div>
+    );
+  }
+  if (status !== "authenticated") return <Landing />;
+
+  const firstName = session?.user?.name?.split(" ")[0] ?? "";
+  return <Dashboard firstName={firstName} />;
+}
+
+/* ------------------------------------------------------------------ */
+/* Signed out: what NovusOrbit is, and how to start                    */
+/* ------------------------------------------------------------------ */
+
+function Landing() {
   const { t } = useTranslation();
-  const { trackEvent } = useAnalytics();
+  return (
+    <div className="min-h-full animate-fade-in px-6 py-12 sm:py-16">
+      <div className="max-w-3xl mx-auto text-center">
+        <LogoMark size={52} className="mx-auto mb-6" />
+        <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-slate-900 dark:text-white">
+          {t("Your AI career assistant")}
+        </h1>
+        <p className="mt-4 text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          {t("Upload your CV once. Get matched jobs, a resume tailored to each one, and interview prep grounded in your real experience.")}
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => signIn("google")}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm transition-colors"
+          >
+            <LogIn className="w-4 h-4" />
+            {t("Get started with Google")}
+          </button>
+          <Link
+            href="/features"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:bg-white dark:hover:bg-slate-900 transition-colors"
+          >
+            {t("See how it works")}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+        <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">{t("Free and open source.")}</p>
+      </div>
+
+      <div className="max-w-5xl mx-auto mt-14">
+        <h2 className="text-center text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-5">
+          {t("Six steps from CV to offer")}
+        </h2>
+        <ol className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {JOURNEY_STEPS.map((step, i) => (
+            <li
+              key={step.id}
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4"
+            >
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <span className="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-xs font-semibold flex items-center justify-center">
+                  {i + 1}
+                </span>
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t(step.label)}</span>
+                <step.icon className="w-4 h-4 ml-auto text-slate-300 dark:text-slate-600" />
+              </div>
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t(step.hint)}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          <Link href="/guides" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+            {t("Read our career guides")}
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Signed in: where the job search stands and what to do next          */
+/* ------------------------------------------------------------------ */
+
+function Dashboard({ firstName }: { firstName: string }) {
+  const { t } = useTranslation();
   const { progress } = useJourney();
-  // Highlight the first unfinished step (the CV until one is uploaded).
-  const nextStepId = JOURNEY_STEPS.find((st) => !progress[st.id])?.id;
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [now] = useState(() => new Date());
 
-  const [inputMessage, setInputMessage] = useState("");
-  const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
-  const [kbsLoaded, setKbsLoaded] = useState(false);
-  const [showRagWarning, setShowRagWarning] = useState(false);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch knowledge bases
   useEffect(() => {
-    fetch(apiUrl("/api/v1/portfolio/list"))
-      .then((res) => res.json())
-      .then((data) => {
-        // Ensure data is an array before processing
-        const kbList = Array.isArray(data) ? data : [];
-        setKbs(kbList);
-        setKbsLoaded(true);
-        if (kbList.length === 0) {
-          // Clear selectedKb if no portfolios exist
-          setChatState((prev) => ({ ...prev, selectedKb: "" }));
-        } else if (!chatState.selectedKb) {
-          // First visit with a portfolio: select it and turn Portfolio on, so
-          // the user can start chatting without hunting for the toggle.
-          const defaultKb = kbList.find((kb: KnowledgeBase) => kb.is_default) ?? kbList[0];
-          setChatState((prev) => ({ ...prev, selectedKb: defaultKb.name, enableRag: true }));
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch KBs:", err);
-        setKbsLoaded(true);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    loadDashboard().then((d) => {
+      if (!cancelled) setData(d);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messagesContainerRef.current) {
-      const container = messagesContainerRef.current;
-      // Use scrollTop instead of scrollIntoView to prevent page-level scrolling
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [chatState.messages]);
-
-  const handleSend = () => {
-    if (!inputMessage.trim() || chatState.isLoading) return;
-    // Check if RAG is enabled or portfolio is selected
-    if (!chatState.enableRag || !chatState.selectedKb) {
-      setShowRagWarning(true);
-      // Hide warning after 4 seconds
-      setTimeout(() => setShowRagWarning(false), 4000);
-      return;
-    }
-    trackEvent({ action: "send_message", feature: "/", metadata: { messageLength: inputMessage.length } });
-    sendChatMessage(inputMessage);
-    setInputMessage("");
-    setShowRagWarning(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handlePortfolioChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === "add-portfolio") {
-      router.push("/portfolio");
-    } else {
-      setChatState((prev) => ({
-        ...prev,
-        selectedKb: value,
-      }));
-    }
-  };
-
-  const hasMessages = chatState.messages.length > 0;
+  const doneCount = JOURNEY_STEPS.filter((s) => progress[s.id]).length;
+  const nextStep = JOURNEY_STEPS.find((s) => !progress[s.id]) ?? null;
+  const latestJob = data?.jobs.find((j) => j.status !== "rejected") ?? data?.jobs[0];
+  const hasCv = (data?.portfolios ?? []).some((p) => (p.statistics?.raw_documents ?? 0) > 0);
 
   return (
-    <div className="h-full flex flex-col animate-fade-in">
-      {/* Empty State / Welcome Screen */}
-      {!hasMessages && (
-        <div className="flex-1 flex flex-col items-center justify-center px-6">
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <LogoMark size={48} className="mx-auto mb-5" />
-            <h1 className="text-3xl sm:text-4xl font-semibold text-slate-900 dark:text-white mb-3 tracking-tight">
-              {t("Your AI career assistant")}
+    <div className="min-h-full animate-fade-in px-4 sm:px-6 py-6 sm:py-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              {t(greetingFor(now))}
+              {firstName ? `, ${firstName}` : ""}
             </h1>
-            <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400">
-              {t("Prepare for interviews, improve your resume and find jobs, with answers grounded in your own CV.")}
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {t("Here's where your job search stands.")}
             </p>
           </div>
-
-          {/* Input Box - Centered */}
-          <div className="w-full max-w-2xl mx-auto mb-12">
-            {/* Mode Toggles */}
-            <div className="flex items-center justify-between mb-3 px-1">
-              <div className="flex items-center gap-2">
-
-                {/* Web Search Toggle */}
-                <button
-                  onClick={() => {
-                    trackEvent({ action: "toggle_web_search", feature: "/", metadata: { enabled: !chatState.enableWebSearch } });
-                    setChatState((prev) => ({
-                      ...prev,
-                      enableWebSearch: !prev.enableWebSearch,
-                    }));
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${chatState.enableWebSearch
-                    ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    }`}
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  {t("Web Search")}
-                </button>
-                {/* RAG Toggle */}
-                <button
-                  onClick={() => {
-                    trackEvent({ action: "toggle_rag", feature: "/", metadata: { enabled: !chatState.enableRag } });
-                    setChatState((prev) => ({
-                      ...prev,
-                      enableRag: !prev.enableRag,
-                    }));
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${chatState.enableRag
-                    ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    }`}
-                >
-                  <Database className="w-3.5 h-3.5" />
-                  {t("Portfolio")}
-                </button>
-                {/* <span
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700"
-                >
-                  <Database className="w-3.5 h-3.5" />
-                  {t("Resume")}
-                </span> */}
-
-                {/* KB Selector */}
-                {chatState.enableRag && (
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={chatState.selectedKb || ""}
-                      onChange={handlePortfolioChange}
-                      className="text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-3 py-1.5 outline-none focus:border-indigo-400 dark:text-slate-200"
-                    >
-                      {kbs.length === 0 ? (
-                        <option value="" disabled>
-                          {t("No portfolios")}
-                        </option>
-                      ) : (
-                        kbs.map((kb) => (
-                          <option key={kb.name} value={kb.name}>
-                            {kb.name}
-                          </option>
-                        ))
-                      )}
-                      <option value="add-portfolio" className="text-indigo-600">
-                        + {t("Add Portfolio")}
-                      </option>
-
-                    </select>
-                  </div>
-                )}
-              </div>
+          <div className="w-48">
+            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+              <span>{t("Your progress")}</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                {doneCount}/{JOURNEY_STEPS.length}
+              </span>
             </div>
-
-            {/* Portfolio Required Banner */}
-            {showRagWarning && (
-              <div className="mb-4 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100 mb-1">
-                    {t("Portfolio is required to start chatting")}
-                  </p>
-                  <p className="text-sm text-indigo-800 dark:text-indigo-200">
-                    {t("Enable your Portfolio above to unlock personalized career advice tailored to your background")}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Input Field */}
-            <div className="relative">
-              <input
-                ref={inputRef}
-                type="text"
-                className="w-full px-5 py-4 pr-14 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50"
-                placeholder={chatState.enableRag && chatState.selectedKb
-                  ? t("Ask anything about") + " " + chatState.selectedKb + "..."
-                  : kbsLoaded && kbs.length === 0
-                    ? t("Upload your CV to start chatting...")
-                    : t("Turn on Portfolio to start chatting...")
-                }
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={chatState.isLoading}
+            <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-500 transition-all duration-500"
+                style={{ width: `${(doneCount / JOURNEY_STEPS.length) * 100}%` }}
               />
-              <button
-                onClick={handleSend}
-                disabled={chatState.isLoading || !inputMessage.trim()}
-                className="absolute right-2 top-2 bottom-2 aspect-square bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all shadow-md shadow-indigo-500/20"
-                title={t("Send message")}
-              >
-                {chatState.isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Send className="w-5 h-5" />
-                )}
-              </button>
             </div>
+          </div>
+        </div>
 
-            {/* The job-search journey: every step, with what's done and what's next */}
-            {kbsLoaded && (
-              <ol className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-3 text-left">
-                {JOURNEY_STEPS.map((step, i) => {
-                  const done = progress[step.id];
-                  const isNext = step.id === nextStepId;
-                  return (
-                    <li key={step.href}>
-                      <Link
-                        href={step.href}
-                        className={`group block h-full rounded-xl border p-3.5 transition-colors ${isNext
-                          ? "border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/60 dark:bg-indigo-500/10 hover:border-indigo-400"
-                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"}`}
-                      >
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className={`w-6 h-6 shrink-0 rounded-full text-xs font-semibold flex items-center justify-center ${isNext
-                            ? "bg-indigo-600 text-white"
-                            : done
-                              ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>
-                            {done && !isNext ? <Check className="w-3.5 h-3.5" /> : i + 1}
-                          </span>
-                          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{t(step.label)}</span>
-                          <step.icon className="w-4 h-4 ml-auto shrink-0 text-slate-400 group-hover:text-indigo-500" />
-                        </div>
-                        <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t(step.hint)}</p>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
-            )}
-
-            {/* Sample Queries */}
-            {kbs.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3 justify-center">
-              {[
-                t("Review my resume and suggest improvements"),
-                t("What skills should I develop for a promotion?"),
-                t("Help me prepare for a job interview"),
-                t("Analyze my career path and suggest next steps"),
-              ].map((query, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    trackEvent({ action: "quick_query_click", feature: "/", metadata: { query } });
-                    setInputMessage(query);
-                    // Use setTimeout to ensure state is updated before calling handleSend
-                    setTimeout(() => {
-                      // Check if RAG is enabled or portfolio is selected
-                      if (!chatState.enableRag || !chatState.selectedKb) {
-                        setShowRagWarning(true);
-                        setTimeout(() => setShowRagWarning(false), 4000);
-                        setInputMessage("");
-                        return;
-                      }
-                      sendChatMessage(query);
-                      setInputMessage("");
-                      setShowRagWarning(false);
-                    }, 0);
-                  }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all"
-                >
-                  {query}
-                </button>
-              ))}
-            </div>
-            )}
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+          {/* Main column */}
+          <div className="lg:col-span-2 space-y-6 min-w-0">
+            <NextStepCard step={nextStep} latestJob={latestJob} />
+            <QuickAsk hasCv={hasCv} loading={!data} />
+            <Applications jobs={data?.jobs ?? null} />
           </div>
 
-          <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
-            {t("New here?")}{" "}
-            <Link href="/features" className="text-indigo-600 dark:text-indigo-400 hover:underline">
-              {t("See what NovusOrbit can do")}
-            </Link>
-            {" · "}
-            <Link href="/guides" className="text-indigo-600 dark:text-indigo-400 hover:underline">
-              {t("Career guides")}
-            </Link>
+          {/* Side column */}
+          <div className="space-y-6 min-w-0">
+            <CvCard portfolios={data?.portfolios ?? null} />
+            <JourneyChecklist />
+            <RecentActivity interviews={data?.interviews ?? []} chats={data?.chats ?? []} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const card =
+  "rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm";
+
+function CardHeader({ title, action }: { title: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between px-5 pt-4 pb-3">
+      <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+      {action}
+    </div>
+  );
+}
+
+function NextStepCard({ step, latestJob }: { step: JourneyStep | null; latestJob?: SavedJob }) {
+  const { t } = useTranslation();
+
+  // Everything done: keep the pipeline full.
+  if (!step) {
+    return (
+      <div className={`${card} p-6 flex flex-wrap items-center justify-between gap-4`}>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            {t("All six steps done")}
+          </p>
+          <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+            {t("Keep your pipeline full: find your next match.")}
           </p>
         </div>
-      )}
+        <Link
+          href="/job-suggest"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold"
+        >
+          {t("Find more jobs")}
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    );
+  }
 
-      {/* Chat Interface - When there are messages */}
-      {hasMessages && (
+  const index = JOURNEY_STEPS.indexOf(step);
+  // Tailoring and interview prep work on a job: jump straight to the latest one.
+  const href =
+    latestJob && (step.id === "tailor" || step.id === "interview")
+      ? withJob(step.href, latestJob.board_id, latestJob.id)
+      : step.href;
+  const forJob = latestJob && href !== step.href ? latestJob : null;
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 to-cyan-600 text-white shadow-md">
+      <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10" aria-hidden />
+      <div className="relative p-6 sm:p-7 flex flex-wrap items-center justify-between gap-5">
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="w-12 h-12 shrink-0 rounded-xl bg-white/15 flex items-center justify-center">
+            <step.icon className="w-6 h-6" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/70">
+              {t("Next step")} · {t("Step")} {index + 1} / {JOURNEY_STEPS.length}
+            </p>
+            <p className="mt-1 text-xl font-semibold">{t(step.label)}</p>
+            <p className="mt-1 text-sm text-white/80 max-w-md">
+              {forJob ? `${t("For")} ${forJob.title}${forJob.company ? ` — ${forJob.company}` : ""}` : t(step.hint)}
+            </p>
+          </div>
+        </div>
+        <Link
+          href={href}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-indigo-700 text-sm font-semibold shadow-sm hover:bg-indigo-50 transition-colors"
+        >
+          {t(step.cta)}
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function QuickAsk({ hasCv, loading }: { hasCv: boolean; loading: boolean }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const [question, setQuestion] = useState("");
+  const disabled = loading || !hasCv;
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!question.trim() || disabled) return;
+    router.push(`/ask?q=${encodeURIComponent(question.trim())}`);
+  };
+
+  return (
+    <form onSubmit={submit} className={`${card} p-2 flex items-center gap-2`}>
+      <MessageSquare className="w-5 h-5 ml-3 shrink-0 text-slate-400" />
+      <input
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        disabled={disabled}
+        placeholder={
+          hasCv || loading
+            ? t("Ask anything about your career...")
+            : t("Upload your CV to ask questions about it")
+        }
+        className="flex-1 min-w-0 bg-transparent px-2 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none disabled:cursor-not-allowed"
+      />
+      <button
+        type="submit"
+        disabled={disabled || !question.trim()}
+        aria-label={t("Ask")}
+        className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40 transition-colors"
+      >
+        <Send className="w-4 h-4" />
+      </button>
+    </form>
+  );
+}
+
+function Applications({ jobs }: { jobs: SavedJob[] | null }) {
+  const { t } = useTranslation();
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const j of jobs ?? []) c[j.status] = (c[j.status] ?? 0) + 1;
+    return c;
+  }, [jobs]);
+
+  return (
+    <section className={card}>
+      <CardHeader
+        title={t("Your applications")}
+        action={
+          jobs && jobs.length > 0 ? (
+            <Link href="/jobs" className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+              {t("View all")}
+            </Link>
+          ) : null
+        }
+      />
+
+      {jobs === null ? (
+        <div className="px-5 pb-6 flex justify-center">
+          <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="px-5 pb-6 pt-2 text-center">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("No saved jobs yet. Find roles that match your CV and save the ones you like.")}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <Link
+              href="/job-suggest"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {t("Find jobs that match your CV")}
+            </Link>
+            <Link
+              href="/jobs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {t("Add a job yourself")}
+            </Link>
+          </div>
+        </div>
+      ) : (
         <>
-          {/* Header Bar */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-
-              <button
-                onClick={() => {
-                  trackEvent({ action: "toggle_web_search", feature: "/", metadata: { enabled: !chatState.enableWebSearch } });
-                  setChatState((prev) => ({
-                    ...prev,
-                    enableWebSearch: !prev.enableWebSearch,
-                  }));
-                }}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${chatState.enableWebSearch
-                  ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                  }`}
-              >
-                <Globe className="w-3 h-3" />
-                {t("Web Search")}
-              </button>
-              {/* Mode Toggles */}
-              <button
-                onClick={() => {
-                  trackEvent({ action: "toggle_rag", feature: "/", metadata: { enabled: !chatState.enableRag } });
-                  setChatState((prev) => ({
-                    ...prev,
-                    enableRag: !prev.enableRag,
-                  }));
-                }}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${chatState.enableRag
-                  ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                  }`}
-              >
-                <Database className="w-3 h-3" />
-                {t("Portfolio")}
-              </button>
-              {/* <span
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
-              >
-                <Database className="w-3 h-3" />
-                {t("Portfolio")}
-              </span> */}
-
-
-
-              {chatState.enableRag && (
-                <select
-                  value={chatState.selectedKb || ""}
-                  onChange={handlePortfolioChange}
-                  className="text-xs bg-slate-100 dark:bg-slate-800 border-0 rounded-lg px-2 py-1 outline-none dark:text-slate-200"
-                >
-                  {kbs.length === 0 ? (
-                    <option value="" disabled>
-                      {t("No portfolios - Add one below")}
-                    </option>
-                  ) : (
-                    kbs.map((kb) => (
-                      <option key={kb.name} value={kb.name}>
-                        {kb.name}
-                      </option>
-                    ))
-                  )}
-                  <option value="add-portfolio" className="text-indigo-600">
-                    + {t("Add Portfolio")}
-                  </option>
-                </select>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  trackEvent({ action: "new_chat_session", feature: "/" });
-                  newChatSession();
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                {t("New Chat")}
-              </button>
-            </div>
-          </div>
-
-          {/* Messages Area */}
-          <div
-            ref={messagesContainerRef}
-            className="flex-1 overflow-y-auto px-6 py-6 space-y-6"
-          >
-            {chatState.messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className="flex gap-4 w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-2"
-              >
-                {msg.role === "user" ? (
-                  <>
-                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                    </div>
-                    <div className="flex-1 bg-slate-100 dark:bg-slate-700 px-4 py-3 rounded-2xl rounded-tl-none text-slate-800 dark:text-slate-200">
-                      {msg.content}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div className="bg-white dark:bg-slate-800 px-5 py-4 rounded-2xl rounded-tl-none border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <div className="prose prose-slate dark:prose-invert prose-sm max-w-none">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm, remarkMath]}
-                            rehypePlugins={[rehypeKatex]}
-                          >
-                            {processLatexContent(msg.content)}
-                          </ReactMarkdown>
-                        </div>
-
-                        {/* Loading indicator */}
-                        {msg.isStreaming && (
-                          <div className="flex items-center gap-2 mt-3 text-indigo-600 dark:text-indigo-400 text-sm">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>{t("Generating response...")}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Sources */}
-                      {msg.sources &&
-                        (msg.sources.rag?.length ?? 0) +
-                        (msg.sources.web?.length ?? 0) >
-                        0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {msg.sources.rag?.map((source, i) => (
-                              <div
-                                key={`rag-${i}`}
-                                className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs"
-                              >
-                                <BookOpen className="w-3 h-3" />
-                                <span>{source.kb_name}</span>
-                              </div>
-                            ))}
-                            {msg.sources.web?.slice(0, 3).map((source, i) => (
-                              <a
-                                key={`web-${i}`}
-                                href={source.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
-                              >
-                                <Globe className="w-3 h-3" />
-                                <span className="max-w-[150px] truncate">
-                                  {source.title || source.url}
-                                </span>
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            ))}
-                          </div>
-                        )}
-                    </div>
-                  </>
-                )}
-              </div>
+          {/* Pipeline summary */}
+          <div className="px-5 pb-3 flex flex-wrap gap-2">
+            {STATUSES.filter((s) => s.value !== "rejected" || counts.rejected).map((s) => (
+              <span key={s.value} className={`text-xs font-medium px-2.5 py-1 rounded-full ${s.className}`}>
+                {t(s.label)} <span className="font-bold">{counts[s.value] ?? 0}</span>
+              </span>
             ))}
-
-            {/* Status indicator */}
-            {chatState.isLoading && chatState.currentStage && (
-              <div className="flex gap-4 w-full max-w-4xl mx-auto">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shrink-0">
-                  <Loader2 className="w-4 h-4 text-white animate-spin" />
-                </div>
-                <div className="flex-1 bg-slate-100 dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-tl-none">
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 text-sm">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                    </span>
-                    {chatState.currentStage === "rag" &&
-                      t("Searching knowledge base...")}
-                    {chatState.currentStage === "web" &&
-                      t("Searching the web...")}
-                    {chatState.currentStage === "generating" &&
-                      t("Generating response...")}
-                    {!["rag", "web", "generating"].includes(
-                      chatState.currentStage,
-                    ) && chatState.currentStage}
+          </div>
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800 border-t border-slate-100 dark:border-slate-800">
+            {jobs.slice(0, 5).map((job) => {
+              const meta = statusMeta(job.status);
+              return (
+                <li key={`${job.board_id}-${job.id}`} className="px-5 py-3 flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{job.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
+                      <Building2 className="w-3 h-3 shrink-0" />
+                      {job.company}
+                      {job.location ? ` · ${job.location}` : ""}
+                    </p>
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Input Area - Fixed at bottom */}
-          <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-6 py-4">
-            {/* Portfolio Required Banner */}
-            {showRagWarning && (
-              <div className="mb-4 p-4 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100 mb-1">
-                    {t("Portfolio is required to start chatting")}
-                  </p>
-                  <p className="text-sm text-indigo-800 dark:text-indigo-200">
-                    {t("Enable your Portfolio above to unlock personalized career advice tailored to your background")}
-                  </p>
-                </div>
-              </div>
-            )}
-            <div className="max-w-4xl mx-auto relative">
-              <input
-                ref={inputRef}
-                type="text"
-                className="w-full px-5 py-3.5 pr-14 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200"
-                placeholder={t("Type your message...")}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={chatState.isLoading}
-              />
-              <button
-                onClick={handleSend}
-                disabled={chatState.isLoading || !inputMessage.trim()}
-                className="absolute right-2 top-2 bottom-2 aspect-square bg-indigo-600 text-white rounded-lg flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all"
-                title={t("Send message")}
-              >
-                {chatState.isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Send className="w-5 h-5" />
-                )}
-              </button>
-            </div>
-          </div>
+                  <span className={`hidden sm:inline text-[11px] font-semibold px-2 py-0.5 rounded-full ${meta.className}`}>
+                    {t(meta.label)}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Link
+                      href={withJob("/resume-writer", job.board_id, job.id)}
+                      title={t("Tailor your resume to this job")}
+                      className="p-2 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-300"
+                    >
+                      <FileText className="w-4 h-4" />
+                    </Link>
+                    <Link
+                      href={withJob("/interview", job.board_id, job.id)}
+                      title={t("Practise interview questions for this job")}
+                      className="p-2 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-300"
+                    >
+                      <Mic className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </>
       )}
+    </section>
+  );
+}
 
-    </div>
+function CvCard({ portfolios }: { portfolios: Portfolio[] | null }) {
+  const { t } = useTranslation();
+  const withDocs = (portfolios ?? []).filter((p) => (p.statistics?.raw_documents ?? 0) > 0);
+
+  return (
+    <section className={card}>
+      <CardHeader
+        title={t("Your CV")}
+        action={
+          withDocs.length > 0 ? (
+            <Link href="/portfolio" className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+              {t("Manage")}
+            </Link>
+          ) : null
+        }
+      />
+      <div className="px-5 pb-5">
+        {portfolios === null ? (
+          <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+        ) : withDocs.length === 0 ? (
+          <>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {t("Every tool works from your CV. Upload it first.")}
+            </p>
+            <Link
+              href="/portfolio"
+              className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              {t("Upload your CV")}
+            </Link>
+          </>
+        ) : (
+          <ul className="space-y-2">
+            {withDocs.map((p) => (
+              <li key={p.name} className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/15 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{p.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {p.statistics?.raw_documents} {p.statistics?.raw_documents === 1 ? t("document") : t("documents")}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function JourneyChecklist() {
+  const { t } = useTranslation();
+  const { progress } = useJourney();
+  const nextId = JOURNEY_STEPS.find((s) => !progress[s.id])?.id;
+
+  return (
+    <section className={card}>
+      <CardHeader title={t("Your job search")} />
+      <ol className="px-3 pb-3">
+        {JOURNEY_STEPS.map((step, i) => {
+          const done = progress[step.id];
+          const isNext = step.id === nextId;
+          return (
+            <li key={step.id}>
+              <Link
+                href={step.href}
+                className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors ${isNext ? "bg-indigo-50 dark:bg-indigo-500/10" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}
+              >
+                <span
+                  className={`w-6 h-6 shrink-0 rounded-full text-[11px] font-semibold flex items-center justify-center ${
+                    done
+                      ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
+                      : isNext
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  {done ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                </span>
+                <span
+                  className={`text-sm ${done ? "text-slate-400 dark:text-slate-500" : isNext ? "font-semibold text-indigo-700 dark:text-indigo-300" : "text-slate-700 dark:text-slate-300"}`}
+                >
+                  {t(step.label)}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+function RecentActivity({ interviews, chats }: { interviews: InterviewSession[]; chats: ChatSession[] }) {
+  const { t } = useTranslation();
+  const items = [
+    ...interviews.map((s) => ({
+      key: `i-${s.session_id}`,
+      icon: Mic,
+      title: `${t("Interview prep")}: ${s.job_title}${s.company ? ` — ${s.company}` : ""}`,
+      href: "/history",
+      at: s.updated_at,
+    })),
+    ...chats.map((s) => ({
+      key: `c-${s.session_id}`,
+      icon: MessageSquare,
+      title: s.title || t("Chat"),
+      href: "/history",
+      at: s.updated_at,
+    })),
+  ]
+    .sort((a, b) => b.at - a.at)
+    .slice(0, 4);
+
+  if (items.length === 0) return null;
+
+  return (
+    <section className={card}>
+      <CardHeader
+        title={t("Recent activity")}
+        action={
+          <Link href="/history" className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+            {t("History")}
+          </Link>
+        }
+      />
+      <ul className="px-3 pb-3">
+        {items.map((it) => (
+          <li key={it.key}>
+            <Link href={it.href} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">
+              <it.icon className="w-4 h-4 shrink-0 text-slate-400" />
+              <span className="flex-1 min-w-0 text-sm text-slate-700 dark:text-slate-300 truncate">{it.title}</span>
+              <span className="text-xs text-slate-400 shrink-0">{formatDate(toDate(it.at), { month: "short", day: "numeric" })}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

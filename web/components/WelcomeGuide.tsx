@@ -228,10 +228,10 @@ const STEPS: Step[] = [
   {
     key: "ask",
     eyebrow: "Step 2 · Ask anything",
-    title: "Chat about your career on Home",
+    title: "Ask anything about your career",
     body: "Ask how to pitch yourself, what to learn next or how to answer a tricky question. Turn on web search when you need current salary or company information.",
     art: AskArt,
-    link: { href: "/", label: "Go to Home" },
+    link: { href: "/ask", label: "Ask a question" },
   },
   {
     key: "jobs",

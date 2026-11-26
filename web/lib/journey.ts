@@ -34,7 +34,7 @@ export const JOURNEY_STEPS: JourneyStep[] = [
   },
   {
     id: "ask",
-    href: "/",
+    href: "/ask",
     icon: MessageSquare,
     label: "Ask Questions",
     hint: "Ask anything about your CV, career or a role you're considering.",
