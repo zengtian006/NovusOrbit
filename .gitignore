@@ -8,6 +8,8 @@
 # User data directory (migrated to data/user/)
 data/user/
 data/knowledge_bases/
+# Uploaded CVs and their indexes: personal data, never commit
+data/portfolios/
 run_code_workspace/
 src/agents/question/reference_papers/
 src/services/rag/eg_only_for_analysis/
