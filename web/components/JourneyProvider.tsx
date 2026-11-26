@@ -31,14 +31,16 @@ async function getJson(path: string): Promise<any> {
   }
 }
 
-async function fetchProgress(): Promise<Progress> {
+/** Guests can only use Upload CV and Ask, so only those are asked about. */
+async function fetchProgress(signedIn: boolean): Promise<Progress> {
+  const accountOnly = (path: string) => (signedIn ? getJson(path) : Promise.resolve(null));
   const [kbs, chats, suggestions, boards, resumeHistory, interviews] = await Promise.all([
     getJson("/api/v1/portfolio/list"),
     getJson("/api/v1/chat/sessions?limit=1"),
-    getJson("/api/v1/job-suggest/sessions?limit=1"),
-    getJson("/api/v1/jobs/list"),
-    getJson("/api/v1/resume_writer/history"),
-    getJson("/api/v1/interview/sessions?limit=1"),
+    accountOnly("/api/v1/job-suggest/sessions?limit=1"),
+    accountOnly("/api/v1/jobs/list"),
+    accountOnly("/api/v1/resume_writer/history"),
+    accountOnly("/api/v1/interview/sessions?limit=1"),
   ]);
   const count = (v: any) => (Array.isArray(v) ? v.length : 0);
   const hasCv = Array.isArray(kbs) && kbs.some((kb: any) => (kb?.statistics?.raw_documents ?? 0) > 0);
@@ -100,13 +102,16 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [progress, setProgress] = useState<Progress>(EMPTY);
   const [loaded, setLoaded] = useState(false);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const userId = session?.user?.id;
+  const signedIn = status === "authenticated";
 
   useEffect(() => {
+    // Wait for the session, so guests don't query tools that need an account.
+    if (status === "loading") return;
     let cancelled = false;
     const load = () =>
-      fetchProgress().then((p) => {
+      fetchProgress(signedIn).then((p) => {
         if (cancelled) return;
         setProgress(p);
         setLoaded(true);
@@ -117,7 +122,7 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
       window.removeEventListener(JOURNEY_REFRESH_EVENT, load);
     };
-  }, [pathname]);
+  }, [pathname, status, signedIn]);
 
   useEffect(() => {
     if (loaded && userId) reportFunnel(userId, progress);

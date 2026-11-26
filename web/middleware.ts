@@ -6,7 +6,10 @@ import yaml from "js-yaml";
 
 // Routes that *might* require authentication (default to protected)
 // Actual requirement is determined by global page_settings.yaml
+// Signed-out visitors can try Upload CV and Ask as a guest; other tools need sign-in.
 const PROTECTED_ROUTES = [
+  "/jobs",
+  "/history",
   "/interview",
   "/settings",
   "/job-suggest",
@@ -62,6 +65,8 @@ function routeRequiresSSO(pathname: string): boolean {
 export const config = {
   runtime: "nodejs",
   matcher: [
+    "/jobs",
+    "/history",
     "/interview",
     "/settings",
     "/job-suggest",

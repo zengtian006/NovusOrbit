@@ -26,6 +26,7 @@ from fastapi import (
 )
 from pydantic import BaseModel
 
+from src.api.auth_deps import deny_guest, guest_single_cv, require_admin
 from src.services.rate_limit import rate_limit
 from src.api.utils.progress_broadcaster import ProgressBroadcaster
 from src.api.utils.task_id_manager import TaskIDManager
@@ -451,7 +452,7 @@ async def get_knowledge_base_details(kb_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{kb_name}")
+@router.delete("/{kb_name}", dependencies=[Depends(deny_guest)])
 async def delete_knowledge_base(kb_name: str):
     """Delete a knowledge base."""
     try:
@@ -467,7 +468,7 @@ async def delete_knowledge_base(kb_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{kb_name}/upload", dependencies=[Depends(rate_limit("upload"))])
+@router.post("/{kb_name}/upload", dependencies=[Depends(deny_guest), Depends(rate_limit("upload"))])
 async def upload_files(
     kb_name: str,
     background_tasks: BackgroundTasks,
@@ -559,7 +560,7 @@ async def upload_files(
         raise HTTPException(status_code=500, detail=formatted_error) from e
 
 
-@router.post("/create", dependencies=[Depends(rate_limit("upload"))])
+@router.post("/create", dependencies=[Depends(guest_single_cv), Depends(rate_limit("upload"))])
 async def create_knowledge_base(
     background_tasks: BackgroundTasks,
     name: str = Form(...),
@@ -759,7 +760,7 @@ async def websocket_progress(websocket: WebSocket, kb_name: str):
             pass
 
 
-@router.post("/{kb_name}/link-folder", response_model=LinkedFolderInfo)
+@router.post("/{kb_name}/link-folder", response_model=LinkedFolderInfo, dependencies=[Depends(require_admin)])
 async def link_folder(kb_name: str, request: LinkFolderRequest):
     """
     Link a local folder to a knowledge base.
@@ -786,7 +787,7 @@ async def link_folder(kb_name: str, request: LinkFolderRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{kb_name}/linked-folders", response_model=list[LinkedFolderInfo])
+@router.get("/{kb_name}/linked-folders", response_model=list[LinkedFolderInfo], dependencies=[Depends(require_admin)])
 async def get_linked_folders(kb_name: str):
     """Get list of linked folders for a knowledge base."""
     try:
@@ -799,7 +800,7 @@ async def get_linked_folders(kb_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{kb_name}/linked-folders/{folder_id}")
+@router.delete("/{kb_name}/linked-folders/{folder_id}", dependencies=[Depends(require_admin)])
 async def unlink_folder(kb_name: str, folder_id: str):
     """Unlink a folder from a knowledge base."""
     try:
@@ -815,7 +816,7 @@ async def unlink_folder(kb_name: str, folder_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{kb_name}/sync-folder/{folder_id}")
+@router.post("/{kb_name}/sync-folder/{folder_id}", dependencies=[Depends(require_admin)])
 async def sync_folder(kb_name: str, folder_id: str, background_tasks: BackgroundTasks):
     """
     Sync files from a linked folder to the knowledge base.

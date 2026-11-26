@@ -4,8 +4,9 @@ embeddings, scraping, TTS).
 
 Production runs a single backend process, so the counters live in memory and
 reset on restart. Each bucket has a per-user limit over a sliding window;
-signed-out visitors are keyed by client IP (they all share the ``anonymous``
-user id) and get a lower limit. A site-wide daily cap across all buckets acts as
+signed-out visitors and guests are keyed by client IP and get a lower
+limit (guests: 10 chat messages and 2 upload attempts a day; one CV is
+enforced separately in src/api/auth_deps.py). A site-wide daily cap across all buckets acts as
 a spending circuit breaker if traffic spikes (for example after a launch).
 
 Environment:
@@ -27,7 +28,7 @@ from typing import Optional
 from fastapi import HTTPException, Request
 
 from src.logging import get_logger
-from src.services.user_context import ANONYMOUS_USER_ID, get_current_user_id
+from src.services.user_context import get_current_user_id, is_signed_in
 
 logger = get_logger("RateLimit")
 
@@ -44,13 +45,13 @@ class Bucket:
 
 
 BUCKETS: dict[str, Bucket] = {
-    "chat": Bucket(limit=100, window=DAY, anon_limit=20, label="chat messages"),
+    "chat": Bucket(limit=100, window=DAY, anon_limit=10, label="chat messages"),
     "interview": Bucket(limit=60, window=DAY, anon_limit=0, label="interview prep requests"),
     "job_suggest": Bucket(limit=10, window=DAY, anon_limit=0, label="job searches"),
     "job_detail": Bucket(limit=60, window=DAY, anon_limit=0, label="job analyses"),
     "resume": Bucket(limit=100, window=DAY, anon_limit=0, label="resume edits"),
     "tts": Bucket(limit=20, window=DAY, anon_limit=0, label="narrations"),
-    "upload": Bucket(limit=30, window=DAY, anon_limit=5, label="document uploads"),
+    "upload": Bucket(limit=30, window=DAY, anon_limit=2, label="document uploads"),
 }
 
 
@@ -122,7 +123,7 @@ def check(bucket_name: str, client_ip: Optional[str]) -> None:
         return
     bucket = BUCKETS[bucket_name]
     user_id = get_current_user_id()
-    signed_in = user_id != ANONYMOUS_USER_ID
+    signed_in = is_signed_in(user_id)  # guests share the per-IP signed-out limits
 
     if signed_in:
         key, limit = f"{bucket_name}:user:{user_id}", bucket.limit

@@ -766,7 +766,10 @@ export default function KnowledgePage() {
       const res = await fetch(apiUrl(`/api/v1/portfolio/${name}`), {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to delete knowledge base");
+      if (!res.ok) {
+        const detail = await res.json().then((d) => d?.detail).catch(() => "");
+        throw new Error(detail || "Failed to delete knowledge base");
+      }
 
       // Also clear progress state for this KB
       clearProgress(name);
@@ -774,7 +777,7 @@ export default function KnowledgePage() {
       fetchKnowledgeBases();
     } catch (err) {
       console.error(err);
-      showToast("Failed to delete knowledge base", "error");
+      showToast(err instanceof Error ? err.message : "Failed to delete knowledge base", "error");
     }
   };
 
@@ -882,6 +885,7 @@ export default function KnowledgePage() {
       });
 
       xhr.open("POST", apiUrl(`/api/v1/portfolio/${targetKb}/upload`));
+      xhr.withCredentials = true;
       xhr.send(formData);
     });
   };
@@ -942,6 +946,7 @@ export default function KnowledgePage() {
       });
 
       xhr.open("POST", apiUrl("/api/v1/portfolio/create"));
+      xhr.withCredentials = true;
       xhr.send(formData);
     });
   };
