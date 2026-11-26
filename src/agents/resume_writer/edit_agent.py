@@ -62,6 +62,27 @@ def save_tool_call(call_id: str, tool_type: str, data: dict[str, Any]) -> str:
     return str(filepath)
 
 
+# Keep prompts bounded: job posts scraped from boards can be very long.
+MAX_JOB_DESCRIPTION_CHARS = 12000
+
+
+def _job_summary(job: dict[str, str] | None) -> dict[str, str] | None:
+    """Title/company only, for history records (the description can be long)."""
+    if not job:
+        return None
+    return {"title": job.get("title", ""), "company": job.get("company", "")}
+
+
+def _strip_code_fence(text: str) -> str:
+    """Remove a single wrapping ```markdown fence if the model added one."""
+    stripped = text.strip()
+    if stripped.startswith("```") and stripped.endswith("```"):
+        first_newline = stripped.find("\n")
+        if first_newline != -1:
+            return stripped[first_newline + 1 : -3].strip()
+    return stripped
+
+
 class EditAgent(BaseAgent):
     """Resume writer editing agent using unified BaseAgent."""
 
@@ -89,9 +110,14 @@ class EditAgent(BaseAgent):
         action: Literal["rewrite", "shorten", "expand"] = "rewrite",
         source: Literal["rag", "web"] | None = None,
         kb_name: str | None = None,
+        job: dict[str, str] | None = None,
     ) -> dict[str, Any]:
         """
         Process edit request
+
+        Args:
+            job: Optional target job ({title, company, description}); when given,
+                the edit is tailored to that job description.
 
         Returns:
             Dict containing:
@@ -174,6 +200,9 @@ class EditAgent(BaseAgent):
             )
             user_prompt += context_template.format(context=context)
 
+        if job:
+            user_prompt += self._format_job(job)
+
         text_template = self.get_prompt(
             "user_template",
             "Target Text to Edit:\n{text}\n\nOutput only the edited text, without quotes or explanations.",
@@ -198,6 +227,7 @@ class EditAgent(BaseAgent):
             "kb_name": kb_name,
             "input": {"original_text": text, "instruction": instruction},
             "output": {"edited_text": response},
+            "job": _job_summary(job),
             "tool_call_file": tool_call_file,
             "model": self.get_model(),
         }
@@ -207,6 +237,75 @@ class EditAgent(BaseAgent):
         self.logger.info(f"Operation {operation_id} recorded successfully")
 
         return {"edited_text": response, "operation_id": operation_id}
+
+    def _format_job(self, job: dict[str, str]) -> str:
+        """Render the target job as a prompt section."""
+        template = self.get_prompt(
+            "job_template",
+            "Target Job:\nTitle: {job_title}\nCompany: {job_company}\n"
+            "Job Description:\n{job_description}\n\n",
+        )
+        return template.format(
+            job_title=job.get("title", "").strip() or "-",
+            job_company=job.get("company", "").strip() or "-",
+            job_description=(job.get("description", "").strip() or "-")[:MAX_JOB_DESCRIPTION_CHARS],
+        )
+
+    async def tailor(
+        self,
+        resume: str,
+        job: dict[str, str],
+        instruction: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        Refine the whole resume for a target job description.
+
+        Returns:
+            Dict containing:
+                - tailored_resume: The refined resume (Markdown)
+                - operation_id: Operation ID
+        """
+        operation_id = datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
+
+        system_prompt = self.get_prompt("tailor_system", "You are an expert resume writer.")
+        user_prompt = self._format_job(job)
+        if instruction and instruction.strip():
+            extra = self.get_prompt("tailor_instruction_template", "Additional Instruction: {instruction}\n\n")
+            user_prompt += extra.format(instruction=instruction.strip())
+        resume_template = self.get_prompt(
+            "tailor_user_template",
+            "Current Resume (Markdown):\n{resume}\n\nOutput only the refined resume in Markdown.",
+        )
+        user_prompt += resume_template.format(resume=resume)
+
+        self.logger.info(f"Calling LLM to tailor resume for job: {job.get('title', '')}")
+        response = await self.call_llm(
+            user_prompt=user_prompt,
+            system_prompt=system_prompt,
+            stage="tailor",
+        )
+        tailored = _strip_code_fence(response)
+
+        history = load_history()
+        history.append(
+            {
+                "id": operation_id,
+                "timestamp": datetime.now().isoformat(),
+                "action": "tailor",
+                "source": None,
+                "kb_name": None,
+                "input": {"original_text": resume, "instruction": instruction or ""},
+                "output": {"edited_text": tailored},
+                "job": _job_summary(job),
+                "tool_call_file": None,
+                "model": self.get_model(),
+            }
+        )
+        save_history(history)
+
+        self.logger.info(f"Tailor operation {operation_id} recorded successfully")
+
+        return {"tailored_resume": tailored, "operation_id": operation_id}
 
     async def auto_mark(self, text: str) -> dict[str, Any]:
         """
