@@ -331,5 +331,20 @@
   "Upload my CV": "上传我的简历",
   "Show me around": "带我看看",
   "Next": "下一步",
-  "Show the welcome guide": "查看新手引导"
+  "Show the welcome guide": "查看新手引导",
+  "Target Job": "目标职位",
+  "Job description": "职位描述",
+  "Change": "更换",
+  "Detach job": "取消关联职位",
+  "Undo": "撤销",
+  "Refine the whole resume for this job": "根据该职位优化整份简历",
+  "This job has no description. Add one on the Jobs page.": "该职位没有描述，请在职位页面添加。",
+  "Tailoring...": "优化中...",
+  "Tailor Resume": "针对职位优化",
+  "No saved jobs yet.": "还没有保存的职位。",
+  "Add a job on the Jobs page": "去职位页面添加职位",
+  "No jobs on this board": "该看板没有职位",
+  "Attach a job to tailor your resume to its description.": "关联一个职位，即可根据职位描述优化简历。",
+  "Tailor to": "针对",
+  "Failed to tailor resume": "简历优化失败"
 }

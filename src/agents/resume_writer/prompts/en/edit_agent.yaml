@@ -10,11 +10,49 @@ context_template: |
   Reference Context:
   {context}
 
+job_template: |
+  Target Job (tailor the edit to this role; mirror its keywords and priorities where they truthfully apply):
+  Title: {job_title}
+  Company: {job_company}
+  Job Description:
+  {job_description}
+
 user_template: |
   Target Text to Edit:
   {text}
 
   Output only the edited text, without quotes or explanations.
+
+tailor_system: |
+  You are an expert resume writer and ATS (Applicant Tracking System) specialist.
+  Your task is to refine a candidate's resume so it is as strong as possible for one specific job.
+
+  ## How to refine
+  1. Read the job description and identify the must-have skills, tools, responsibilities, and keywords.
+  2. Rewrite the Professional Summary so it speaks directly to this role.
+  3. Reorder and rephrase experience bullets to put the most relevant accomplishments first, using the
+     job description's terminology where it accurately describes the candidate's real experience.
+  4. Lead bullets with strong action verbs and keep quantified results.
+  5. Reorder the Skills section so the skills the job asks for come first.
+  6. Keep the resume concise; trim content that is irrelevant to this role.
+
+  ## Strict rules
+  - Never invent employers, job titles, dates, degrees, certifications, metrics, or skills the resume does not support.
+    If the job asks for something the candidate lacks, do not add it.
+  - Keep the candidate's name and contact details exactly as written.
+  - Keep placeholders (e.g. [Your Name], X%) as they are; do not fill them with made-up values.
+  - Keep standard ATS-friendly Markdown: # name, ## section headers, ### roles, "-" bullets. No tables or images.
+  - Write in the same language as the current resume.
+  - Output only the refined resume in Markdown, with no preamble, explanations, or code fences.
+
+tailor_instruction_template: |
+  Additional Instruction from the candidate: {instruction}
+
+tailor_user_template: |
+  Current Resume (Markdown):
+  {resume}
+
+  Output only the refined resume in Markdown.
 
 auto_mark_system: |
   You are a professional academic reading annotation assistant, helping readers quickly grasp the core points of text.

@@ -39,7 +39,9 @@ import {
   ChevronDown,
   ChevronRight,
   LayoutTemplate,
+  Briefcase,
 } from "lucide-react";
+import ResumeTargetJob, { TargetJob } from "@/components/ResumeTargetJob";
 import { apiUrl } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -192,6 +194,30 @@ export default function ResumeWriterEditor({
   const [backendConnected, setBackendConnected] = useState<boolean | null>(
     null,
   );
+  const [targetJob, setTargetJob] = useState<TargetJob | null>(null);
+  const [useJobContext, setUseJobContext] = useState(true);
+  const [isTailoring, setIsTailoring] = useState(false);
+  // Resume content before the last "Tailor Resume", so it can be undone
+  const [preTailorContent, setPreTailorContent] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setTargetJob(
+      loadFromStorage<TargetJob | null>(STORAGE_KEYS.RESUME_WRITER_TARGET_JOB, null),
+    );
+  }, []);
+
+  const changeTargetJob = (job: TargetJob | null) => {
+    setTargetJob(job);
+    setPreTailorContent(null);
+    saveToStorage(STORAGE_KEYS.RESUME_WRITER_TARGET_JOB, job);
+  };
+
+  const jobPayload = (job: TargetJob) => ({
+    title: job.title,
+    company: job.company,
+    description: job.description,
+  });
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -543,6 +569,9 @@ export default function ResumeWriterEditor({
       if (selectedKb && source === "rag") {
         requestBody.portfolio = selectedKb;
       }
+      if (targetJob && useJobContext) {
+        requestBody.job = jobPayload(targetJob);
+      }
 
       const res = await fetch(requestUrl, {
         method: "POST",
@@ -594,6 +623,44 @@ export default function ResumeWriterEditor({
     }
   };
 
+  const handleTailor = async () => {
+    if (!targetJob || isTailoring) return;
+    setIsTailoring(true);
+    try {
+      const res = await fetch(apiUrl("/api/v1/resume_writer/tailor"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resume: content, job: jobPayload(targetJob) }),
+      });
+      if (!res.ok) {
+        let detail = `${res.status} ${res.statusText}`;
+        try {
+          const err = await res.json();
+          if (err.detail) detail = err.detail;
+        } catch {}
+        throw new Error(detail);
+      }
+      const data = await res.json();
+      if (!data.tailored_resume) {
+        throw new Error("Invalid response: missing tailored_resume field");
+      }
+      setPreTailorContent(content);
+      setContent(data.tailored_resume);
+      fetchHistory();
+    } catch (error: any) {
+      console.error("Tailor error:", error);
+      alert(`❌ ${t("Failed to tailor resume")}: ${error.message || error}`);
+    } finally {
+      setIsTailoring(false);
+    }
+  };
+
+  const undoTailor = () => {
+    if (preTailorContent === null) return;
+    setContent(preTailorContent);
+    setPreTailorContent(null);
+  };
+
   const exportMarkdown = () => {
     const blob = new Blob([content], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
@@ -629,7 +696,16 @@ export default function ResumeWriterEditor({
   );
 
   return (
-    <div className="flex h-full gap-4">
+    <div className="flex flex-col h-full gap-4">
+    <ResumeTargetJob
+      job={targetJob}
+      onChange={changeTargetJob}
+      onTailor={handleTailor}
+      isTailoring={isTailoring}
+      canUndo={preTailorContent !== null}
+      onUndo={undoTailor}
+    />
+    <div className="flex flex-1 min-h-0 gap-4">
       {/* Left Column: Editor */}
       <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden relative">
         {/* Toolbar */}
@@ -729,6 +805,7 @@ export default function ResumeWriterEditor({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onMouseUp={handleMouseUp}
+              readOnly={isTailoring}
               className="w-full h-full min-h-full p-4 resize-none outline-none font-mono text-sm leading-relaxed text-slate-800 dark:text-slate-200 bg-transparent placeholder-slate-400 dark:placeholder-slate-500 overflow-y-auto"
               placeholder={t("Edit your resume here...")}
               style={{ minHeight: "100%" }}
@@ -806,6 +883,23 @@ export default function ResumeWriterEditor({
                 </div>
               </div>
               {/* )} */}
+
+              {/* Target job context */}
+              {targetJob && (
+                <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useJobContext}
+                    onChange={(e) => setUseJobContext(e.target.checked)}
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <Briefcase className="w-3 h-3 text-indigo-500" />
+                  <span className="truncate">
+                    {t("Tailor to")} {targetJob.title}
+                    {targetJob.company ? ` — ${targetJob.company}` : ""}
+                  </span>
+                </label>
+              )}
 
               {/* KB Selector if Portfolio */}
               {source === "rag" && kbs.length > 0 && (
@@ -1009,6 +1103,7 @@ export default function ResumeWriterEditor({
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
