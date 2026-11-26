@@ -92,7 +92,7 @@ interface ResumeWriterOperation {
 }
 
 export default function HistoryPage() {
-  const { uiSettings, loadChatSession } = useGlobal();
+  const { loadChatSession } = useGlobal();
   const { t } = useTranslation();
   const { trackEvent } = useAnalytics();
   const router = useRouter();
@@ -365,8 +365,7 @@ export default function HistoryPage() {
                             <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {formatDate(
-                                new Date(session.updated_at * 1000),
-                                uiSettings.language,
+                                new Date(session.updated_at * 1000)
                               )}
                             </span>
                           </div>
@@ -462,8 +461,7 @@ export default function HistoryPage() {
                             <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {formatDate(
-                                new Date(session.updated_at * 1000),
-                                uiSettings.language,
+                                new Date(session.updated_at * 1000)
                               )}
                             </span>
                           </div>
@@ -574,8 +572,7 @@ export default function HistoryPage() {
                               <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {formatDate(
-                                  new Date(session.updated_at * 1000),
-                                  uiSettings.language,
+                                  new Date(session.updated_at * 1000)
                                 )}
                               </span>
                             </div>
@@ -678,8 +675,7 @@ export default function HistoryPage() {
                             <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {formatDate(
-                                new Date(operation.timestamp),
-                                uiSettings.language,
+                                new Date(operation.timestamp)
                               )}
                             </span>
                           </div>
@@ -853,8 +849,7 @@ export default function HistoryPage() {
                     )}
                     <span className="text-xs text-slate-400">
                       {formatDate(
-                        new Date((jobSuggestDetail.created_at || 0) * 1000),
-                        uiSettings.language,
+                        new Date((jobSuggestDetail.created_at || 0) * 1000)
                       )}
                     </span>
                   </div>
@@ -942,8 +937,7 @@ export default function HistoryPage() {
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-xs text-slate-400">
                       {formatDate(
-                        new Date(resumeOperationDetail.timestamp),
-                        uiSettings.language,
+                        new Date(resumeOperationDetail.timestamp)
                       )}
                     </span>
                     {resumeOperationDetail.model && (

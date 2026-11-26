@@ -45,7 +45,6 @@ The template is `.env.example`. In Docker, the whole file is passed to the conta
 
 ## `config/main.yaml`
 
-- **`system.language`**: `en` or `zh`. Sets the prompt language.
 - **`paths.*`**: `user_data_dir` (`data/user`), `portfolios_dir` (`data/portfolios`), `user_log_dir`. Per-user data lives in `data/user/accounts/<uid>/` and `data/portfolios/users/<uid>/` (see [architecture.md](architecture.md#per-user-data)).
 - **`tools.*`**: tool switches and defaults.
   - `rag_tool.kb_base_dir`: where portfolios live
@@ -72,4 +71,4 @@ Currently Interview Prep, Job Suggestions, Resume Writer and Settings require si
 
 ## Settings page
 
-`/settings` changes the theme, language and sidebar order. The `/api/v1/settings` API saves them to `data/user/settings/interface.json`. That one file is shared by every user of the instance, not stored per user. The page also shows the active LLM, embedding and TTS configuration and can test connections (`/api/v1/config`).
+`/settings` changes the theme and sidebar order. The `/api/v1/settings` API saves them to `data/user/settings/interface.json`. That one file is shared by every user of the instance, not stored per user. The page also shows the active LLM, embedding and TTS configuration and can test connections (`/api/v1/config`).

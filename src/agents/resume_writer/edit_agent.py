@@ -86,12 +86,9 @@ def _strip_code_fence(text: str) -> str:
 class EditAgent(BaseAgent):
     """Resume writer editing agent using unified BaseAgent."""
 
-    def __init__(self, language: str = "en"):
+    def __init__(self):
         """
         Initialize EditAgent.
-
-        Args:
-            language: Language setting ('en' | 'zh'), default 'en'
 
         Note: LLM configuration (api_key, base_url, model, etc.) is loaded
         automatically from the unified config service. Use refresh_config()
@@ -100,7 +97,6 @@ class EditAgent(BaseAgent):
         super().__init__(
             module_name="resume_writer",
             agent_name="edit_agent",
-            language=language,
         )
 
     async def process(

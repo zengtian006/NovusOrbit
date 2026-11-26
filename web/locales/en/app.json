@@ -1,6 +1,4 @@
 {
-  "language.english": "English",
-  "language.chinese": "中文",
   "questions": "questions",
   "extended": "extended",
   "round": "round",
@@ -304,7 +302,6 @@
   "A quick tour of how NovusOrbit helps you land your next role. It takes under a minute.": "A quick tour of how NovusOrbit helps you land your next role. It takes under a minute.",
   "Answers grounded in your own CV": "Answers grounded in your own CV",
   "Interview practice for the jobs you want": "Interview practice for the jobs you want",
-  "Free, in English and Chinese": "Free, in English and Chinese",
   "Step 1 · Start here": "Step 1 · Start here",
   "Upload your CV to My Portfolio": "Upload your CV to My Portfolio",
   "Add your resume, plus certificates or project write-ups if you have them. Every feature uses this to give advice that's about you, not generic tips.": "Add your resume, plus certificates or project write-ups if you have them. Every feature uses this to give advice that's about you, not generic tips.",

@@ -40,7 +40,6 @@ class ChatAgent(BaseAgent):
 
     def __init__(
         self,
-        language: str = "zh",
         config: dict[str, Any] | None = None,
         max_history_tokens: int | None = None,
         **kwargs,
@@ -49,7 +48,6 @@ class ChatAgent(BaseAgent):
         Initialize ChatAgent.
 
         Args:
-            language: Language setting ('zh' | 'en')
             config: Optional configuration dictionary
             max_history_tokens: Maximum tokens for conversation history
             **kwargs: Additional arguments passed to BaseAgent
@@ -57,7 +55,6 @@ class ChatAgent(BaseAgent):
         super().__init__(
             module_name="chat",
             agent_name="chat_agent",
-            language=language,
             config=config,
             **kwargs,
         )
@@ -170,9 +167,6 @@ class ChatAgent(BaseAgent):
         "workplace", "work-life", "remote work", "freelance", "startup",
         "industry", "mentor", "coach", "transition", "layoff", "fired",
         "resign", "quit", "onboarding", "performance review",
-        # Chinese equivalents
-        "简历", "面试", "求职", "职业", "薪资", "晋升", "技能", "招聘",
-        "工作", "岗位", "离职", "跳槽", "职场", "人脉", "实习",
     }
 
     def _quick_career_check(self, message: str) -> bool:

@@ -17,7 +17,7 @@ JOB = {
 @pytest.fixture
 def agent(monkeypatch, tmp_path):
     monkeypatch.setattr(ea, "resume_writer_dir", lambda: tmp_path)
-    a = EditAgent(language="en")
+    a = EditAgent()
     calls = []
 
     async def fake_call_llm(user_prompt, system_prompt, stage, **_):

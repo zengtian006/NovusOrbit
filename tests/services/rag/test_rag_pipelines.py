@@ -3,15 +3,15 @@
 RAG Pipeline Integration Tests
 ==============================
 
-测试所有RAG pipeline的完整功能：
-- 知识库初始化（文档处理）
-- 检索/搜索功能
-- 删除知识库
+End-to-end tests for every RAG pipeline:
+- Knowledge base initialization (document processing)
+- Retrieval / search
+- Knowledge base deletion
 
-运行方式：
+Run with:
     python -m pytest tests/services/rag/test_rag_pipelines.py -v
 
-或直接运行：
+Or directly:
     python tests/services/rag/test_rag_pipelines.py
 """
 

@@ -213,7 +213,7 @@ const STEPS: Step[] = [
     points: [
       "Answers grounded in your own CV",
       "Interview practice for the jobs you want",
-      "Free, in English and Chinese",
+      "Free to use",
     ],
     art: WelcomeArt,
   },

@@ -14,7 +14,7 @@ Each takes about 10 minutes and gives you a backlink (good for SEO) plus a trick
 Free AI career assistant: interview prep, resume rewrites and job matches personalized from your CV.
 
 **Medium description (~ 300 characters):**
-NovusOrbit is a free AI career assistant. Upload your CV once, then get interview questions and personalized answers for the job you want, AI resume rewrites with PDF export, ranked job matches from Indeed and LinkedIn, and a tracker for every application. Open source, in English and Chinese.
+NovusOrbit is a free AI career assistant. Upload your CV once, then get interview questions and personalized answers for the job you want, AI resume rewrites with PDF export, ranked job matches from Indeed and LinkedIn, and a tracker for every application. Open source.
 
 **Long description:**
 Job hunting usually means re-explaining your background to every tool. NovusOrbit reads your CV and documents once and uses them everywhere:
