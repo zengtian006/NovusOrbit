@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { apiUrl } from "@/lib/api";
 import { JOURNEY_REFRESH_EVENT, JourneyStepId } from "@/lib/journey";
 
@@ -53,6 +54,43 @@ async function fetchProgress(): Promise<Progress> {
   };
 }
 
+const FUNNEL_SENT_KEY = "novusorbit-funnel-sent";
+
+/**
+ * Record each journey step the first time a signed-in user has completed it, as
+ * a "funnel" analytics event (deduplicated per user on the server). Admin →
+ * Analytics joins these with sign-up sources to show which channel brings
+ * users who actually upload a CV and go further.
+ */
+function reportFunnel(userId: string, progress: Progress) {
+  let sent: Record<string, boolean> = {};
+  try {
+    sent = JSON.parse(localStorage.getItem(`${FUNNEL_SENT_KEY}:${userId}`) || "{}");
+  } catch {
+    // Storage unavailable: the server deduplicates anyway.
+  }
+  for (const step of Object.keys(progress) as JourneyStepId[]) {
+    if (!progress[step] || sent[step]) continue;
+    fetch("/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "funnel", feature: step }),
+    })
+      .then((res) => {
+        if (!res.ok) return;
+        sent[step] = true;
+        try {
+          localStorage.setItem(`${FUNNEL_SENT_KEY}:${userId}`, JSON.stringify(sent));
+        } catch {
+          // ignore
+        }
+      })
+      .catch(() => {
+        // Retry on a later page view.
+      });
+  }
+}
+
 /**
  * Works out which journey steps the user has done, from data they already have
  * on the server (CV uploaded, chats, saved jobs, tailored resumes, interview
@@ -62,6 +100,8 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [progress, setProgress] = useState<Progress>(EMPTY);
   const [loaded, setLoaded] = useState(false);
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +118,10 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener(JOURNEY_REFRESH_EVENT, load);
     };
   }, [pathname]);
+
+  useEffect(() => {
+    if (loaded && userId) reportFunnel(userId, progress);
+  }, [loaded, userId, progress]);
 
   return <JourneyContext.Provider value={{ progress, loaded }}>{children}</JourneyContext.Provider>;
 }

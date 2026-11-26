@@ -27,6 +27,21 @@ export async function POST(request: Request) {
             );
         }
 
+        // Funnel milestones and the acquisition source count once per user
+        if (action === "funnel" || action === "acquisition") {
+            const existing = await prisma.userAnalytics.findFirst({
+                where: {
+                    userId: session.user.id!,
+                    action,
+                    ...(action === "funnel" ? { feature } : {}),
+                },
+                select: { id: true },
+            });
+            if (existing) {
+                return NextResponse.json({ success: true, id: existing.id, duplicate: true });
+            }
+        }
+
         // Create analytics record
         const analytics = await prisma.userAnalytics.create({
             data: {

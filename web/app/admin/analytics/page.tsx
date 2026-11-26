@@ -20,6 +20,15 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+const FUNNEL_COLUMNS = [
+    { id: "cv", label: "CV uploaded" },
+    { id: "ask", label: "Asked" },
+    { id: "find", label: "Found jobs" },
+    { id: "save", label: "Saved job" },
+    { id: "tailor", label: "Tailored" },
+    { id: "interview", label: "Interview prep" },
+];
+
 interface DashboardData {
     summary: {
         totalEvents: number;
@@ -28,6 +37,7 @@ interface DashboardData {
     };
     featureStats: Array<{ feature: string; count: number }>;
     sourceStats?: Array<{ source: string; count: number }>;
+    funnelBySource?: Array<{ channel: string; signups: number; steps: Record<string, number> }>;
     actionStats: Array<{ action: string; count: number }>;
     dailyData: Array<{ date: string; count: number }>;
     topUsers: Array<{ userId: string; userEmail: string | null; eventCount: number }>;
@@ -351,6 +361,54 @@ export default function AdminAnalyticsPage() {
                         </div>
                     ) : (
                         <p className="text-sm text-slate-500 dark:text-slate-400">No sign-ups with a recorded source in this period yet.</p>
+                    )}
+                </div>
+
+                {/* Funnel by channel: compare paid and free channels on activation, not clicks */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        Funnel by Channel
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                        Users who signed up in this period, by source / campaign, and how many reached each step.
+                        Divide a channel&apos;s spend by its CV uploads to get cost per activated user.
+                    </p>
+                    {data.funnelBySource && data.funnelBySource.length > 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+                                        <th className="py-2 pr-4 font-medium">Channel</th>
+                                        <th className="py-2 px-2 font-medium text-right">Sign-ups</th>
+                                        {FUNNEL_COLUMNS.map((c) => (
+                                            <th key={c.id} className="py-2 px-2 font-medium text-right whitespace-nowrap">{c.label}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.funnelBySource.map((row) => (
+                                        <tr key={row.channel} className="border-b border-slate-100 dark:border-slate-700/50">
+                                            <td className="py-2 pr-4 text-slate-800 dark:text-slate-200 whitespace-nowrap">{row.channel}</td>
+                                            <td className="py-2 px-2 text-right font-semibold text-slate-900 dark:text-white">{row.signups}</td>
+                                            {FUNNEL_COLUMNS.map((c) => {
+                                                const n = row.steps[c.id] ?? 0;
+                                                return (
+                                                    <td key={c.id} className="py-2 px-2 text-right tabular-nums text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                                                        {n}
+                                                        <span className="ml-1 text-xs text-slate-400">
+                                                            {row.signups ? `${Math.round((n / row.signups) * 100)}%` : ""}
+                                                        </span>
+                                                    </td>
+                                                );
+                                            })}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">No sign-ups in this period yet.</p>
                     )}
                 </div>
 
