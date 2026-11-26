@@ -1,81 +1,140 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import {
-  Home,
   MessageCircle,
-  MessageSquare,
   History,
-  Briefcase,
-  BookmarkCheck,
   Settings,
-  Compass,
   ChevronsLeft,
   ChevronsRight,
-  GripVertical,
   LucideIcon,
   LogOut,
   LogIn,
   Crown,
-  FileText,
   Sun,
   Moon,
   BarChart3,
   CircleHelp,
+  Check,
+  Lock,
 } from "lucide-react";
 import { useGlobal } from "@/context/GlobalContext";
 import FeedbackModal from "@/components/FeedbackModal";
 import { Logo, LogoMark } from "@/components/Logo";
 import { OPEN_GUIDE_EVENT } from "@/components/WelcomeGuide";
+import { useJourney } from "@/components/JourneyProvider";
+import { JOURNEY_STEPS } from "@/lib/journey";
 
 const SIDEBAR_EXPANDED_WIDTH = 256;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
 
-// Navigation item type
-interface NavItem {
-  name: string;
+/** One sidebar entry; journey steps get a numbered badge that turns into a check when done. */
+function NavLink({
+  href,
+  label,
+  icon: Icon,
+  badge,
+  done,
+  isLast,
+  locked,
+  pathname,
+  sidebarCollapsed,
+  showTooltip,
+  setShowTooltip,
+  onNavigate,
+}: {
   href: string;
+  label: string;
   icon: LucideIcon;
+  badge?: number;
+  done?: boolean;
+  isLast?: boolean;
+  locked?: boolean;
+  pathname: string | null;
+  sidebarCollapsed: boolean;
+  showTooltip: string | null;
+  setShowTooltip: (v: string | null) => void;
+  onNavigate: (href: string) => void;
+}) {
+  const isActive = pathname === href;
+  return (
+    <div className="group relative">
+      {/* Connector line between journey steps */}
+      {badge !== undefined && !isLast && !sidebarCollapsed && (
+        <span
+          className={`absolute left-[19px] top-8 h-[calc(100%-20px)] w-px ${done ? "bg-emerald-300 dark:bg-emerald-800" : "bg-slate-200 dark:bg-slate-700"}`}
+          aria-hidden
+        />
+      )}
+      <Link
+        href={href}
+        aria-current={isActive ? "page" : undefined}
+        className={`relative flex items-center rounded-md transition-all duration-200 ${sidebarCollapsed ? "justify-center p-2" : "gap-2.5 pl-2 pr-2 py-2"} ${
+          isActive
+            ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
+            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+        }`}
+        onClick={() => onNavigate(href)}
+        onMouseEnter={() => sidebarCollapsed && setShowTooltip(href)}
+        onMouseLeave={() => setShowTooltip(null)}
+      >
+        {badge !== undefined ? (
+          <span
+            className={`relative z-10 w-6 h-6 flex-shrink-0 rounded-full flex items-center justify-center text-[11px] font-semibold ring-2 ring-white dark:ring-slate-900 ${
+              isActive
+                ? "bg-indigo-600 text-white"
+                : done
+                  ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+            }`}
+          >
+            {done && !isActive ? <Check className="w-3.5 h-3.5" /> : badge}
+          </span>
+        ) : (
+          <Icon
+            className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500"}`}
+          />
+        )}
+        <span
+          className={`font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}
+        >
+          {label}
+        </span>
+        {locked && !sidebarCollapsed && (
+          <span title="Sign in to use" className="flex-shrink-0">
+            <Lock className="w-3 h-3 text-slate-300 dark:text-slate-600" />
+          </span>
+        )}
+        {badge !== undefined && !sidebarCollapsed && (
+          <Icon
+            className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-indigo-500 dark:text-indigo-400" : "text-slate-300 dark:text-slate-600 group-hover:text-slate-400"}`}
+          />
+        )}
+      </Link>
+      {sidebarCollapsed && showTooltip === href && (
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
+          {badge !== undefined ? `${badge}. ${label}` : label}
+          <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
+        </div>
+      )}
+    </div>
+  );
 }
-
-// All available navigation items (static reference)
-const ALL_NAV_ITEMS: Record<string, { icon: LucideIcon; nameKey: string }> = {
-  "/": { icon: Home, nameKey: "Home" },
-  "/history": { icon: History, nameKey: "History" },
-  "/portfolio": { icon: Briefcase, nameKey: "My Portfolio" },
-  "/jobs": { icon: BookmarkCheck, nameKey: "Interested Jobs" },
-  "/interview": { icon: MessageSquare, nameKey: "Interview Prep" },
-  "/job-suggest": { icon: Compass, nameKey: "Job Suggestions" },
-  "/resume-writer": { icon: FileText, nameKey: "Resume Writer" },
-};
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const {
-    sidebarCollapsed,
-    toggleSidebar,
-    sidebarNavOrder,
-    setSidebarNavOrder,
-    uiSettings,
-    updateTheme,
-  } = useGlobal();
+  const { sidebarCollapsed, toggleSidebar, uiSettings, updateTheme, pageSettings } = useGlobal();
+  const { progress } = useJourney();
   const { t } = useTranslation();
 
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-
-  // Drag and drop state
-  const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  const [dragOverItem, setDragOverItem] = useState<string | null>(null);
-  const [dragGroup, setDragGroup] = useState<"essential" | "advanced" | null>(
-    null,
-  );
 
   // Track analytics
   const trackAnalytics = async (feature: string, action: string = "navigate") => {
@@ -100,97 +159,14 @@ export default function Sidebar() {
     }
   };
 
-  // Build navigation items from saved order - defined inside useMemo to properly capture dependencies
-  const navGroups = useMemo(() => {
-    const buildNavItems = (hrefs: string[]): NavItem[] => {
-      return hrefs
-        .filter((href) => ALL_NAV_ITEMS[href])
-        .map((href) => ({
-          name: t(ALL_NAV_ITEMS[href].nameKey),
-          href,
-          icon: ALL_NAV_ITEMS[href].icon,
-        }));
-    };
+  const doneCount = JOURNEY_STEPS.filter((st) => progress[st.id]).length;
 
-    return [
-      {
-        id: "essential" as const,
-        name: t("Essential Tools"),
-        items: buildNavItems(sidebarNavOrder.essential),
-      },
-      {
-        id: "advanced" as const,
-        name: t("Advanced Tools"),
-        items: buildNavItems(sidebarNavOrder.advanced),
-      },
-    ];
-  }, [sidebarNavOrder, t]);
-
-  // Drag and drop handlers
-  const handleDragStart = (
-    e: React.DragEvent,
-    href: string,
-    groupId: "essential" | "advanced",
-  ) => {
-    setDraggedItem(href);
-    setDragGroup(groupId);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", href);
-  };
-
-  const handleDragOver = (
-    e: React.DragEvent,
-    href: string,
-    groupId: "essential" | "advanced",
-  ) => {
-    e.preventDefault();
-    if (dragGroup !== groupId) return; // Only allow drag within same group
-    if (draggedItem !== href) {
-      setDragOverItem(href);
-    }
-  };
-
-  const handleDragLeave = () => {
-    setDragOverItem(null);
-  };
-
-  const handleDrop = (
-    e: React.DragEvent,
-    targetHref: string,
-    groupId: "essential" | "advanced",
-  ) => {
-    e.preventDefault();
-    if (!draggedItem || dragGroup !== groupId) return;
-
-    const groupKey = groupId;
-    const currentOrder = [...sidebarNavOrder[groupKey]];
-    const draggedIndex = currentOrder.indexOf(draggedItem);
-    const targetIndex = currentOrder.indexOf(targetHref);
-
-    if (
-      draggedIndex !== -1 &&
-      targetIndex !== -1 &&
-      draggedIndex !== targetIndex
-    ) {
-      // Remove dragged item and insert at new position
-      currentOrder.splice(draggedIndex, 1);
-      currentOrder.splice(targetIndex, 0, draggedItem);
-
-      setSidebarNavOrder({
-        ...sidebarNavOrder,
-        [groupKey]: currentOrder,
-      });
-    }
-
-    setDraggedItem(null);
-    setDragOverItem(null);
-    setDragGroup(null);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedItem(null);
-    setDragOverItem(null);
-    setDragGroup(null);
+  const navProps = {
+    pathname,
+    sidebarCollapsed,
+    showTooltip,
+    setShowTooltip,
+    onNavigate: (href: string) => trackAnalytics(href, "navigate"),
   };
 
   const currentWidth = sidebarCollapsed
@@ -208,105 +184,45 @@ export default function Sidebar() {
           {sidebarCollapsed ? <LogoMark size={30} /> : <Logo size={28} />}
         </Link>
       </div>
-      {/* Navigation */}
-      <nav
-        className={`flex-1 overflow-y-auto py-2 space-y-4 transition-all duration-300 ${sidebarCollapsed ? "px-2" : "px-2"
-          }`}
-      >
-        {navGroups.map((group, idx) => (
-          <div key={group.id}>
-            {/* Group title - only show when expanded */}
-            <div
-              className={`text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 truncate transition-all duration-300 ${sidebarCollapsed
-                ? "opacity-0 h-0 overflow-hidden px-0"
-                : "opacity-100 px-1"
-                }`}
-            >
-              {group.name}
-            </div>
-            <div className="space-y-1">
-              {group.items.map((item) => {
-                const isActive = pathname === item.href;
-                const isDragging = draggedItem === item.href;
-                const isDragOver =
-                  dragOverItem === item.href && dragGroup === group.id;
-
-                return (
-                  <div
-                    key={item.href}
-                    draggable={!sidebarCollapsed}
-                    onDragStart={(e) =>
-                      !sidebarCollapsed &&
-                      handleDragStart(e, item.href, group.id)
-                    }
-                    onDragOver={(e) =>
-                      !sidebarCollapsed &&
-                      handleDragOver(e, item.href, group.id)
-                    }
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) =>
-                      !sidebarCollapsed && handleDrop(e, item.href, group.id)
-                    }
-                    onDragEnd={handleDragEnd}
-                    className={`group relative ${isDragging ? "opacity-50" : ""} ${isDragOver ? "border-t-2 border-indigo-500" : ""
-                      }`}
-                  >
-                    <Link
-                      href={item.href}
-                      className={`flex items-center rounded-md border transition-all duration-200 ${sidebarCollapsed
-                        ? "justify-center p-2"
-                        : "gap-2.5 pl-2 pr-1.5 py-2"
-                        } ${isActive
-                          ? "bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-transparent"
-                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 border-transparent"
-                        }`}
-                      onClick={() => trackAnalytics(item.href, "navigate")}
-                      onMouseEnter={() =>
-                        sidebarCollapsed && setShowTooltip(item.href)
-                      }
-                      onMouseLeave={() => setShowTooltip(null)}
-                    >
-                      <item.icon
-                        className={`w-5 h-5 flex-shrink-0 transition-colors ${isActive
-                          ? "text-indigo-600 dark:text-indigo-400"
-                          : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"
-                          }`}
-                      />
-                      <span
-                        className={`font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300 ${sidebarCollapsed
-                          ? "opacity-0 w-0 overflow-hidden"
-                          : "opacity-100"
-                          }`}
-                      >
-                        {item.name}
-                      </span>
-                      {/* Drag handle - only show when expanded and hovering, now on right */}
-                      <div
-                        className={`flex-shrink-0 transition-all duration-300 ${sidebarCollapsed
-                          ? "w-0 opacity-0 overflow-hidden"
-                          : "opacity-0 group-hover:opacity-100"
-                          }`}
-                      >
-                        <GripVertical className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 cursor-grab active:cursor-grabbing" />
-                      </div>
-                    </Link>
-                    {/* Tooltip for collapsed state */}
-                    {sidebarCollapsed && showTooltip === item.href && (
-                      <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none">
-                        {item.name}
-                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900 dark:border-r-slate-700" />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {/* Divider between groups in collapsed mode */}
-            {sidebarCollapsed && idx < navGroups.length - 1 && (
-              <div className="h-px bg-slate-200 dark:bg-slate-700 my-2 mx-1" />
-            )}
+      {/* Navigation: the job-search journey, in order */}
+      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-5">
+        <div>
+          <div
+            className={`flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-1 transition-all duration-300 ${sidebarCollapsed ? "opacity-0 h-0 overflow-hidden" : "opacity-100"}`}
+          >
+            <span className="truncate">{t("Your job search")}</span>
+            <span className="normal-case font-semibold text-slate-400 dark:text-slate-500">
+              {doneCount}/{JOURNEY_STEPS.length}
+            </span>
           </div>
-        ))}
+          <ol className="relative space-y-0.5">
+            {JOURNEY_STEPS.map((step, i) => (
+              <li key={step.href}>
+                <NavLink
+                  href={step.href}
+                  label={t(step.label)}
+                  icon={step.icon}
+                  badge={i + 1}
+                  done={progress[step.id]}
+                  isLast={i === JOURNEY_STEPS.length - 1}
+                  locked={status !== "authenticated" && !!pageSettings?.[step.href]?.requireSSO}
+                  {...navProps}
+                />
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div>
+          {sidebarCollapsed ? (
+            <div className="h-px bg-slate-200 dark:bg-slate-700 my-2 mx-1" />
+          ) : (
+            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-1 truncate">
+              {t("More")}
+            </div>
+          )}
+          <NavLink href="/history" label={t("History")} icon={History} {...navProps} />
+        </div>
       </nav>
 
       {/* Footer */}

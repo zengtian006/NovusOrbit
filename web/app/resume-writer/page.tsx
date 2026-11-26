@@ -37,7 +37,7 @@ export default function ResumeWriterPage() {
   }, [status, router, pageSettings]);
 
   return (
-    <div className="h-screen animate-fade-in flex flex-col p-6">
+    <div className="h-full animate-fade-in flex flex-col p-6">
       {/* Header */}
       <div className="mb-4 shrink-0">
         <PageHeader icon={FileText} title={t("Resume Writer")} description={t("AI-powered resume editor to enhance your professional documents and optimize for ATS systems.")} />
