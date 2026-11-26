@@ -48,7 +48,6 @@ Other platform features:
 - Google sign-in, with per-page sign-in requirements set in `config/page_settings.yaml`
 - Admin pages for user roles and usage analytics
 - Send Feedback form (emails the team over SMTP)
-- English and Chinese UI
 - Light and dark themes
 
 ## Architecture at a glance
@@ -109,7 +108,7 @@ src/
 web/              Next.js 16 app (App Router), NextAuth, Prisma schema, i18n locales
 config/           main.yaml, agents.yaml, page_settings.yaml
 scripts/          start_web.py (local runner), install helpers, migrations, prompt audits
-marketing/        Launch kit: posts for HN, Product Hunt, Reddit, LinkedIn, Chinese channels; directories; outreach
+marketing/        Launch kit: posts for HN, Product Hunt, Reddit, LinkedIn; directories; outreach
 terraform-ec2/    AWS infrastructure (EC2, Elastic IP, Route53, ECR, Secrets Manager) and deploy.sh
 tests/            pytest suites (prompts, RAG pipelines)
 data/             Runtime data (portfolios, user data). Not baked into the image.

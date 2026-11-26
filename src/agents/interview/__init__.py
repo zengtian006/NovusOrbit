@@ -10,7 +10,7 @@ This module provides:
 Usage:
     from src.agents.interview import InterviewAgent
 
-    agent = InterviewAgent(language="en")
+    agent = InterviewAgent()
     questions = await agent.generate_questions(
         job_title="Software Engineer",
         company="Google",

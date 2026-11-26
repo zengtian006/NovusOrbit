@@ -10,9 +10,6 @@ Use these so Admin → Analytics (and Google Search Console / any analytics you 
 | Reddit r/opensource | https://www.novusorbit.com/?utm_source=reddit&utm_medium=social&utm_campaign=opensource |
 | LinkedIn launch | https://www.novusorbit.com/?utm_source=linkedin&utm_medium=social&utm_campaign=launch |
 | LinkedIn guide post | https://www.novusorbit.com/guides/star-method-interview-answers?utm_source=linkedin&utm_medium=social&utm_campaign=guide |
-| V2EX | https://www.novusorbit.com/?utm_source=v2ex&utm_medium=social&utm_campaign=launch |
-| 小红书 | https://www.novusorbit.com/?utm_source=xiaohongshu&utm_medium=social&utm_campaign=launch |
-| 知乎 | https://www.novusorbit.com/?utm_source=zhihu&utm_medium=social&utm_campaign=answer |
 | GitHub README | https://www.novusorbit.com/?utm_source=github&utm_medium=referral&utm_campaign=readme |
 | Directories | https://www.novusorbit.com/?utm_source=DIRECTORY_NAME&utm_medium=directory&utm_campaign=listing |
 | Outreach email | https://www.novusorbit.com/features?utm_source=email&utm_medium=outreach&utm_campaign=ORG_NAME |

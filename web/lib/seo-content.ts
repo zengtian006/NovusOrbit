@@ -321,10 +321,6 @@ export const FEATURES: Feature[] = [
         title: "Current information",
         body: "Optional web search brings in up-to-date context such as company or industry news.",
       },
-      {
-        title: "English and Chinese",
-        body: "Use the interface in English or Chinese.",
-      },
     ],
     faqs: [
       {

@@ -25,9 +25,6 @@ import {
 } from "@/lib/persistence";
 import { debounce } from "@/lib/debounce";
 
-// Language storage key
-const LANGUAGE_STORAGE_KEY = "novusorbit-language";
-
 // --- Types ---
 // Chat Types
 interface ChatSource {
@@ -68,10 +65,9 @@ interface GlobalContextType {
   newChatSession: () => void;
 
   // UI Settings
-  uiSettings: { theme: "light" | "dark"; language: "en" | "zh" };
+  uiSettings: { theme: "light" | "dark" };
   refreshSettings: () => Promise<void>;
   updateTheme: (theme: "light" | "dark") => Promise<void>;
-  updateLanguage: (language: "en" | "zh") => Promise<void>;
 
   // Sidebar
   sidebarWidth: number;
@@ -113,8 +109,7 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
   // --- UI Settings Logic ---
   const [uiSettings, setUiSettings] = useState<{
     theme: "light" | "dark";
-    language: "en" | "zh";
-  }>({ theme: "light", language: "en" });
+  }>({ theme: "light" });
 
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -125,16 +120,8 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         const serverTheme = data.ui?.theme || "light";
-        const serverLanguage = data.ui?.language || "en";
-        setUiSettings({
-          theme: serverTheme,
-          language: serverLanguage,
-        });
+        setUiSettings({ theme: serverTheme });
         setTheme(serverTheme);
-        // Sync to localStorage as cache
-        if (typeof window !== "undefined") {
-          localStorage.setItem(LANGUAGE_STORAGE_KEY, serverLanguage);
-        }
         return;
       }
     } catch (e) {
@@ -146,16 +133,8 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
 
     // Fallback to localStorage
     const storedTheme = getStoredTheme();
-    const storedLanguage =
-      typeof window !== "undefined"
-        ? (localStorage.getItem(LANGUAGE_STORAGE_KEY) as "en" | "zh") || "en"
-        : "en";
-
     const themeToUse = storedTheme || "light";
-    setUiSettings({
-      theme: themeToUse,
-      language: storedLanguage,
-    });
+    setUiSettings({ theme: themeToUse });
     setTheme(themeToUse);
   };
 
@@ -176,39 +155,12 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateLanguage = async (newLanguage: "en" | "zh") => {
-    // Update UI immediately
-    setUiSettings((prev) => ({ ...prev, language: newLanguage }));
-    if (typeof window !== "undefined") {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, newLanguage);
-    }
-
-    // Persist to backend
-    try {
-      await fetch(apiUrl("/api/v1/settings/language"), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ language: newLanguage }),
-      });
-    } catch (e) {
-      console.warn("Failed to save language to server:", e);
-    }
-  };
-
   useEffect(() => {
     // Initialize settings on first render
     if (!isInitialized) {
       // First apply localStorage theme immediately to avoid flash
       const initialTheme = initializeTheme();
-      const storedLanguage =
-        typeof window !== "undefined"
-          ? (localStorage.getItem(LANGUAGE_STORAGE_KEY) as "en" | "zh") || "en"
-          : "en";
-
-      setUiSettings({
-        theme: initialTheme,
-        language: storedLanguage,
-      });
+      setUiSettings({ theme: initialTheme });
       setIsInitialized(true);
 
       // Then async load from server (which may override)
@@ -694,7 +646,6 @@ export function GlobalProvider({ children }: { children: React.ReactNode }) {
         uiSettings,
         refreshSettings,
         updateTheme,
-        updateLanguage,
         sidebarWidth,
         setSidebarWidth,
         sidebarCollapsed,

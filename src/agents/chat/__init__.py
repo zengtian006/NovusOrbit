@@ -8,7 +8,7 @@ This module provides:
 Usage:
     from src.agents.chat import ChatAgent, SessionManager
 
-    agent = ChatAgent(language="en")
+    agent = ChatAgent()
     response = await agent.process(
         message="What is machine learning?",
         history=[],

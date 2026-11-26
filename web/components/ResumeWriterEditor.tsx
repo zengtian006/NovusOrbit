@@ -42,6 +42,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import ResumeTargetJob, { TargetJob } from "@/components/ResumeTargetJob";
+import { readJobParams, refreshJourney } from "@/lib/journey";
 import { apiUrl } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -205,6 +206,26 @@ export default function ResumeWriterEditor({
     setTargetJob(
       loadFromStorage<TargetJob | null>(STORAGE_KEYS.RESUME_WRITER_TARGET_JOB, null),
     );
+    // Opened from Saved Jobs ("Tailor Resume"): attach that job.
+    const params = readJobParams();
+    if (!params) return;
+    fetch(apiUrl(`/api/v1/jobs/${params.boardId}`))
+      .then((res) => (res.ok ? res.json() : null))
+      .then((board) => {
+        const entry = board?.jobs?.find((j: any) => j.id === params.jobId);
+        if (!entry) return;
+        const job: TargetJob = {
+          id: entry.id,
+          board_id: params.boardId,
+          title: entry.title,
+          company: entry.company,
+          location: entry.location || "",
+          description: entry.description || "",
+        };
+        setTargetJob(job);
+        saveToStorage(STORAGE_KEYS.RESUME_WRITER_TARGET_JOB, job);
+      })
+      .catch(() => {});
   }, []);
 
   const changeTargetJob = (job: TargetJob | null) => {
@@ -647,6 +668,7 @@ export default function ResumeWriterEditor({
       setPreTailorContent(content);
       setContent(data.tailored_resume);
       fetchHistory();
+      refreshJourney();
     } catch (error: any) {
       console.error("Tailor error:", error);
       alert(`❌ ${t("Failed to tailor resume")}: ${error.message || error}`);

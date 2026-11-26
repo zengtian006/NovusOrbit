@@ -42,7 +42,7 @@ export function WebSiteStructuredData() {
         name: SITE_NAME,
         url: SITE_URL,
         publisher: { "@id": `${SITE_URL}/#organization` },
-        inLanguage: ["en", "zh"],
+        inLanguage: "en",
       }}
     />
   );

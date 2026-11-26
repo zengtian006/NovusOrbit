@@ -6,7 +6,7 @@ Configuration Service
 Provides three types of configuration:
 
 1. **YAML Configuration (loader.py)** - For application settings from config/*.yaml
-   - PROJECT_ROOT, load_config_with_main, get_path_from_config, parse_language, get_agent_params
+   - PROJECT_ROOT, load_config_with_main, get_path_from_config, get_agent_params
 
 2. **Unified Config Service (unified_config.py)** - For service configurations (LLM, Embedding, TTS, Search)
    - ConfigType, UnifiedConfigManager, get_config_manager
@@ -27,7 +27,6 @@ from .loader import (
     get_agent_params,
     get_path_from_config,
     load_config_with_main,
-    parse_language,
 )
 
 # Export new unified config service
@@ -46,7 +45,6 @@ __all__ = [
     "PROJECT_ROOT",
     "load_config_with_main",
     "get_path_from_config",
-    "parse_language",
     "get_agent_params",
     # From unified_config.py
     "ConfigType",

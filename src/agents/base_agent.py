@@ -56,7 +56,6 @@ class BaseAgent(ABC):
         base_url: str | None = None,
         model: str | None = None,
         api_version: str | None = None,
-        language: str = "zh",
         binding: str = "openai",
         config: dict[str, Any] | None = None,
         token_tracker: Any | None = None,
@@ -72,7 +71,6 @@ class BaseAgent(ABC):
             base_url: API endpoint (optional, defaults to environment variable)
             model: Model name (optional, defaults to environment variable)
             api_version: API version for Azure OpenAI (optional)
-            language: Language setting ('zh' | 'en'), default 'zh'
             binding: Provider binding type (optional, defaults to 'openai')
             config: Optional configuration dictionary
             token_tracker: Optional external TokenTracker instance
@@ -80,7 +78,6 @@ class BaseAgent(ABC):
         """
         self.module_name = module_name
         self.agent_name = agent_name
-        self.language = language
         # Ensure config is always a dict (not a dataclass like LLMConfig)
         if config is None:
             self.config = {}
@@ -136,10 +133,9 @@ class BaseAgent(ABC):
             self.prompts = get_prompt_manager().load_prompts(
                 module_name=module_name,
                 agent_name=agent_name,
-                language=language,
             )
             if self.prompts:
-                self.logger.debug(f"Prompts loaded: {agent_name} ({language})")
+                self.logger.debug(f"Prompts loaded: {agent_name}")
         except Exception as e:
             self.prompts = None
             self.logger.warning(f"Failed to load prompts for {agent_name}: {e}")

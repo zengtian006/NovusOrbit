@@ -34,7 +34,7 @@ Manages chat sessions:
 from src.agents.chat import ChatAgent, SessionManager
 
 # Initialize agent
-agent = ChatAgent(language="en")
+agent = ChatAgent()
 
 # Process a message
 response = await agent.process(
@@ -56,8 +56,6 @@ session_mgr.update_session(session["session_id"], messages)
 
 ## Configuration
 
-The agent uses prompts from:
-- `prompts/en/chat_agent.yaml` (English)
-- `prompts/zh/chat_agent.yaml` (Chinese)
+The agent uses prompts from `prompts/chat_agent.yaml`.
 
 Token limits and other parameters are configured in `config/agents.yaml`.

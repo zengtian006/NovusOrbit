@@ -1,5 +1,3 @@
-system:
-  language: en
 paths:
   user_data_dir: ./data/user
   portfolios_dir: ./data/portfolios

@@ -19,7 +19,6 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { apiUrl } from "@/lib/api";
 import { processLatexContent } from "@/lib/latex";
-import { useGlobal } from "@/context/GlobalContext";
 import { useTranslation } from "react-i18next";
 
 interface ChatMessage {
@@ -56,7 +55,6 @@ export default function ChatSessionDetail({
   onClose,
   onContinue,
 }: ChatSessionDetailProps) {
-  const { uiSettings } = useGlobal();
   const { t } = useTranslation();
 
   const [session, setSession] = useState<ChatSession | null>(null);
@@ -136,9 +134,7 @@ export default function ChatSessionDetail({
               {session && (
                 <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                   <Clock className="w-3 h-3" />
-                  {new Date(session.created_at * 1000).toLocaleString(
-                    uiSettings.language === "zh" ? "zh-CN" : "en-US",
-                  )}
+                  {new Date(session.created_at * 1000).toLocaleString("en-US")}
                   <span className="mx-1">•</span>
                   {session.messages.length} {t("messages")}
                 </p>
@@ -262,7 +258,7 @@ export default function ChatSessionDetail({
                         }`}
                       >
                         {new Date(msg.timestamp * 1000).toLocaleTimeString(
-                          uiSettings.language === "zh" ? "zh-CN" : "en-US",
+                          "en-US",
                           { hour: "2-digit", minute: "2-digit" },
                         )}
                       </p>

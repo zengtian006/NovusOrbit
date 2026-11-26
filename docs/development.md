@@ -68,14 +68,15 @@ pre-commit run --all-files                 # ruff + ruff-format, prettier, YAML/
 # Frontend (run in web/)
 npx tsc --noEmit
 npm run lint
-npm run i18n:check                         # en/zh locale key parity + hard-coded string audit
+npm run i18n:check                         # hard-coded UI string audit
 npm run build
 npm run audit                              # Playwright accessibility/UX audit (needs a running app)
 ```
 
 ## Conventions
 
-- **Prompts:** each agent has prompt YAML files in `src/agents/<agent>/prompts/en/` and `zh/`. `scripts/audit_prompts.py` and `scripts/sync_prompts_from_en.py` keep the two languages in sync. `tests/core/test_prompt_parity.py` fails if they drift apart.
-- **New UI strings** go in `web/locales/en/*.json` and `web/locales/zh/*.json`. Use `t("…")` instead of hard-coding text.
+- **Language:** NovusOrbit is English-only. Don't add translations or language switches.
+- **Prompts:** each agent's prompts are YAML files at `src/agents/<agent>/prompts/<agent_name>.yaml`. `tests/core/test_prompt_manager.py` checks they all load.
+- **New UI strings:** use `t("…")` instead of hard-coding text; the English key is the text, so adding it to `web/locales/en/app.json` is optional.
 - **New pages:** add the route to `ALL_NAV_ITEMS` in `web/components/Sidebar.tsx` and to the default order in `web/context/GlobalContext.tsx`. If the page should require sign-in, add it to `config/page_settings.yaml` and to the matcher in `web/middleware.ts`.
 - **Agent sampling parameters** belong in `config/agents.yaml`, not in code.

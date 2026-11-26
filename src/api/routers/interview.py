@@ -21,7 +21,6 @@ from src.agents.interview import InterviewAgent, get_interview_session_manager
 from src.logging import get_logger
 from src.services.config import load_config_with_main
 from src.services.llm.config import get_llm_config
-from src.services.settings.interface_settings import get_ui_language
 
 # Initialize logger
 config = load_config_with_main("main.yaml", project_root)
@@ -42,7 +41,6 @@ class GenerateQuestionsRequest(BaseModel):
     job_description: str
     level: str = "medium"  # easy, medium, hard
     count: int = 5
-    language: str = ""  # auto-detect from UI settings if empty
 
 
 class GenerateAnswerRequest(BaseModel):
@@ -53,7 +51,6 @@ class GenerateAnswerRequest(BaseModel):
     company: str = ""
     job_description: str = ""
     kb_name: str = ""  # user's resume portfolio
-    language: str = ""
 
 
 class GenerateBatchAnswersRequest(BaseModel):
@@ -64,7 +61,6 @@ class GenerateBatchAnswersRequest(BaseModel):
     company: str = ""
     job_description: str = ""
     kb_name: str = ""
-    language: str = ""
 
 
 class SaveSessionRequest(BaseModel):
@@ -93,10 +89,7 @@ def _get_agent() -> InterviewAgent:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM config error: {e!s}")
 
-    ui_language = get_ui_language(default="en")
-
     return InterviewAgent(
-        language=ui_language,
         api_key=llm_config.api_key,
         base_url=llm_config.base_url,
         model=llm_config.model,

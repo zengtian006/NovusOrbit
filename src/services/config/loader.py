@@ -5,7 +5,7 @@ Configuration Loader
 ====================
 
 Unified configuration loading for all NovusOrbit modules.
-Provides YAML configuration loading, path resolution, and language parsing.
+Provides YAML configuration loading and path resolution.
 """
 
 import asyncio
@@ -121,33 +121,6 @@ def get_path_from_config(config: dict[str, Any], path_key: str, default: str = N
     return default
 
 
-def parse_language(language: Any) -> str:
-    """
-    Unified language configuration parser, supports multiple input formats
-
-    Supported language representations:
-    - English: "en", "english", "English"
-    - Chinese: "zh", "chinese", "Chinese"
-
-    Args:
-        language: Language configuration value (can be "zh"/"en"/"Chinese"/"English" etc.)
-
-    Returns:
-        Standardized language code: 'zh' or 'en', defaults to 'zh'
-    """
-    if not language:
-        return "zh"
-
-    if isinstance(language, str):
-        lang_lower = language.lower()
-        if lang_lower in ["en", "english"]:
-            return "en"
-        if lang_lower in ["zh", "chinese", "cn"]:
-            return "zh"
-
-    return "zh"  # Default Chinese
-
-
 def get_agent_params(module_name: str) -> dict:
     """
     Get agent parameters (temperature, max_tokens) for a specific module.
@@ -201,7 +174,6 @@ __all__ = [
     "PROJECT_ROOT",
     "load_config_with_main",
     "get_path_from_config",
-    "parse_language",
     "get_agent_params",
     "_deep_merge",
 ]

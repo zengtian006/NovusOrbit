@@ -41,7 +41,6 @@ class TestPromptManager:
         prompts = pm.load_prompts(
             module_name="interview",
             agent_name="interview_agent",
-            language="en",
         )
         assert isinstance(prompts, dict)
         assert "question_system" in prompts
@@ -52,7 +51,6 @@ class TestPromptManager:
         prompts = pm.load_prompts(
             module_name="resume_writer",
             agent_name="edit_agent",
-            language="en",
         )
         assert isinstance(prompts, dict)
         assert prompts
@@ -63,18 +61,6 @@ class TestPromptManager:
         prompts = pm.load_prompts(
             module_name="chat",
             agent_name="chat_agent",
-            language="en",
-        )
-        assert isinstance(prompts, dict)
-
-    def test_load_prompts_with_missing_subdirectory(self):
-        """Test that a missing subdirectory returns a dict instead of raising."""
-        pm = get_prompt_manager()
-        prompts = pm.load_prompts(
-            module_name="resume_writer",
-            agent_name="edit_agent",
-            language="en",
-            subdirectory="does_not_exist",
         )
         assert isinstance(prompts, dict)
 
@@ -83,10 +69,10 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # First load
-        prompts1 = pm.load_prompts("interview", "interview_agent", "en")
+        prompts1 = pm.load_prompts("interview", "interview_agent")
 
         # Second load should return cached version
-        prompts2 = pm.load_prompts("interview", "interview_agent", "en")
+        prompts2 = pm.load_prompts("interview", "interview_agent")
 
         assert prompts1 is prompts2
 
@@ -95,8 +81,8 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # Load some prompts
-        pm.load_prompts("interview", "interview_agent", "en")
-        pm.load_prompts("chat", "chat_agent", "en")
+        pm.load_prompts("interview", "interview_agent")
+        pm.load_prompts("chat", "chat_agent")
 
         assert len(pm._cache) >= 2
 
@@ -108,8 +94,8 @@ class TestPromptManager:
         pm = get_prompt_manager()
 
         # Load prompts for multiple modules
-        pm.load_prompts("interview", "interview_agent", "en")
-        pm.load_prompts("chat", "chat_agent", "en")
+        pm.load_prompts("interview", "interview_agent")
+        pm.load_prompts("chat", "chat_agent")
 
         initial_count = len(pm._cache)
 
@@ -144,56 +130,45 @@ class TestPromptManager:
         missing = pm.get_prompt(test_prompts, "nonexistent", "field", "fallback_value")
         assert missing == "fallback_value"
 
-    def test_language_fallback(self):
-        """Test language fallback chain."""
+    def test_missing_prompt_file_returns_empty_dict(self):
+        """A missing prompt file returns {} instead of raising."""
         pm = get_prompt_manager()
-
-        # Even with a potentially missing language, should fallback
-        prompts = pm.load_prompts("interview", "interview_agent", "zh")
-        assert isinstance(prompts, dict)
+        assert pm.load_prompts("interview", "does_not_exist") == {}
 
     def test_reload_prompts(self):
         """Test force reload bypasses cache."""
         pm = get_prompt_manager()
 
         # Load and cache
-        prompts1 = pm.load_prompts("interview", "interview_agent", "en")
+        prompts1 = pm.load_prompts("interview", "interview_agent")
 
         # Force reload
-        prompts2 = pm.reload_prompts("interview", "interview_agent", "en")
+        prompts2 = pm.reload_prompts("interview", "interview_agent")
 
         # They should be equal but not the same object
         assert prompts1 == prompts2
         # After reload, cache should have fresh entry
-        cache_key = "interview_interview_agent_en"
+        cache_key = "interview_interview_agent"
         assert cache_key in pm._cache
 
 
-class TestPromptManagerLanguages:
-    """Test language handling."""
+class TestPromptFiles:
+    """Every agent's prompt file loads and is non-empty."""
 
-    def setup_method(self):
-        PromptManager._instance = None
+    @pytest.mark.parametrize(
+        "module_name,agent_name",
+        [
+            ("chat", "chat_agent"),
+            ("interview", "interview_agent"),
+            ("job_suggest", "job_suggest_agent"),
+            ("resume_writer", "edit_agent"),
+            ("resume_writer", "narrator_agent"),
+        ],
+    )
+    def test_prompt_file_loads(self, module_name, agent_name):
         PromptManager._cache = {}
-
-    def test_english_prompts(self):
-        """Test loading English prompts."""
-        pm = get_prompt_manager()
-        prompts = pm.load_prompts("chat", "chat_agent", "en")
-        assert isinstance(prompts, dict)
-
-    def test_chinese_prompts(self):
-        """Test loading Chinese prompts."""
-        pm = get_prompt_manager()
-        prompts = pm.load_prompts("chat", "chat_agent", "zh")
-        assert isinstance(prompts, dict)
-
-    def test_invalid_language_falls_back(self):
-        """Test that invalid language code falls back gracefully."""
-        pm = get_prompt_manager()
-        # Should not raise, should fallback
-        prompts = pm.load_prompts("interview", "interview_agent", "invalid")
-        assert isinstance(prompts, dict)
+        prompts = get_prompt_manager().load_prompts(module_name, agent_name)
+        assert prompts, f"{module_name}/{agent_name} prompts are empty"
 
 
 if __name__ == "__main__":

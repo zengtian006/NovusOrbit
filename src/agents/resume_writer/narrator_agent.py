@@ -38,12 +38,9 @@ def ensure_dirs():
 class NarratorAgent(BaseAgent):
     """Note Narration Agent - Generate narration script and convert to audio"""
 
-    def __init__(self, language: str = "en"):
+    def __init__(self):
         """
         Initialize NarratorAgent.
-
-        Args:
-            language: Language setting ('en' | 'zh'), default 'en'
 
         Note: LLM configuration (api_key, base_url, model, etc.) is loaded
         automatically from the unified config service. Use refresh_config()
@@ -53,7 +50,6 @@ class NarratorAgent(BaseAgent):
         super().__init__(
             module_name="narrator",
             agent_name="narrator_agent",
-            language=language,
         )
 
         # Override prompts to load from resume_writer module
@@ -63,7 +59,6 @@ class NarratorAgent(BaseAgent):
         self.prompts = get_prompt_manager().load_prompts(
             module_name="resume_writer",
             agent_name="narrator_agent",
-            language=language,
         )
 
         # Load TTS-specific configuration

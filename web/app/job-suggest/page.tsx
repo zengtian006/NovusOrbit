@@ -1,5 +1,7 @@
 "use client";
 
+import { refreshJourney } from "@/lib/journey";
+
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
@@ -446,6 +448,7 @@ export default function JobSuggestPage() {
         setShowAddToBoardModal(false);
         setAddToBoardJob(null);
         fetchBoards(); // refresh counts
+        refreshJourney();
       }
     } catch (err) {
       console.error("Failed to add job to board:", err);
@@ -470,6 +473,7 @@ export default function JobSuggestPage() {
       const data = await res.json();
       if (data.success && data.board) {
         await fetchBoards();
+        refreshJourney();
         setSelectedBoardId(data.board.id);
         setShowCreateBoardInline(false);
         setNewBoardName("");
@@ -644,7 +648,7 @@ export default function JobSuggestPage() {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen animate-fade-in flex flex-col lg:flex-row gap-4 p-3 sm:p-4">
+    <div className="min-h-full lg:h-full animate-fade-in flex flex-col lg:flex-row gap-4 p-3 sm:p-4">
       {/* LEFT PANEL — Configuration (stacks above results on small screens) */}
       <div className="lg:flex-[1_1_33%] min-w-0 lg:min-w-[320px] lg:max-w-[420px] flex flex-col gap-4 lg:h-full lg:overflow-y-auto">
         {/* Header */}

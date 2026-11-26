@@ -60,23 +60,19 @@ class JobSuggestAgent(BaseAgent):
 
     def __init__(
         self,
-        language: str = "en",
         config: dict[str, Any] | None = None,
         **kwargs,
     ):
         super().__init__(
             module_name="job_suggest",
             agent_name="job_suggest_agent",
-            language=language,
             config=config,
             **kwargs,
         )
         self.indeed = IndeedScraper()
         self.linkedin = LinkedInScraper()
         self._country_cache: dict[str, str] = {}
-        self.logger.info(
-            f"JobSuggestAgent initialized: model={self.model}, language={language}"
-        )
+        self.logger.info(f"JobSuggestAgent initialized: model={self.model}")
 
     # ------------------------------------------------------------------
     # Abstract method implementation

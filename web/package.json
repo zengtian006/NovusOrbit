@@ -7,10 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "i18n:parity": "node ./scripts/i18n_parity.mjs",
     "i18n:audit": "node ./scripts/i18n_audit.mjs",
     "i18n:audit:strict": "node ./scripts/i18n_audit.mjs --strict",
-    "i18n:check": "npm run i18n:parity && npm run i18n:audit",
+    "i18n:check": "npm run i18n:audit",
     "audit": "playwright test --project=ui-audit",
     "audit:ui": "playwright test --ui --project=ui-audit",
     "audit:report": "playwright show-report"

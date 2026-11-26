@@ -1,5 +1,7 @@
 "use client";
 
+import { refreshJourney } from "@/lib/journey";
+
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect, useCallback, useRef } from "react";
 
@@ -199,7 +201,7 @@ export default function KnowledgePage() {
   const PROVIDER_FILE_HINTS: Record<string, string> = {
     llamaindex: "PDF, TXT, MD, JSON, CSV, HTML, XML...",
     lightrag: "PDF, TXT, MD, JSON, CSV, HTML, XML...",
-    raganything: "PDF, Word, 图片, TXT, MD, JSON, CSV, HTML...",
+    raganything: "PDF, Word, images, TXT, MD, JSON, CSV, HTML...",
   };
 
   // Get supported extensions for current provider
@@ -541,6 +543,7 @@ export default function KnowledgePage() {
       }
 
       setKbs(data);
+      refreshJourney();
       setError(null); // Clear previous error - empty list is not an error, it's just empty state
     } catch (err: any) {
       console.error("❌ Error fetching knowledge bases:", err);
@@ -1040,7 +1043,7 @@ export default function KnowledgePage() {
   }, []);
 
   return (
-    <div className="animate-fade-in h-screen overflow-y-auto p-6">
+    <div className="animate-fade-in h-full overflow-y-auto p-6">
       {/* Header */}
       <PageHeader
         className="mb-8"

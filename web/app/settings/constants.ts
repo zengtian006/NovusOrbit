@@ -2,12 +2,6 @@
 
 import { ConfigType } from "./types";
 
-// Language options
-export const LANGUAGE_OPTIONS = [
-  { value: "en" as const, label: "English" },
-  { value: "zh" as const, label: "中文" },
-];
-
 // Provider options - Cloud services first, then local deployments
 export const PROVIDER_OPTIONS: Record<ConfigType, string[]> = {
   llm: [
