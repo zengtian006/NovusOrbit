@@ -12,15 +12,18 @@ interface Crumb {
 export function PageShell({
   crumbs,
   children,
+  wide = false,
 }: {
   crumbs: Crumb[];
   children: React.ReactNode;
+  /** Wider column for overview pages with card grids. */
+  wide?: boolean;
 }) {
   const all = [{ name: "Home", path: "/" }, ...crumbs];
   return (
     <div className="min-h-full px-4 sm:px-6 py-8 sm:py-12">
       <BreadcrumbStructuredData items={all} />
-      <div className="max-w-3xl mx-auto">
+      <div className={`${wide ? "max-w-5xl" : "max-w-3xl"} mx-auto`}>
         <nav aria-label="Breadcrumb" className="mb-6">
           <ol className="flex flex-wrap items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
             {all.map((c, i) => (
