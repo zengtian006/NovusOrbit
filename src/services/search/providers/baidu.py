@@ -27,7 +27,7 @@ class BaiduProvider(BaseSearchProvider):
     """Baidu AI Search provider"""
 
     display_name = "Baidu AI"
-    description = "百度AI搜索 with ERNIE models"
+    description = "Baidu AI Search with ERNIE models"
     supports_answer = True
     BASE_URL = "https://qianfan.baidubce.com/v2/ai_search/chat/completions"
 

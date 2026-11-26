@@ -10,7 +10,7 @@ This module provides:
 Usage:
     from src.agents.job_suggest import JobSuggestAgent
 
-    agent = JobSuggestAgent(language="en")
+    agent = JobSuggestAgent()
     suggestions = await agent.suggest_jobs(
         kb_name="my-cv",
         preferences={"role_type": "Software Engineer", "location": "Remote"},

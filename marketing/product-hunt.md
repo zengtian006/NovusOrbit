@@ -31,7 +31,7 @@
 > 🔎 **Job suggestions**: it searches live listings on Indeed and LinkedIn, ranks them against your CV, and explains each match and the gaps.
 > 📋 **Job tracker**: every application from "interested" to "offered".
 >
-> It's free, open source (AGPL), and works in English and Chinese.
+> It's free and open source (AGPL).
 >
 > I'd really value your honest feedback: what would make this the first tool you open when you start job hunting?
 

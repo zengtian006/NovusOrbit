@@ -34,10 +34,6 @@ const FAQS: Faq[] = [
     q: "How does NovusOrbit personalize its answers?",
     a: "Documents you upload to My Portfolio are indexed. When you use a tool, the AI retrieves the relevant parts of your own experience and uses them in its answer.",
   },
-  {
-    q: "Which languages does NovusOrbit support?",
-    a: "The interface is available in English and Chinese.",
-  },
 ];
 
 export default function FeaturesPage() {

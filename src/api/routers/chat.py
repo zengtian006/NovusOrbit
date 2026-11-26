@@ -19,7 +19,6 @@ from src.logging import get_logger
 from src.services.rate_limit import RateLimitExceeded, check as check_rate_limit, client_ip_from_headers
 from src.services.config import load_config_with_main
 from src.services.llm.config import get_llm_config
-from src.services.settings.interface_settings import get_ui_language
 
 # Initialize logger
 project_root = Path(__file__).parent.parent.parent.parent
@@ -119,8 +118,6 @@ async def websocket_chat(websocket: WebSocket):
         while True:
             # Receive message
             data = await websocket.receive_json()
-            # Use current UI language (fallback to config/main.yaml system.language)
-            language = get_ui_language(default=config.get("system", {}).get("language", "en"))
             message = data.get("message", "").strip()
             session_id = data.get("session_id")
             explicit_history = data.get("history")  # Optional override
@@ -212,7 +209,6 @@ async def websocket_chat(websocket: WebSocket):
                     api_version = None
 
                 agent = ChatAgent(
-                    language=language,
                     config=config,
                     api_key=api_key,
                     base_url=base_url,

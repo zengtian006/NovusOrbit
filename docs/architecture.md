@@ -39,7 +39,7 @@ The browser calls the FastAPI backend directly for feature APIs; `NEXT_PUBLIC_AP
 
 ### Agents (`src/agents/`)
 
-Every agent extends `BaseAgent`, which provides an LLM client, prompt loading and logging. Prompts are YAML files under `<agent>/prompts/{en,zh}/` and are loaded by `services/prompt`. Sampling parameters (`temperature`, `max_tokens`) come from `config/agents.yaml`.
+Every agent extends `BaseAgent`, which provides an LLM client, prompt loading and logging. Prompts are English YAML files at `<agent>/prompts/<agent_name>.yaml` and are loaded by `services/prompt`. Sampling parameters (`temperature`, `max_tokens`) come from `config/agents.yaml`.
 
 | Agent | Highlights |
 |---|---|
@@ -63,7 +63,7 @@ Every agent extends `BaseAgent`, which provides an LLM client, prompt loading an
 - **State:** `context/GlobalContext.tsx` holds cross-page state: the Home chat session, UI settings, theme, and sidebar order.
 - **Auth:** NextAuth v5 with Google and the Prisma adapter on MongoDB (`lib/auth.ts`, `prisma/schema.prisma`). See [authentication.md](authentication.md).
 - **Route protection:** `middleware.ts` reads `config/page_settings.yaml`, caches it for 30 seconds, and sends signed-out users to `/auth/signin` on pages marked `requireSSO: true`.
-- **i18n:** i18next with `locales/{en,zh}/*.json`. Run `npm run i18n:check` to check that keys match across languages.
+- **UI strings:** English only. Strings go through i18next `t("…")` with `locales/en/app.json`; `npm run i18n:check` flags hard-coded UI text.
 - **Route handlers:** `app/api/auth` (NextAuth), `app/api/admin/users`, `app/api/analytics/{track,dashboard}`, `app/api/feedback`.
 
 ## Data and persistence

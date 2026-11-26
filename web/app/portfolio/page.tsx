@@ -201,7 +201,7 @@ export default function KnowledgePage() {
   const PROVIDER_FILE_HINTS: Record<string, string> = {
     llamaindex: "PDF, TXT, MD, JSON, CSV, HTML, XML...",
     lightrag: "PDF, TXT, MD, JSON, CSV, HTML, XML...",
-    raganything: "PDF, Word, 图片, TXT, MD, JSON, CSV, HTML...",
+    raganything: "PDF, Word, images, TXT, MD, JSON, CSV, HTML...",
   };
 
   // Get supported extensions for current provider

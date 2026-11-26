@@ -12,7 +12,6 @@ import {
   Loader2,
   Sun,
   Moon,
-  Globe,
   Trash2,
   AlertTriangle,
 } from "lucide-react";
@@ -21,14 +20,12 @@ import { useGlobal } from "@/context/GlobalContext";
 import { useTranslation } from "react-i18next";
 import { OverviewTab, ConfigTab } from "./components";
 import { FullStatus, PortsInfo, TabType } from "./types";
-import { LANGUAGE_OPTIONS } from "./constants";
 import { getStorageStats } from "@/lib/persistence";
 
 export default function SettingsPage() {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
-  const { uiSettings, updateTheme, updateLanguage, clearAllPersistence } =
-    useGlobal();
+  const { uiSettings, updateTheme, clearAllPersistence } = useGlobal();
   const { t } = useTranslation();
 
   // Check if user is admin
@@ -132,7 +129,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* General Settings - Theme & Language */}
+        {/* General Settings - Theme */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 mb-6">
           <div className="flex flex-wrap items-center gap-6">
             {/* Theme Toggle */}
@@ -166,31 +163,6 @@ export default function SettingsPage() {
                   <Moon className="w-3.5 h-3.5" />
                   {t("Dark")}
                 </button>
-              </div>
-            </div>
-
-            {/* Separator */}
-            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
-
-            {/* Language Selector */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <Globe className="w-4 h-4" />
-                <span>{t("Language")}</span>
-              </div>
-              <div className="flex p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                {LANGUAGE_OPTIONS.map((lang) => (
-                  <button
-                    key={lang.value}
-                    onClick={() => updateLanguage(lang.value)}
-                    className={`px-3 py-1.5 rounded-md text-sm transition-all ${uiSettings.language === lang.value
-                        ? "bg-white dark:bg-slate-600 text-slate-900 dark:text-slate-100 shadow-sm"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                      }`}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
               </div>
             </div>
 

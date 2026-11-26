@@ -32,12 +32,6 @@ LEVEL_GUIDANCE = {
     "hard": "Include complex system design questions, advanced technical deep-dives, challenging behavioral scenarios, and leadership/strategy questions suitable for senior-level candidates.",
 }
 
-LEVEL_GUIDANCE_ZH = {
-    "easy": "侧重基础概念、基本行为类问题和适合入门级候选人的简单技术问题。",
-    "medium": "包含行为类、情景类和中等难度的技术问题，适合中级候选人。",
-    "hard": "包含复杂的系统设计问题、深入的技术探讨、具有挑战性的行为场景和领导力/战略问题，适合高级候选人。",
-}
-
 
 class InterviewAgent(BaseAgent):
     """
@@ -48,12 +42,10 @@ class InterviewAgent(BaseAgent):
     - Produces personalized answers using resume/portfolio RAG
     - Falls back to web search for industry best practices
     - Supports Easy / Medium / Hard difficulty levels
-    - Bilingual prompt templates (English & Chinese)
     """
 
     def __init__(
         self,
-        language: str = "en",
         config: dict[str, Any] | None = None,
         **kwargs,
     ):
@@ -61,21 +53,17 @@ class InterviewAgent(BaseAgent):
         Initialize InterviewAgent.
 
         Args:
-            language: Language setting ('zh' | 'en')
             config: Optional configuration dictionary
             **kwargs: Additional arguments passed to BaseAgent
         """
         super().__init__(
             module_name="interview",
             agent_name="interview_agent",
-            language=language,
             config=config,
             **kwargs,
         )
 
-        self.logger.info(
-            f"InterviewAgent initialized: model={self.model}, language={language}"
-        )
+        self.logger.info(f"InterviewAgent initialized: model={self.model}")
 
     # ------------------------------------------------------------------
     # Abstract method implementation (required by BaseAgent)
@@ -118,8 +106,7 @@ class InterviewAgent(BaseAgent):
         )
 
         company_line = f" at **{company}**" if company else ""
-        guidance = LEVEL_GUIDANCE if self.language == "en" else LEVEL_GUIDANCE_ZH
-        level_text = guidance.get(level, guidance["medium"])
+        level_text = LEVEL_GUIDANCE.get(level, LEVEL_GUIDANCE["medium"])
 
         # Build user prompt from template (fallback to inline if template missing)
         template = self.get_prompt("question_template")

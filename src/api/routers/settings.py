@@ -2,7 +2,7 @@
 Settings API Router (Simplified)
 ================================
 
-Manages basic UI settings: theme, language, sidebar customization.
+Manages basic UI settings: theme and sidebar customization.
 Configuration for LLM/Embedding/TTS/Search is handled by the unified config service.
 """
 
@@ -100,7 +100,6 @@ def save_page_settings(settings: dict):
 # Default UI settings
 DEFAULT_UI_SETTINGS = {
     "theme": "light",
-    "language": "en",
     "sidebar_description": "✨ NovusOrbit",
     "sidebar_nav_order": DEFAULT_SIDEBAR_NAV_ORDER,
 }
@@ -113,17 +112,12 @@ class SidebarNavOrder(BaseModel):
 
 class UISettings(BaseModel):
     theme: Literal["light", "dark"] = "light"
-    language: Literal["zh", "en"] = "en"
     sidebar_description: Optional[str] = None
     sidebar_nav_order: Optional[SidebarNavOrder] = None
 
 
 class ThemeUpdate(BaseModel):
     theme: Literal["light", "dark"]
-
-
-class LanguageUpdate(BaseModel):
-    language: Literal["zh", "en"]
 
 
 class SidebarDescriptionUpdate(BaseModel):
@@ -140,6 +134,7 @@ def load_ui_settings() -> dict:
         try:
             with open(SETTINGS_FILE, encoding="utf-8") as f:
                 saved = json.load(f)
+                saved.pop("language", None)  # Legacy: the UI is English-only now
                 return {**DEFAULT_UI_SETTINGS, **saved}
         except Exception:
             pass
@@ -166,15 +161,6 @@ async def update_theme(update: ThemeUpdate):
     current_ui["theme"] = update.theme
     save_ui_settings(current_ui)
     return {"theme": update.theme}
-
-
-@router.put("/language")
-async def update_language(update: LanguageUpdate):
-    """Update UI language"""
-    current_ui = load_ui_settings()
-    current_ui["language"] = update.language
-    save_ui_settings(current_ui)
-    return {"language": update.language}
 
 
 @router.put("/ui")

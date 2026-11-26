@@ -24,7 +24,6 @@ from src.agents.job_suggest import JobSuggestAgent, get_job_suggest_session_mana
 from src.logging import get_logger
 from src.services.config import load_config_with_main
 from src.services.llm.config import get_llm_config
-from src.services.settings.interface_settings import get_ui_language
 
 # Initialize logger
 config = load_config_with_main("main.yaml", project_root)
@@ -49,7 +48,6 @@ class SuggestJobsRequest(BaseModel):
     date_posted: str = ""  # all, today, 3days, week, month
     remote_only: bool = False
     sources: list[str] = []  # linkedin, indeed, glassdoor, ziprecruiter, company, other; empty = all
-    language: str = ""
 
 
 class JobDetailRequest(BaseModel):
@@ -62,7 +60,6 @@ class JobDetailRequest(BaseModel):
     job_description: str = ""
     kb_name: str = ""
     session_id: str = ""
-    language: str = ""
 
 
 class ScrapeJobDescriptionRequest(BaseModel):
@@ -99,10 +96,7 @@ def _get_agent() -> JobSuggestAgent:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM config error: {e!s}")
 
-    ui_language = get_ui_language(default="en")
-
     return JobSuggestAgent(
-        language=ui_language,
         api_key=llm_config.api_key,
         base_url=llm_config.base_url,
         model=llm_config.model,
