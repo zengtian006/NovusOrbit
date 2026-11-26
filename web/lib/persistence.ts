@@ -225,6 +225,7 @@ export function getStorageStats(): {
 export const STORAGE_KEYS = {
   CHAT_STATE: "chat_state",
   RESUME_WRITER_CONTENT: "resume_writer_content",
+  RESUME_WRITER_TARGET_JOB: "resume_writer_target_job",
 } as const;
 
 /**
