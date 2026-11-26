@@ -6,9 +6,6 @@ import Link from "next/link";
 
 import { LogoMark } from "@/components/Logo";
 import {
-  Upload,
-  BookmarkCheck,
-  MessageSquare,
   Send,
   Loader2,
   Bot,
@@ -18,6 +15,7 @@ import {
   Trash2,
   ExternalLink,
   BookOpen,
+  Check,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -29,6 +27,8 @@ import { apiUrl } from "@/lib/api";
 import { processLatexContent } from "@/lib/latex";
 import { useTranslation } from "react-i18next";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useJourney } from "@/components/JourneyProvider";
+import { JOURNEY_STEPS } from "@/lib/journey";
 
 interface KnowledgeBase {
   name: string;
@@ -46,6 +46,9 @@ export default function HomePage() {
   } = useGlobal();
   const { t } = useTranslation();
   const { trackEvent } = useAnalytics();
+  const { progress } = useJourney();
+  // Highlight the first unfinished step (the CV until one is uploaded).
+  const nextStepId = JOURNEY_STEPS.find((st) => !progress[st.id])?.id;
 
   const [inputMessage, setInputMessage] = useState("");
   const [kbs, setKbs] = useState<KnowledgeBase[]>([]);
@@ -129,7 +132,7 @@ export default function HomePage() {
   const hasMessages = chatState.messages.length > 0;
 
   return (
-    <div className="h-screen flex flex-col animate-fade-in">
+    <div className="h-full flex flex-col animate-fade-in">
       {/* Empty State / Welcome Screen */}
       {!hasMessages && (
         <div className="flex-1 flex flex-col items-center justify-center px-6">
@@ -265,32 +268,36 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* Getting started (no portfolio yet) */}
-            {kbsLoaded && kbs.length === 0 && (
-              <ol className="mt-6 grid gap-3 sm:grid-cols-3 text-left">
-                {[
-                  { href: "/portfolio", title: t("Upload your CV"), body: t("Create a portfolio so every tool knows your experience."), icon: Upload },
-                  { href: "/jobs", title: t("Save jobs you like"), body: t("Keep listings and track each application."), icon: BookmarkCheck },
-                  { href: "/interview", title: t("Prepare and apply"), body: t("Get interview questions and answers for each job."), icon: MessageSquare },
-                ].map((step, i) => (
-                  <li key={step.href}>
-                    <Link
-                      href={step.href}
-                      className={`group block h-full rounded-xl border p-4 transition-colors ${i === 0
-                        ? "border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/60 dark:bg-indigo-500/10 hover:border-indigo-400"
-                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"}`}
-                    >
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className={`w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center ${i === 0 ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>
-                          {i + 1}
-                        </span>
-                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{step.title}</span>
-                        <step.icon className="w-4 h-4 ml-auto text-slate-400 group-hover:text-indigo-500" />
-                      </div>
-                      <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{step.body}</p>
-                    </Link>
-                  </li>
-                ))}
+            {/* The job-search journey: every step, with what's done and what's next */}
+            {kbsLoaded && (
+              <ol className="mt-6 grid gap-3 grid-cols-2 sm:grid-cols-3 text-left">
+                {JOURNEY_STEPS.map((step, i) => {
+                  const done = progress[step.id];
+                  const isNext = step.id === nextStepId;
+                  return (
+                    <li key={step.href}>
+                      <Link
+                        href={step.href}
+                        className={`group block h-full rounded-xl border p-3.5 transition-colors ${isNext
+                          ? "border-indigo-200 dark:border-indigo-500/40 bg-indigo-50/60 dark:bg-indigo-500/10 hover:border-indigo-400"
+                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"}`}
+                      >
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className={`w-6 h-6 shrink-0 rounded-full text-xs font-semibold flex items-center justify-center ${isNext
+                            ? "bg-indigo-600 text-white"
+                            : done
+                              ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}>
+                            {done && !isNext ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                          </span>
+                          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{t(step.label)}</span>
+                          <step.icon className="w-4 h-4 ml-auto shrink-0 text-slate-400 group-hover:text-indigo-500" />
+                        </div>
+                        <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t(step.hint)}</p>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ol>
             )}
 

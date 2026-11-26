@@ -8,6 +8,8 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 import ApiLimitNotice from "@/components/ApiLimitNotice";
 import AcquisitionTracker from "@/components/AcquisitionTracker";
 import WelcomeGuide from "@/components/WelcomeGuide";
+import JourneyBar from "@/components/JourneyBar";
+import { JourneyProvider } from "@/components/JourneyProvider";
 import { I18nClientBridge } from "@/i18n/I18nClientBridge";
 import { Providers } from "@/app/providers";
 import {
@@ -101,12 +103,15 @@ export default function RootLayout({
           <GlobalProvider>
             <I18nClientBridge>
               <LayoutWrapper>
-                <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-200">
-                  <Sidebar />
-                  <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
-                    {children}
-                  </main>
-                </div>
+                <JourneyProvider>
+                  <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-200">
+                    <Sidebar />
+                    <main className="flex-1 min-w-0 flex flex-col bg-slate-50 dark:bg-slate-950">
+                      <JourneyBar />
+                      <div className="flex-1 min-h-0 overflow-y-auto">{children}</div>
+                    </main>
+                  </div>
+                </JourneyProvider>
                 <ApiLimitNotice />
                 <AcquisitionTracker />
                 <WelcomeGuide />

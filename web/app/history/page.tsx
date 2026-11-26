@@ -235,7 +235,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col animate-fade-in p-4 sm:p-6">
+    <div className="h-full flex flex-col animate-fade-in p-4 sm:p-6">
       {/* Header - Fixed */}
       <div className="shrink-0 pb-4">
         <div className="flex items-center justify-between">

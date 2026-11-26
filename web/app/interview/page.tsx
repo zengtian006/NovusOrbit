@@ -1,5 +1,7 @@
 "use client";
 
+import { readJobParams, refreshJourney } from "@/lib/journey";
+
 import PageHeader from "@/components/PageHeader";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
@@ -117,11 +119,28 @@ export default function InterviewPage() {
 
   const questionsRef = useRef<HTMLDivElement>(null);
 
+  // Opened from Saved Jobs ("Interview Prep"): pre-select that board and job.
+  const pendingJobId = useRef<string | null>(null);
+
   // Fetch boards and KBs on mount
   useEffect(() => {
     fetchBoards();
     fetchKBs();
+    const params = readJobParams();
+    if (params) {
+      pendingJobId.current = params.jobId;
+      setSelectedBoardId(params.boardId);
+    }
   }, []);
+
+  useEffect(() => {
+    if (!pendingJobId.current) return;
+    const job = boardJobs.find((j) => j.id === pendingJobId.current);
+    if (job) {
+      setSelectedJob(job);
+      pendingJobId.current = null;
+    }
+  }, [boardJobs]);
 
   // Fetch jobs when board changes
   useEffect(() => {
@@ -196,6 +215,7 @@ export default function InterviewPage() {
       const data = await res.json();
       if (data.success && data.session_id) {
         setSessionId(data.session_id);
+        refreshJourney();
       }
     } catch (err) {
       console.error("Failed to save interview session:", err);
@@ -367,7 +387,7 @@ export default function InterviewPage() {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen animate-fade-in flex flex-col lg:flex-row gap-4 p-3 sm:p-4">
+    <div className="min-h-full lg:h-full animate-fade-in flex flex-col lg:flex-row gap-4 p-3 sm:p-4">
       {/* LEFT PANEL — Configuration (stacks above results on small screens) */}
       <div className="lg:flex-[1_1_33%] min-w-0 lg:min-w-[320px] lg:max-w-[420px] flex flex-col gap-4 lg:h-full lg:overflow-y-auto">
         {/* Header */}

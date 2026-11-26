@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { withJob } from "@/lib/journey";
+
 import { useState, useEffect } from "react";
 
 import {
@@ -21,6 +24,7 @@ import {
   DollarSign,
   Building2,
   FileText,
+  Mic,
   StickyNote,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -352,7 +356,7 @@ export default function JobsPage() {
 
   return (
     <div
-      className="h-screen flex gap-4 p-3 sm:p-4 animate-fade-in overflow-x-auto snap-x snap-mandatory lg:snap-none"
+      className="h-full flex gap-4 p-3 sm:p-4 animate-fade-in overflow-x-auto snap-x snap-mandatory lg:snap-none"
       style={{ justifyContent: "flex-start" }}
     >
       {/* Left Panel: Board List */}
@@ -722,7 +726,27 @@ export default function JobsPage() {
 
             {/* Action Buttons */}
             {selectedJob && (
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                {selectedBoard && (
+                  <>
+                    <Link
+                      href={withJob("/resume-writer", selectedBoard.id, selectedJob.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors"
+                      title={t("Tailor your resume to this job")}
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      {t("Tailor Resume")}
+                    </Link>
+                    <Link
+                      href={withJob("/interview", selectedBoard.id, selectedJob.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/15 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 rounded-lg transition-colors"
+                      title={t("Practise interview questions for this job")}
+                    >
+                      <Mic className="w-3.5 h-3.5" />
+                      {t("Interview Prep")}
+                    </Link>
+                  </>
+                )}
                 {selectedJob.url && (
                   <a
                     href={selectedJob.url}
