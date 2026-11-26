@@ -175,6 +175,66 @@ export const FEATURES: Feature[] = [
     relatedGuides: ["how-to-tailor-resume-to-job-description"],
   },
   {
+    slug: "tailor-resume-to-job-description",
+    name: "Tailor Resume to a Job",
+    metaTitle: "Tailor Your Resume to a Job Description with AI (Free)",
+    metaDescription:
+      "Attach a saved job and let AI rewrite your resume around its description: matching keywords, reordered achievements and a focused summary, using only facts from your CV. Free.",
+    h1: "Tailor your resume to any job description in one click",
+    intro:
+      "Recruiters and applicant tracking systems look for the skills and wording in the job ad. Attach a job you saved, and NovusOrbit rewrites your resume to lead with the experience that role asks for. It works only from what's already in your resume, so it won't invent jobs, numbers or skills.",
+    appPath: "/resume-writer",
+    appLabel: "Tailor my resume",
+    requiresSignIn: true,
+    steps: [
+      {
+        title: "Save the job",
+        body: "Add the posting to your saved jobs with its full description, or find one with AI job matching.",
+      },
+      {
+        title: "Paste your resume",
+        body: "Open the resume writer and paste your current resume, or start from your uploaded CV.",
+      },
+      {
+        title: "Attach the job and tailor",
+        body: "Pick the saved job and click Tailor Resume. The AI rewrites the summary, reorders bullets and mirrors the job's key terms where your experience supports them.",
+      },
+      {
+        title: "Review, refine and export",
+        body: "Undo in one click, refine individual lines against the same job, then export to Markdown or PDF.",
+      },
+    ],
+    benefits: [
+      {
+        title: "No invented facts",
+        body: "The rewrite is limited to what your resume already says. It changes emphasis and wording, not your history.",
+      },
+      {
+        title: "One resume per job, fast",
+        body: "Tailoring takes seconds, so you can send a targeted version to every application instead of one generic resume.",
+      },
+      {
+        title: "Connected to the rest of your search",
+        body: "The same saved job drives interview prep, so what you claim on your resume and what you practise match.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Is tailoring a resume to each job worth it?",
+        a: "Yes. A resume that uses the role's own language and leads with the most relevant experience is easier for both recruiters and applicant tracking systems to match. It's one of the highest-return steps in an application.",
+      },
+      {
+        q: "Will it add skills I don't have?",
+        a: "No. It's instructed to use only facts already in your resume. Still read the result before sending: you should be able to discuss every line in an interview.",
+      },
+      {
+        q: "Is it really free?",
+        a: "Yes. NovusOrbit is free and open source. You only need to sign in with Google so your resume and saved jobs are kept in your own account.",
+      },
+    ],
+    relatedGuides: ["how-to-tailor-resume-to-job-description"],
+  },
+  {
     slug: "ai-job-matching",
     name: "AI Job Matching",
     metaTitle: "AI Job Matching: Find Jobs That Fit Your Resume",
@@ -403,7 +463,7 @@ export const GUIDES: Guide[] = [
         ],
       },
     ],
-    relatedFeature: "ai-resume-writer",
+    relatedFeature: "tailor-resume-to-job-description",
   },
   {
     slug: "star-method-interview-answers",

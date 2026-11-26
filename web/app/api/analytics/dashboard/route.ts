@@ -44,7 +44,7 @@ export async function GET(request: Request) {
             by: ["feature"],
             where: {
                 createdAt: { gte: startDate },
-                action: { not: "acquisition" },
+                action: { notIn: ["acquisition", "funnel"] },
             },
             _count: {
                 feature: true,
@@ -73,6 +73,40 @@ export async function GET(request: Request) {
                 },
             },
         });
+
+        // Funnel by channel: users who signed up in this period, grouped by
+        // source / campaign, and how many of them reached each journey step
+        // (at any time since). This is what to compare paid channels on.
+        const signups = await prisma.userAnalytics.findMany({
+            where: { action: "acquisition", createdAt: { gte: startDate } },
+            select: { userId: true, feature: true, metadata: true },
+        });
+        const channelOf = new Map<string, string>();
+        for (const s of signups) {
+            const campaign = (s.metadata as { campaign?: string } | null)?.campaign;
+            channelOf.set(s.userId, campaign ? `${s.feature} / ${campaign}` : s.feature);
+        }
+        const milestones = channelOf.size
+            ? await prisma.userAnalytics.findMany({
+                  where: { action: "funnel", userId: { in: [...channelOf.keys()] } },
+                  select: { userId: true, feature: true },
+              })
+            : [];
+        const funnelMap = new Map<string, { channel: string; signups: number; steps: Record<string, number> }>();
+        for (const channel of channelOf.values()) {
+            const row = funnelMap.get(channel) ?? { channel, signups: 0, steps: {} };
+            row.signups += 1;
+            funnelMap.set(channel, row);
+        }
+        const seen = new Set<string>();
+        for (const m of milestones) {
+            const key = `${m.userId}:${m.feature}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const row = funnelMap.get(channelOf.get(m.userId)!);
+            if (row) row.steps[m.feature] = (row.steps[m.feature] ?? 0) + 1;
+        }
+        const funnelBySource = [...funnelMap.values()].sort((a, b) => b.signups - a.signups);
 
         // Get action type distribution
         const actionStats = await prisma.userAnalytics.groupBy({
@@ -168,6 +202,7 @@ export async function GET(request: Request) {
                 source: stat.feature,
                 count: stat._count.feature,
             })),
+            funnelBySource,
             actionStats: actionStats.map((stat: any) => ({
                 action: stat.action,
                 count: stat._count.action,
