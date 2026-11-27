@@ -86,6 +86,8 @@ export const metadata: Metadata = {
   category: "career",
 };
 
+const GTM_ID = "GTM-5P8LDC66";
+
 export default function RootLayout({
   children,
 }: {
@@ -94,6 +96,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Google tag (GTM container). Keep first in <head>; only one per page. */}
+        <script async src={`https://www.googletagmanager.com/gtm.js?id=${GTM_ID}`} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());`,
+          }}
+        />
         <ThemeScript />
       </head>
       <body className={font.className} suppressHydrationWarning>
