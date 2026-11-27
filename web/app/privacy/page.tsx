@@ -85,6 +85,11 @@ export default function PrivacyPage() {
           <li>
             <strong>Google</strong>: handles sign-in. We never see your Google password.
           </li>
+          <li>
+            <strong>Google Tag Manager and Google Ads</strong>: we use Google tags to measure visits and ad
+            performance. Google may set cookies and receive your IP address and pages viewed. It never receives your
+            documents or chat content.
+          </li>
         </ul>
       </Section>
 
